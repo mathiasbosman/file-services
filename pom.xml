@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <artifactId>acd-parent</artifactId>
+    <groupId>be.milieuinfo</groupId>
+    <version>1.0.8</version>
+  </parent>
+
+  <groupId>be.mathiasbosman</groupId>
+  <artifactId>file-services</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <description>File services</description>
+
+  <properties>
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <docker-compose-test.file>.docker/docker-compose-test.yml</docker-compose-test.file>
+  </properties>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <artifactId>docker-compose-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <configuration>
+              <awaitTimeout>10</awaitTimeout>
+              <composeFile>${docker-compose-test.file}</composeFile>
+              <detachedMode>true</detachedMode>
+              <projectName>file-services-unit</projectName>
+            </configuration>
+            <goals>
+              <goal>up</goal>
+            </goals>
+            <id>bring-docker-containers-up</id>
+            <phase>validate</phase>
+          </execution>
+          <execution>
+            <configuration>
+              <composeFile>${docker-compose-test.file}</composeFile>
+              <removeVolumes>true</removeVolumes>
+              <removeVolumes>true</removeVolumes>
+              <removeOrphans>true</removeOrphans>
+              <removeImages>true</removeImages>
+              <removeImagesType>local</removeImagesType>
+              <projectName>file-services-unit</projectName>
+            </configuration>
+            <goals>
+              <goal>down</goal>
+            </goals>
+            <id>bring-docker-containers-down</id>
+            <phase>post-integration-test</phase>
+          </execution>
+        </executions>
+        <groupId>com.dkanejs.maven.plugins</groupId>
+        <version>4.0.0</version>
+      </plugin>
+    </plugins>
+  </build>
+
+  <dependencies>
+    <dependency>
+      <artifactId>commons-lang3</artifactId>
+      <groupId>org.apache.commons</groupId>
+      <version>3.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-collections4</artifactId>
+      <version>4.3</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>29.0-jre</version>
+    </dependency>
+    <dependency>
+      <artifactId>commons-io</artifactId>
+      <groupId>commons-io</groupId>
+      <version>2.4</version>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>3.16.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.jimfs</groupId>
+      <artifactId>jimfs</artifactId>
+      <version>1.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-s3</artifactId>
+      <version>1.11.820</version>
+    </dependency>
+  </dependencies>
+
+</project>
