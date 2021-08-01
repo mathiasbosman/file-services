@@ -3,9 +3,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <artifactId>acd-parent</artifactId>
-    <groupId>be.milieuinfo</groupId>
-    <version>1.0.8</version>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>2.5.1</version>
+    <relativePath/> <!-- lookup parent from repository -->
   </parent>
 
   <groupId>be.mathiasbosman</groupId>
