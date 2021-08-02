@@ -1,9 +1,9 @@
-version: '3'
+version: '3.8'
 services:
   fs-test-minio:
     image: minio/minio
     ports:
-      - "11000:9000"
+      - "9000:9000"
     environment:
       MINIO_ACCESS_KEY: minio_key
       MINIO_SECRET_KEY: minio_secret

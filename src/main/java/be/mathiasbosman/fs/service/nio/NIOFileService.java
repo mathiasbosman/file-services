@@ -37,6 +37,7 @@ public class NIOFileService extends AbstractFileService {
     workDir = fs.getPath(prefix);
   }
 
+  @SuppressWarnings("unused")
   public NIOFileService(String prefix) {
     this(FileSystems.getDefault(), prefix);
   }

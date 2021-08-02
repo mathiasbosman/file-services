@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -25,15 +26,11 @@ public abstract class AbstractFileService implements FileService {
     return StringUtils.strip(path, separator + " ");
   }
 
-  private static Pair<String, String> split(String path, String separator) {
-    int i = path == null ? -1 : path.lastIndexOf(separator);
+  private static Pair<String, String> split(String path) {
+    int i = path == null ? -1 : path.lastIndexOf(File.separator);
     return 0 < i
         ? Pair.of(path.substring(0, i), path.substring(i + 1))
         : Pair.of((String) null, path);
-  }
-
-  public static String nodeName(String path, String separator) {
-    return split(path, separator).getRight();
   }
 
   public static String combine(String... parts) {
@@ -69,10 +66,6 @@ public abstract class AbstractFileService implements FileService {
 
   protected abstract long getSize(String path);
 
-  private String createFileNodePath(String parentPath, String name) {
-    return combine(parentPath, name);
-  }
-
   protected String strip(String path) {
     return strip(path, File.separator);
   }
@@ -102,7 +95,7 @@ public abstract class AbstractFileService implements FileService {
   @Override
   public String read(FileNode node) {
     try (InputStream inputStream = open(node)) {
-      return IOUtils.toString(inputStream);
+      return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -202,7 +195,7 @@ public abstract class AbstractFileService implements FileService {
 
   @Override
   public String getParentPath(String... path) {
-    return split(combine(path), File.separator).getRight();
+    return split(combine(path)).getRight();
   }
 
   private FileNode getForPath(String parts, boolean shouldExist) {
@@ -222,7 +215,7 @@ public abstract class AbstractFileService implements FileService {
   }
 
   protected FileNode createFileNode(String path, boolean isFolder, long size) {
-    Pair<String, String> folderAndName = split(path, File.separator);
+    Pair<String, String> folderAndName = split(path);
     String parentFolder = folderAndName.getLeft();
     String name = folderAndName.getRight();
     return new FileNodeImpl(parentFolder, name, isFolder, size);

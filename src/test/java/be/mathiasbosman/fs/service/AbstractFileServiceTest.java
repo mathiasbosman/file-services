@@ -6,8 +6,6 @@ import static org.assertj.core.api.Assertions.shouldHaveThrown;
 import static org.junit.Assert.assertThrows;
 
 import be.mathiasbosman.fs.domain.FileNode;
-import be.mathiasbosman.fs.service.FileNodeVisitor;
-import be.mathiasbosman.fs.service.FileService;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import java.io.ByteArrayInputStream;
@@ -21,7 +19,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.apache.commons.io.IOUtils;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public abstract class AbstractFileServiceTest {
 
@@ -197,7 +195,7 @@ public abstract class AbstractFileServiceTest {
   public void getMimeType() {
     putImageObject("a.jpeg");
     putImageObject("x/a.jpg");
-    assertThat(fs.getMimeType(fs.get("a.jepg"))).isEqualTo("image/jpeg");
+    assertThat(fs.getMimeType(fs.get("a.jpeg"))).isEqualTo("image/jpeg");
     assertThat(fs.getMimeType(fs.get("x/a.jpg"))).isEqualTo("image/jpeg");
   }
 

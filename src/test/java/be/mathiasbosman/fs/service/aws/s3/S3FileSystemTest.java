@@ -2,8 +2,8 @@ package be.mathiasbosman.fs.service.aws.s3;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import be.mathiasbosman.fs.AbstractFileServiceContainerTest;
 import be.mathiasbosman.fs.domain.FileNode;
-import be.mathiasbosman.fs.service.AbstractFileServiceTest;
 import be.mathiasbosman.fs.service.FileService;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentials;
@@ -19,16 +19,23 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.util.StringInputStream;
 import com.google.common.base.Charsets;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 
-public class S3FileSystemTest extends AbstractFileServiceTest {
+public class S3FileSystemTest extends AbstractFileServiceContainerTest {
+
+  private static final String dockerComposeFile = "src/test/resources/docker/docker-compose.yml";
+  private static final String dockerS3Service = "fs-test-minio";
+  private static final int dockerS3Port = 9000;
 
   private final AmazonS3 s3;
   private final String bucketName = "test";
@@ -37,7 +44,7 @@ public class S3FileSystemTest extends AbstractFileServiceTest {
   public S3FileSystemTest() {
     // see docker compose
     AWSCredentials credentials = new BasicAWSCredentials("minio_key", "minio_secret");
-    String hostAddress = "http://localhost:11000";
+    String hostAddress = "http://localhost:" + dockerS3Port;
     ClientConfiguration clientConfiguration = new ClientConfiguration();
     clientConfiguration.setSignerOverride("AWSS3V4SignerType");
     s3 = AmazonS3ClientBuilder.standard()
@@ -50,14 +57,24 @@ public class S3FileSystemTest extends AbstractFileServiceTest {
         .build();
   }
 
-  @Before
+  @Override
+  public DockerComposeContainer<?> createContainer() {
+    return new DockerComposeContainer<>(
+        new File(dockerComposeFile))
+        .withExposedService(dockerS3Service, dockerS3Port, Wait.forListeningPort())
+        .withLogConsumer(dockerS3Service, getContainerLogConsumer(dockerS3Service))
+        .withLocalCompose(true)
+        .withPull(false);
+  }
+
+  @BeforeEach
   public void setup() {
     cleanUp();
     s3.createBucket(bucketName);
     setFs(new S3FileSystem(this.s3, bucketName, prefix));
   }
 
-  @After
+  @AfterEach
   public void cleanUp() {
     if (!s3.doesBucketExistV2(bucketName)) {
       return;

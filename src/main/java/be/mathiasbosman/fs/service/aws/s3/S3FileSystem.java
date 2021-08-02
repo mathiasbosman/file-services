@@ -35,6 +35,7 @@ public class S3FileSystem extends AbstractFileService {
     this.prefix = prefix;
   }
 
+  @SuppressWarnings("unused")
   public S3FileSystem(AmazonS3 s3, String bucketName) {
     this(s3, bucketName, "");
   }

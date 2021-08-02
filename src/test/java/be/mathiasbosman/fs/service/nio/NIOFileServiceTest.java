@@ -34,9 +34,9 @@ import java.util.stream.StreamSupport;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.assertj.core.api.Assertions;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class NIOFileServiceTest extends AbstractFileServiceTest {
 
@@ -49,13 +49,13 @@ public class NIOFileServiceTest extends AbstractFileServiceTest {
     setFs(new NIOFileService(fileSystem, workdir.toString()));
   }
 
-  @Before
+  @BeforeEach
   public void setup() throws IOException {
     cleanup();
     createDirectories(workdir);
   }
 
-  @After
+  @AfterEach
   public void cleanup() throws IOException {
     FileUtils.deleteDirectory(workdir.toFile());
   }
