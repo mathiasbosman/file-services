@@ -12,6 +12,7 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
@@ -46,6 +47,14 @@ public abstract class AbstractFileService implements FileService {
           return StringUtils.isEmpty(stripped) ? null : stripped;
         }).collect(Collectors.toList())
     );
+  }
+
+  public static String getExtension(String... parts) {
+    String combined = combine(parts);
+    return Optional.ofNullable(combined)
+        .filter(f -> f.contains("."))
+        .map(f -> f.substring(combined.lastIndexOf(".") + 1))
+        .orElseThrow(() -> new IllegalArgumentException("No '.' found in path: " + combined));
   }
 
   protected abstract void mkFolders(String path);
@@ -242,12 +251,6 @@ public abstract class AbstractFileService implements FileService {
 
   @Override
   public void move(String from, String to) {
-    copy(from, to);
-    delete(get(from), true);
-  }
-
-  @Override
-  public void mv(String from, String to) {
     copy(from, to);
     final FileNode fromNode = get(from);
     delete(fromNode, fromNode.isFolder());

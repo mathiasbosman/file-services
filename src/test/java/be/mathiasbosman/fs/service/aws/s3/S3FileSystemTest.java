@@ -83,14 +83,23 @@ public class S3FileSystemTest extends AbstractFileServiceTest {
     getFs().mkFolders(path);
   }
 
-  @Override
-  protected void putObject(String path, String data) {
+  private void putObject(String path, String data, String contentType) {
     byte[] bytes = data.getBytes(Charsets.UTF_8);
     ObjectMetadata metadata = new ObjectMetadata();
     metadata.setContentEncoding("aws-chunked");
-    metadata.setContentType("text/plain");
+    metadata.setContentType(contentType);
     metadata.setContentLength(bytes.length);
     s3.putObject(bucketName, prefix + path, new ByteArrayInputStream(bytes), metadata);
+  }
+
+  @Override
+  protected void putObject(String path, String data) {
+    putObject(path, data, "text/plain");
+  }
+
+  @Override
+  protected void putImageObject(String path) {
+    putObject(path, "-", "image/jpeg");
   }
 
   @Override

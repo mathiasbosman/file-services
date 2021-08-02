@@ -63,19 +63,11 @@ public interface FileService {
 
   void delete(FileNode node, boolean recursive);
 
-  /**
-   * Als ik me niet vergis werkt dit enkel voor folders.
-   */
   void move(String from, String to);
-
-  /**
-   * Pad from hoeft geen folder te zijn. Omdat deze lib eventueel op meerdere plaatsen
-   * gebruikt wordt, op veilig gespeeld en een bijkomende methode toegevoegd. Zou kunnen
-   * gemerged worden met move algemeen.
-   */
-  void mv(String from, String to);
 
   void walk(FileNode root, FileNodeVisitor visitor);
 
   long countFiles(FileNode fileNode);
+
+  String getMimeType(FileNode fileNode);
 }

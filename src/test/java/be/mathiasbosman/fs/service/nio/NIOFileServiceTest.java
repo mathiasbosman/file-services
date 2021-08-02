@@ -86,6 +86,11 @@ public class NIOFileServiceTest extends AbstractFileServiceTest {
   }
 
   @Override
+  protected void putImageObject(String path) {
+    putObject(path, "-");
+  }
+
+  @Override
   protected void assertExists(String path) {
     assertThat(Files.exists(workdir.resolve(path))).isTrue();
   }
@@ -163,7 +168,7 @@ public class NIOFileServiceTest extends AbstractFileServiceTest {
         throw new RuntimeException(e);
       }
     }).collect(Collectors.toList());
-    Assertions.assertThat(contents).containsAll(asList(expected));
+    assertThat(contents).containsAll(asList(expected));
   }
 
   private Iterable<Path> getCopiedFiles() {

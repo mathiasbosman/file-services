@@ -3,6 +3,7 @@ package be.mathiasbosman.fs.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.shouldHaveThrown;
+import static org.junit.Assert.assertThrows;
 
 import be.mathiasbosman.fs.domain.FileNode;
 import be.mathiasbosman.fs.service.FileNodeVisitor;
@@ -37,6 +38,7 @@ public abstract class AbstractFileServiceTest {
 
   protected abstract void putFolder(String path);
   protected abstract void putObject(String path, String data);
+  protected abstract void putImageObject(String path);
   protected abstract void assertExists(String path);
   protected abstract void assertFolderExists(String path);
   protected abstract void assertNotExists(String path);
@@ -189,6 +191,21 @@ public abstract class AbstractFileServiceTest {
     putObject("x/z", "-");
     putObject("x/b/a", "-");
     assertThat(fs.countFiles(fs.get("x"))).isEqualTo(2);
+  }
+
+  @Test
+  public void getMimeType() {
+    putImageObject("a.jpeg");
+    putImageObject("x/a.jpg");
+    assertThat(fs.getMimeType(fs.get("a.jepg"))).isEqualTo("image/jpeg");
+    assertThat(fs.getMimeType(fs.get("x/a.jpg"))).isEqualTo("image/jpeg");
+  }
+
+  @Test
+  public void getExtension() {
+    assertThrows(IllegalArgumentException.class, () -> AbstractFileService.getExtension("a"));
+    assertThat(AbstractFileService.getExtension("a.jpeg")).isEqualTo("jpeg");
+    assertThat(AbstractFileService.getExtension("a","b","c.xml")).isEqualTo("xml");
   }
 
   private void assertLocationAndName(FileNode node, String expectedParentPath, String expectedName) {

@@ -195,7 +195,18 @@ public class NIOFileService extends AbstractFileService {
       String line = reader.readLine();
       reader.close();
       return Long.parseLong(line.trim());
-    } catch (Exception e) {
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+
+  @Override
+  public String getMimeType(FileNode fileNode) {
+    Path path = path(fileNode.getPath());
+    try {
+      return Files.probeContentType(path);
+    } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }

@@ -90,17 +90,17 @@ public class S3FileSystem extends AbstractFileService {
 
   @Override
   protected long getSize(String path) {
-    final String key = toObjectKey(path);
     ObjectMetadata objectMetadata;
-    try {
-      objectMetadata = s3.getObjectMetadata(bucketName, key);
-    } catch (Exception e) {
-      throw new RuntimeException("The S3 server threw an error on getObjectMetadata for " + key, e);
-    }
+    objectMetadata = getMetaData(path);
     if (objectMetadata == null) {
       throw new IllegalArgumentException("Path does not exist: " + path);
     }
     return objectMetadata.getContentLength();
+  }
+
+  ObjectMetadata getMetaData(String path) {
+    final String key = toObjectKey(path);
+    return s3.getObjectMetadata(bucketName, key);
   }
 
   @Override
@@ -228,6 +228,11 @@ public class S3FileSystem extends AbstractFileService {
       String location = getLocation(s3ObjectSummary);
       return get(location);
     });
+  }
+
+  @Override
+  public String getMimeType(FileNode fileNode) {
+    return getMetaData(fileNode.getPath()).getContentType();
   }
 
   private ObjectListing next(ObjectListing objectListing) {
