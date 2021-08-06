@@ -11,6 +11,7 @@ import com.google.common.collect.Iterables;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -18,12 +19,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.apache.commons.io.IOUtils;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.junit.jupiter.api.Test;
 
 public abstract class AbstractFileServiceTest {
 
-  private static final Function<FileNode, @Nullable String> toPath = FileNode::getPath;
+  private static final Function<FileNode, String> toPath = FileNode::getPath;
   private FileService fs;
 
   protected FileService getFs() {
@@ -54,6 +54,8 @@ public abstract class AbstractFileServiceTest {
     fs.save(stringToInputStream("-"), "x/y");
     assertExists("x/y");
     assertThat(getContent("x/y")).isEqualTo("-");
+    fs.save(stringToInputStream("+"), "a/b/c");
+    assertThat(getContent("a/b/c")).isEqualTo("+");
     // check if parent folders are created
     fs.save(stringToInputStream("-"), "1/2/3");
     assertFolderExists("1/2");
@@ -143,7 +145,7 @@ public abstract class AbstractFileServiceTest {
     Iterable<FileNode> filter = Iterables.filter(list, new ByFiles());
     Iterable<String> transform = StreamSupport.stream(filter.spliterator(), false).map(fileNode -> {
       try {
-        return IOUtils.toString(fs.open(fileNode));
+        return IOUtils.toString(fs.open(fileNode), StandardCharsets.UTF_8);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
