@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
-public class S3FileSystem extends AbstractFileService {
+public class S3FileService extends AbstractFileService {
 
   private static final String FOLDER_MARKER_OBJECT_NAME = ".folder";
   private final AmazonS3 s3;
@@ -29,14 +29,14 @@ public class S3FileSystem extends AbstractFileService {
   private final String prefix;
 
 
-  S3FileSystem(AmazonS3 s3, String bucketName, String prefix) {
+  S3FileService(AmazonS3 s3, String bucketName, String prefix) {
     this.s3 = s3;
     this.bucketName = bucketName;
     this.prefix = prefix;
   }
 
   @SuppressWarnings("unused")
-  public S3FileSystem(AmazonS3 s3, String bucketName) {
+  public S3FileService(AmazonS3 s3, String bucketName) {
     this(s3, bucketName, "");
   }
 

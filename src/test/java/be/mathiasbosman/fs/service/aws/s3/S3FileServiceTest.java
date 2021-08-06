@@ -5,16 +5,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import be.mathiasbosman.fs.AbstractFileServiceContainerTest;
 import be.mathiasbosman.fs.domain.FileNode;
 import be.mathiasbosman.fs.service.FileService;
-import com.amazonaws.ClientConfiguration;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.Region;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.util.StringInputStream;
 import com.google.common.base.Charsets;
@@ -31,7 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
-public class S3FileSystemTest extends AbstractFileServiceContainerTest {
+public class S3FileServiceTest extends AbstractFileServiceContainerTest {
 
   private static final String dockerComposeFile = "src/test/resources/docker/docker-compose.yml";
   private static final String dockerS3Service = "fs-test-minio";
@@ -41,20 +35,16 @@ public class S3FileSystemTest extends AbstractFileServiceContainerTest {
   private final String bucketName = "test";
   private final String prefix = "sandbox/";
 
-  public S3FileSystemTest() {
+  public S3FileServiceTest() {
     // see docker compose
-    AWSCredentials credentials = new BasicAWSCredentials("minio_key", "minio_secret");
-    String hostAddress = "http://localhost:" + dockerS3Port;
-    ClientConfiguration clientConfiguration = new ClientConfiguration();
-    clientConfiguration.setSignerOverride("AWSS3V4SignerType");
-    s3 = AmazonS3ClientBuilder.standard()
-        .withCredentials(new AWSStaticCredentialsProvider(credentials))
-        .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(
-            hostAddress, Regions.EU_WEST_1.name()
-        ))
-        .withClientConfiguration(clientConfiguration)
-        .withPathStyleAccessEnabled(true)
-        .build();
+    s3 = AmazonS3Factory.builder()
+        .bucket(bucketName)
+        .serviceEndpoint("http://localhost:" + dockerS3Port)
+        .key("minio_key")
+        .secret("minio_secret")
+        .pathStyleAccessEnabled(true)
+        .region(Region.EU_London.toAWSRegion())
+        .build().toAmazonS3();
   }
 
   @Override
@@ -71,7 +61,7 @@ public class S3FileSystemTest extends AbstractFileServiceContainerTest {
   public void setup() {
     cleanUp();
     s3.createBucket(bucketName);
-    setFs(new S3FileSystem(this.s3, bucketName, prefix));
+    setFs(new S3FileService(this.s3, bucketName, prefix));
   }
 
   @AfterEach
