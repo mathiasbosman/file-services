@@ -19,7 +19,6 @@ public class AmazonS3Factory {
   private final boolean pathStyleAccessEnabled;
   private final boolean createBucketIfMissing;
 
-  @SuppressWarnings("unused")
   public AmazonS3 toAmazonS3() {
     AmazonS3 s3 = AmazonS3ClientBuilder.standard()
         .withCredentials(

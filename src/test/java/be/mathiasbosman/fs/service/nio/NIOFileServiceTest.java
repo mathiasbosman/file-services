@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
@@ -61,6 +62,35 @@ public class NIOFileServiceTest extends AbstractFileServiceTest {
   }
 
   @Override
+  protected void putImageObject(String path) {
+    putObject(path, "-");
+  }
+
+  @Override
+  protected void assertExists(String path) {
+    assertThat(Files.exists(workdir.resolve(path))).isTrue();
+  }
+
+  @Override
+  protected void assertFolderExists(String path) {
+    assertExists(path);
+  }
+
+  @Override
+  protected void assertNotExists(String path) {
+    assertThat(Files.exists(fileSystem.getPath(path))).isFalse();
+  }
+
+  @Override
+  protected String getContent(String path) {
+    try (InputStream in = newInputStream(workdir.resolve(path))) {
+      return IOUtils.toString(in, StandardCharsets.UTF_8);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
   protected void putFolder(String pad) {
     try {
       createDirectories(workdir.resolve(pad));
@@ -85,41 +115,6 @@ public class NIOFileServiceTest extends AbstractFileServiceTest {
     }
   }
 
-  @Override
-  protected void putImageObject(String path) {
-    putObject(path, "-");
-  }
-
-  @Override
-  protected void assertExists(String path) {
-    assertThat(Files.exists(workdir.resolve(path))).isTrue();
-  }
-
-  @Override
-  protected void assertFolderExists(String path) {
-    assertExists(path);
-  }
-
-  @Override
-  protected void assertNotExists(String path) {
-    assertThat(Files.exists(fileSystem.getPath(path))).isFalse();
-  }
-
-  @Override
-  protected String getContent(String path) {
-    try (InputStream in = newInputStream(workdir.resolve(path))) {
-      return IOUtils.toString(in);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  @Test
-  public void mkFolders() {
-    getFs().mkFolders(targetPath);
-    assertThat(Files.exists(workdir.resolve(targetPath))).isTrue();
-  }
-
   @Test
   public void copy() throws IOException {
     createDirectories(workdir.resolve(targetPath));
@@ -131,22 +126,20 @@ public class NIOFileServiceTest extends AbstractFileServiceTest {
   }
 
   @Test
+  public void mkFolders() {
+    getFs().mkFolders(targetPath);
+    assertThat(Files.exists(workdir.resolve(targetPath))).isTrue();
+  }
+
+  @Test
   public void stream() {
     putObject("x/a", "-");
     putObject("x/z", "-");
     putObject("x/b/a", "-");
-    Stream<FileNode> stream = getFs().streamDirectory(getFs().get("x"));
+    Stream<FileNode> stream = getFs().streamDirectory(getFs().getFileNode("x"));
     assertThat(stream).isNotNull();
     List<FileNode> collected = stream.collect(Collectors.toList());
     assertThat(collected).hasSize(5);
-  }
-
-  private void saveContent(String sub, String content) throws IOException {
-    Path template = workdir.resolve(NIOFileServiceTest.templatePath).resolve(sub);
-    createDirectories(template.getParent());
-    try (PrintWriter out = new PrintWriter(Files.newOutputStream(template))) {
-      out.print(content);
-    }
   }
 
   private void assertTemplatesCopied(String... expected) {
@@ -173,6 +166,14 @@ public class NIOFileServiceTest extends AbstractFileServiceTest {
 
   private Iterable<Path> getCopiedFiles() {
     return new FileAccumulator(workdir.resolve(targetPath)).toIterable();
+  }
+
+  private void saveContent(String sub, String content) throws IOException {
+    Path template = workdir.resolve(NIOFileServiceTest.templatePath).resolve(sub);
+    createDirectories(template.getParent());
+    try (PrintWriter out = new PrintWriter(Files.newOutputStream(template))) {
+      out.print(content);
+    }
   }
 
   private static class FileAccumulator extends SimpleFileVisitor<Path> {

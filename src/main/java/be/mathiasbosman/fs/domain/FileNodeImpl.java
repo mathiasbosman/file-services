@@ -19,8 +19,8 @@ public class FileNodeImpl implements FileNode {
   }
 
   @Override
-  public String getParentPath() {
-    return parentPath;
+  public String getName() {
+    return name;
   }
 
   @Override
@@ -29,18 +29,18 @@ public class FileNodeImpl implements FileNode {
   }
 
   @Override
-  public String getName() {
-    return name;
-  }
-
-  @Override
-  public boolean isFolder() {
-    return isFolder;
+  public String getParentPath() {
+    return parentPath;
   }
 
   @Override
   public long getSize() {
     return size;
+  }
+
+  @Override
+  public boolean isDirectory() {
+    return isFolder;
   }
 
 }

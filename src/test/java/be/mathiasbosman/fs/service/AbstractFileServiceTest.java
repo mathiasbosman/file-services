@@ -34,112 +34,132 @@ public abstract class AbstractFileServiceTest {
     this.fs = fs;
   }
 
-  protected abstract void putFolder(String path);
-  protected abstract void putObject(String path, String data);
-  protected abstract void putImageObject(String path);
   protected abstract void assertExists(String path);
+
   protected abstract void assertFolderExists(String path);
+
   protected abstract void assertNotExists(String path);
+
   protected abstract String getContent(String path);
 
+  protected abstract void putFolder(String path);
+
+  protected abstract void putObject(String path, String data);
+
+  protected abstract void putImageObject(String path);
+
   @Test
-  public void exists() {
-    assertThat(fs.exists("-")).isFalse();
-    putObject("b", "-");
-    assertThat(fs.exists("b")).isTrue();
+  void countFiles() {
+    putObject("x/a", "-");
+    putObject("x/z", "-");
+    putObject("x/b/a", "-");
+    assertThat(fs.countFiles(fs.getFileNode("x"))).isEqualTo(2);
   }
 
   @Test
-  public void save() {
-    fs.save(stringToInputStream("-"), "x/y");
-    assertExists("x/y");
-    assertThat(getContent("x/y")).isEqualTo("-");
-    fs.save(stringToInputStream("+"), "a/b/c");
-    assertThat(getContent("a/b/c")).isEqualTo("+");
-    // check if parent folders are created
-    fs.save(stringToInputStream("-"), "1/2/3");
-    assertFolderExists("1/2");
-    assertFolderExists("1");
-    // check creation from path
-    assertLocationAndName(fs.get("1"), null, "1");
-    assertLocationAndName(fs.get("/1"), null, "1");
-    assertLocationAndName(fs.get("1/"), null, "1");
-    assertLocationAndName(fs.get("1/2"), "1", "2");
-    assertLocationAndName(fs.get("1/2/3"), "1/2", "3");
-  }
-
-  @Test
-  public void getFileNode() {
-    try {
-      fs.get("x/y");
-      shouldHaveThrown(IllegalArgumentException.class);
-    } catch (IllegalArgumentException e) {
-      assertThat(e.getMessage()).isEqualTo("Path does not exist on filesystem: x/y");
-    }
-    // test file
-    putObject("x/y", "-");
-    FileNode file = fs.get("x/y");
-    assertThat(file.getParentPath()).isEqualTo("x");
-    assertThat(file.getName()).isEqualTo("y");
-    assertThat(file.getPath()).isEqualTo("x/y");
-    assertThat(file.isFolder()).isFalse();
-    // test folder
-    putFolder("z");
-    FileNode folder = fs.get("z");
-    assertThat(folder.getParentPath()).isNull();
-    assertThat(folder.getName()).isEqualTo("z");
-    assertThat(folder.getPath()).isEqualTo("z");
-    assertThat(folder.isFolder()).isTrue();
-  }
-
-  @Test
-  public void getParent() {
-    fs.save(stringToInputStream("testContent"), "a/b/c.txt");
-    FileNode c = fs.get("a", "b/c.txt");
-    FileNode b = fs.getParent(c);
-    assertThat(b).isNotNull();
-    FileNode a = fs.getParent(b);
-    assertThat(a).isNotNull();
-    FileNode root = fs.getParent(a);
-    assertThat(root).isNotNull();
-    FileNode beyondRoot = fs.getParent(root);
-    assertThat(beyondRoot).isNull();
-  }
-
-  @Test
-  public void mkFolders() {
-    fs.mkFolders("x");
-    assertFolderExists("x");
-  }
-
-  @Test
-  public void read() {
-    putObject("x/y", "-");
-    FileNode file = fs.get("x/y");
-    assertThat(fs.read(file)).isEqualTo("-");
-  }
-
-  @Test
-  public void isFolder() {
-    assertThat(fs.isFolder("-")).isFalse();
-    putObject("x/.folder", "");
-    assertThat(fs.get("x").isFolder()).isTrue();
-    assertThat(fs.get("/x").isFolder()).isTrue();
-    assertThat(fs.get("x/").isFolder()).isTrue();
-  }
-
-  @Test
-  public void delete() {
+  void delete() {
     putObject("x/y", "-");
     fs.delete("x/y");
     assertNotExists("x/y");
   }
 
   @Test
-  public void list() {
+  void exists() {
+    assertThat(fs.exists("-")).isFalse();
+    putObject("b", "-");
+    assertThat(fs.exists("b")).isTrue();
+  }
+
+  @Test
+  void getBytes() {
+    String content = "John";
+    putObject("x/a", content);
+    assertThat(fs.getBytes("x/a")).isEqualTo(content.getBytes());
+    assertThat(fs.getBytes("x", "a")).isEqualTo(content.getBytes());
+    assertThat(fs.getBytes(fs.getFileNode("x/a"))).isEqualTo(content.getBytes());
+  }
+
+  @Test
+  void getExtension() {
+    assertThrows(IllegalArgumentException.class, () -> AbstractFileService.getExtension("a"));
+    assertThat(AbstractFileService.getExtension("a.jpeg")).isEqualTo("jpeg");
+    assertThat(AbstractFileService.getExtension("a", "b", "c.xml")).isEqualTo("xml");
+  }
+
+  @Test
+  void getFileNode() {
+    try {
+      fs.getFileNode("x/y");
+      shouldHaveThrown(IllegalArgumentException.class);
+    } catch (IllegalArgumentException e) {
+      assertThat(e.getMessage()).isEqualTo("Path does not exist on filesystem: x/y");
+    }
+    // test file
+    putObject("x/y", "-");
+    FileNode file = fs.getFileNode("x/y");
+    assertThat(file.getParentPath()).isEqualTo("x");
+    assertThat(file.getName()).isEqualTo("y");
+    assertThat(file.getPath()).isEqualTo("x/y");
+    assertThat(file.isDirectory()).isFalse();
+    // test folder
+    putFolder("z");
+    FileNode folder = fs.getFileNode("z");
+    assertThat(folder.getParentPath()).isNull();
+    assertThat(folder.getName()).isEqualTo("z");
+    assertThat(folder.getPath()).isEqualTo("z");
+    assertThat(folder.isDirectory()).isTrue();
+  }
+
+  @Test
+  void getMimeType() {
+    putImageObject("a.jpeg");
+    putImageObject("x/a.jpg");
+    assertThat(fs.getMimeType(fs.getFileNode("a.jpeg"))).isEqualTo("image/jpeg");
+    assertThat(fs.getMimeType(fs.getFileNode("x/a.jpg"))).isEqualTo("image/jpeg");
+  }
+
+  @Test
+  void getParent() {
+    fs.save(stringToInputStream("testContent"), "a/b/c.txt");
+    FileNode c = fs.getFileNode("a", "b/c.txt");
+    FileNode cParent = fs.getParent(c);
+    FileNode cParentBis = fs.getParent("a", "b/c.txt");
+    assertLocationAndName(cParent, "a", "b");
+    assertLocationAndName(cParentBis, "a", "b");
+    FileNode cParentParent = fs.getParent(cParent);
+    assertThat(cParentParent).isNotNull();
+    FileNode root = fs.getParent(cParentParent);
+    assertThat(root).isNotNull();
+    FileNode beyondRoot = fs.getParent(root);
+    assertThat(beyondRoot).isNull();
+  }
+
+  @Test
+  void getParentPath() {
+    String parent = fs.getParentPath("a/b/c.txt");
+    assertThat(parent).isEqualTo("a/b");
+  }
+
+  @Test
+  void getSize() {
+    putObject("x/a", "John");
+    assertThat(fs.getSize(fs.getFileNode("x/a"))).isEqualTo(4);
+  }
+
+  @Test
+  void isFolder() {
+    assertThat(fs.isDirectory("-")).isFalse();
+    putObject("x/.folder", "");
+    assertThat(fs.getFileNode("x").isDirectory()).isTrue();
+    assertThat(fs.getFileNode("/x").isDirectory()).isTrue();
+    assertThat(fs.getFileNode("x/").isDirectory()).isTrue();
+  }
+
+  @Test
+  void list() {
     putObject("x/a", "John");
     putObject("x/b", "Doe");
-    FileNode x = fs.get("x");
+    FileNode x = fs.getFileNode("x");
     List<FileNode> list = fs.list(x);
     assertThat(transformToPath(list)).containsExactly("x/a", "x/b");
     Iterable<FileNode> filter = Iterables.filter(list, new ByFiles());
@@ -158,15 +178,71 @@ public abstract class AbstractFileServiceTest {
     putFolder("x/c");
     putObject("x/c/1", "-");
     putFolder("x/c/d");
-    putObject("y/e","-");
+    putObject("y/e", "-");
     putObject("z", "-");
-    assertThat(transformToPath(fs.list(fs.get("x")))).containsExactly("x/a","x/b","x/c");
+    assertThat(transformToPath(fs.list(fs.getFileNode("x")))).containsExactly("x/a", "x/b", "x/c");
     List<FileNode> subList = fs.list("x/c");
-    assertThat(transformToPath(subList)).containsExactly("x/c/1","x/c/d");
+    assertThat(transformToPath(subList)).containsExactly("x/c/1", "x/c/d");
   }
 
   @Test
-  public void walk() {
+  void mkFolders() {
+    fs.mkFolders("x");
+    assertFolderExists("x");
+  }
+
+  @Test
+  void move() {
+    putFolder("x/source");
+    putObject("x/source/y.txt", "-");
+    putFolder("x/target");
+    fs.move("x/source/y.txt", "x/target/y.txt");
+    assertExists("x/target/y.txt");
+  }
+
+  @Test
+  void open() {
+    putObject("x/a", "John");
+    assertThat(fs.open("x/a")).hasContent("John");
+    assertThat(fs.open("x", "a")).hasContent("John");
+    assertThat(fs.open(fs.getFileNode("x/a"))).hasContent("John");
+  }
+
+
+  @Test
+  void save() {
+    fs.save(stringToInputStream("-"), "x/y");
+    assertExists("x/y");
+    assertThat(getContent("x/y")).isEqualTo("-");
+    fs.save(stringToInputStream("+"), "a/b/c");
+    assertThat(getContent("a/b/c")).isEqualTo("+");
+    // check if parent folders are created
+    fs.save(stringToInputStream("-"), "1/2/3");
+    assertFolderExists("1/2");
+    assertFolderExists("1");
+    // check creation from path
+    assertLocationAndName(fs.getFileNode("1"), null, "1");
+    assertLocationAndName(fs.getFileNode("/1"), null, "1");
+    assertLocationAndName(fs.getFileNode("1/"), null, "1");
+    assertLocationAndName(fs.getFileNode("1/2"), "1", "2");
+    assertLocationAndName(fs.getFileNode("1/2/3"), "1/2", "3");
+  }
+
+  @Test
+  void read() {
+    putObject("x/y", "-");
+    FileNode file = fs.getFileNode("x/y");
+    assertThat(fs.read(file)).isEqualTo("-");
+  }
+
+  @Test
+  void saveText() {
+    fs.saveText("-", "x/y/z.txt");
+    assertThat(getContent("x/y/z.txt")).isEqualTo("-");
+  }
+
+  @Test
+  void walk() {
     putFolder("x");
     putObject("x/a", "-");
     putObject("x/b", "-");
@@ -182,33 +258,13 @@ public abstract class AbstractFileServiceTest {
     }
     assertThat(Arrays.asList("x/a", "x/b", "x/c/1", "y/e", "z")).isEqualTo(spy.visitedFiles);
     assertThat(Arrays.asList("x", "x/c", "x/c/d", "y")).isEqualTo(spy.visitedFolders);
-    assertThat(Arrays.asList("> x", "x/a", "x/b", "> x/c", "x/c/1", "> x/c/d", "< x/c/d", "< x/c", "< x", "> y", "y/e", "< y", "z")).isEqualTo(spy.visitationOrder);
+    assertThat(Arrays
+        .asList("> x", "x/a", "x/b", "> x/c", "x/c/1", "> x/c/d", "< x/c/d", "< x/c", "< x", "> y",
+            "y/e", "< y", "z")).isEqualTo(spy.visitationOrder);
   }
 
-  @Test
-  public void countFiles() {
-    putObject("x/a", "-");
-    putObject("x/z", "-");
-    putObject("x/b/a", "-");
-    assertThat(fs.countFiles(fs.get("x"))).isEqualTo(2);
-  }
-
-  @Test
-  public void getMimeType() {
-    putImageObject("a.jpeg");
-    putImageObject("x/a.jpg");
-    assertThat(fs.getMimeType(fs.get("a.jpeg"))).isEqualTo("image/jpeg");
-    assertThat(fs.getMimeType(fs.get("x/a.jpg"))).isEqualTo("image/jpeg");
-  }
-
-  @Test
-  public void getExtension() {
-    assertThrows(IllegalArgumentException.class, () -> AbstractFileService.getExtension("a"));
-    assertThat(AbstractFileService.getExtension("a.jpeg")).isEqualTo("jpeg");
-    assertThat(AbstractFileService.getExtension("a","b","c.xml")).isEqualTo("xml");
-  }
-
-  private void assertLocationAndName(FileNode node, String expectedParentPath, String expectedName) {
+  private void assertLocationAndName(FileNode node, String expectedParentPath,
+      String expectedName) {
     assertThat(node.getParentPath()).isEqualTo(expectedParentPath);
     assertThat(node.getName()).isEqualTo(expectedName);
   }
@@ -227,11 +283,12 @@ public abstract class AbstractFileServiceTest {
     @Override
     public boolean apply(FileNode fileNode) {
       assert fileNode != null;
-      return !fileNode.isFolder();
+      return !fileNode.isDirectory();
     }
   }
 
   private static class SpyingTreeVisitor implements FileNodeVisitor {
+
     private final List<String> visitationOrder = new ArrayList<>();
     private final List<String> visitedFiles = new ArrayList<>();
     private final List<String> visitedFolders = new ArrayList<>();

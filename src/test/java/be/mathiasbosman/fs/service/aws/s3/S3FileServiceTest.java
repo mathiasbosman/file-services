@@ -35,7 +35,7 @@ public class S3FileServiceTest extends AbstractFileServiceContainerTest {
   private final String bucketName = "test";
   private final String prefix = "sandbox/";
 
-  public S3FileServiceTest() {
+  S3FileServiceTest() {
     // see docker compose
     s3 = AmazonS3Factory.builder()
         .bucket(bucketName)
@@ -100,23 +100,13 @@ public class S3FileServiceTest extends AbstractFileServiceContainerTest {
   }
 
   @Override
-  protected void putObject(String path, String data) {
-    putObject(path, data, "text/plain");
-  }
-
-  @Override
-  protected void putImageObject(String path) {
-    putObject(path, "-", "image/jpeg");
-  }
-
-  @Override
   protected void assertExists(String path) {
     assertThat(s3.doesObjectExist(bucketName, prefix + path)).isTrue();
   }
 
   @Override
   protected void assertFolderExists(String path) {
-    assertThat(getFs().isFolder(path)).isTrue();
+    assertThat(getFs().isDirectory(path)).isTrue();
   }
 
   @Override
@@ -129,12 +119,23 @@ public class S3FileServiceTest extends AbstractFileServiceContainerTest {
     return s3.getObjectAsString(bucketName, prefix + path);
   }
 
+  @Override
+  protected void putObject(String path, String data) {
+    putObject(path, data, "text/plain");
+  }
+
+  @Override
+  protected void putImageObject(String path) {
+    putObject(path, "-", "image/jpeg");
+  }
+
+
   @Test
   public void copy() throws Exception {
     FileService fs = getFs();
     fs.save(new StringInputStream("information"), "folder/file.txt");
     fs.save(new StringInputStream("more data"), "folder/more.txt");
-    fs.copy(fs.get("folder"), "copy");
+    fs.copy(fs.getFileNode("folder"), "copy");
     assertThat(fs.exists("copy/more.txt")).isTrue();
     assertThat(fs.read("copy/file.txt")).isEqualTo("information");
   }
@@ -143,7 +144,7 @@ public class S3FileServiceTest extends AbstractFileServiceContainerTest {
   public void delete() {
     FileService fs = getFs();
     putObject("x/.folder", "-");
-    fs.delete(fs.get("x"));
+    fs.delete(fs.getFileNode("x"));
     assertNotExists("x/.folder");
     assertNotExists("x");
   }
@@ -153,7 +154,7 @@ public class S3FileServiceTest extends AbstractFileServiceContainerTest {
     putObject("x/a", "-");
     putObject("x/z", "-");
     putObject("x/b/a", "-");
-    Stream<FileNode> stream = getFs().streamDirectory(getFs().get("x"));
+    Stream<FileNode> stream = getFs().streamDirectory(getFs().getFileNode("x"));
     assertThat(stream).isNotNull();
     List<FileNode> collected = stream.collect(Collectors.toList());
     assertThat(collected).hasSize(3);

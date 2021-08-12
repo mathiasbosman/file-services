@@ -4,7 +4,7 @@ This package holds some simple interfaces to use certain file services.
 
 ## Supported services
 
-Currently the library supports:
+Currently, the library supports:
 
 - [NIO (new IO) systems](#NIO-file-system)
 - [Amazon S3 systems](#S3-file-system)

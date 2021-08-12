@@ -22,17 +22,6 @@ import org.apache.commons.lang3.tuple.Pair;
 
 public abstract class AbstractFileService implements FileService {
 
-  public static String strip(String path, String separator) {
-    return StringUtils.strip(path, separator + " ");
-  }
-
-  private static Pair<String, String> split(String path) {
-    int i = path == null ? -1 : path.lastIndexOf(File.separator);
-    return 0 < i
-        ? Pair.of(path.substring(0, i), path.substring(i + 1))
-        : Pair.of((String) null, path);
-  }
-
   public static String combine(String... parts) {
     if (parts == null) {
       return null;
@@ -54,66 +43,15 @@ public abstract class AbstractFileService implements FileService {
         .orElseThrow(() -> new IllegalArgumentException("No '.' found in path: " + combined));
   }
 
-  protected abstract void mkFolders(String path);
-
-  protected abstract void copyContent(FileNode source, String to);
-
-  protected abstract FileNodeType getFileNodeType(String path);
-
-  protected abstract boolean isFolder(String path);
-
-  protected abstract boolean exists(String path);
-
-  protected abstract long getSize(String path);
-
-  protected String strip(String path) {
-    return strip(path, File.separator);
+  public static String strip(String path, String separator) {
+    return StringUtils.strip(path, separator + " ");
   }
 
-  @Override
-  public List<FileNode> list(String... parts) {
-    FileNode node = getOptionalFileNode(parts);
-    return node != null ? list(node) : Collections.emptyList();
-  }
-
-  @Override
-  public String read(String... parts) {
-    return read(get(parts));
-  }
-
-  @Override
-  @SuppressWarnings("ConstantConditions")
-  public void copy(String source, String target) {
-    copy(getForPath(source, true), target);
-  }
-
-  @Override
-  public byte[] getBytes(String... parts) {
-    return getBytes(get(parts));
-  }
-
-  @Override
-  public String read(FileNode node) {
-    try (InputStream inputStream = open(node)) {
-      return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  @Override
-  public byte[] getBytes(FileNode node) {
-    try (InputStream inputStream = open(node)) {
-      return IOUtils.toByteArray(inputStream);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  @Override
-  public InputStream open(String... parts) {
-    checkPath(parts);
-    return open(get(parts));
+  private static Pair<String, String> split(String path) {
+    int i = path == null ? -1 : path.lastIndexOf(File.separator);
+    return 0 < i
+        ? Pair.of(path.substring(0, i), path.substring(i + 1))
+        : Pair.of((String) null, path);
   }
 
   @Override
@@ -122,7 +60,7 @@ public abstract class AbstractFileService implements FileService {
     if (!exists(source.getPath())) {
       throw new RuntimeException("File " + source.getPath() + " does not exist.");
     }
-    if (source.isFolder()) {
+    if (source.isDirectory()) {
       List<FileNode> list = list(source);
       if (CollectionUtils.isEmpty(list)) {
         mkFolders(targetPath);
@@ -140,9 +78,66 @@ public abstract class AbstractFileService implements FileService {
   }
 
   @Override
+  @SuppressWarnings("ConstantConditions")
+  public void copy(String source, String target) {
+    copy(getForPath(source, true), target);
+  }
+
+  @Override
+  public byte[] getBytes(FileNode node) {
+    try (InputStream inputStream = open(node)) {
+      return IOUtils.toByteArray(inputStream);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public byte[] getBytes(String... parts) {
+    return getBytes(getFileNode(parts));
+  }
+
+  @Override
+  public FileNode getFileNode(String... parts) {
+    return getForPath(combine(parts), true);
+  }
+
+  @Override
+  public FileNode getOptionalFileNode(String... parts) {
+    return getForPath(combine(parts), false);
+  }
+
+  @Override
+  public FileNode getParent(FileNode node) {
+    return StringUtils.isEmpty(node.getPath()) ? null : getFileNode(node.getParentPath());
+  }
+
+  @Override
+  public FileNode getParent(String... path) {
+    return getForPath(getParentPath(path), false);
+  }
+
+  @Override
   public void mkFolders(String... path) {
     checkPath(path);
     mkFolders(combine(path));
+  }
+
+  @Override
+  public String getParentPath(String... path) {
+    return split(combine(path)).getLeft();
+  }
+
+  @Override
+  public List<FileNode> list(String... parts) {
+    FileNode node = getOptionalFileNode(parts);
+    return node != null ? list(node) : Collections.emptyList();
+  }
+
+  @Override
+  public InputStream open(String... parts) {
+    checkPath(parts);
+    return open(getFileNode(parts));
   }
 
   @Override
@@ -162,6 +157,15 @@ public abstract class AbstractFileService implements FileService {
     save(content.getBytes(Charset.defaultCharset()), parts);
   }
 
+  @Override
+  public String read(FileNode node) {
+    try (InputStream inputStream = open(node)) {
+      return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   private void checkPath(String[] parts) {
     if (parts == null || parts.length == 0) {
       throw new IllegalArgumentException("Operation only possible with path in second argument.");
@@ -169,34 +173,26 @@ public abstract class AbstractFileService implements FileService {
   }
 
   @Override
-  public FileNode get(String... parts) {
-    return getForPath(combine(parts), true);
+  public String read(String... parts) {
+    return read(getFileNode(parts));
   }
 
-  @Override
-  public FileNode getFileNode(String... parts) {
-    return getForPath(combine(parts), true);
+  protected abstract void mkFolders(String path);
+
+  protected abstract void copyContent(FileNode source, String to);
+
+  protected abstract FileNodeType getFileNodeType(String path);
+
+  protected abstract boolean isFolder(String path);
+
+  protected abstract boolean exists(String path);
+
+  protected abstract long getSize(String path);
+
+  protected String strip(String path) {
+    return strip(path, File.separator);
   }
 
-  @Override
-  public FileNode getOptionalFileNode(String... parts) {
-    return getForPath(combine(parts), false);
-  }
-
-  @Override
-  public FileNode getParent(FileNode node) {
-    return StringUtils.isEmpty(node.getPath()) ? null : get(node.getParentPath());
-  }
-
-  @Override
-  public FileNode getParent(String... path) {
-    return getForPath(getParentPath(path), false);
-  }
-
-  @Override
-  public String getParentPath(String... path) {
-    return split(combine(path)).getRight();
-  }
 
   private FileNode getForPath(String parts, boolean shouldExist) {
     if (StringUtils.isBlank(parts)) {
@@ -222,7 +218,7 @@ public abstract class AbstractFileService implements FileService {
   }
 
   @Override
-  public boolean isFolder(String... parts) {
+  public boolean isDirectory(String... parts) {
     return isFolder(combine(parts));
   }
 
@@ -234,7 +230,7 @@ public abstract class AbstractFileService implements FileService {
   @Override
   public void delete(String... path) {
     checkPath(path);
-    delete(get(path));
+    delete(getFileNode(path));
   }
 
   @Override
@@ -245,13 +241,13 @@ public abstract class AbstractFileService implements FileService {
   @Override
   public void move(String from, String to) {
     copy(from, to);
-    final FileNode fromNode = get(from);
-    delete(fromNode, fromNode.isFolder());
+    final FileNode fromNode = getFileNode(from);
+    delete(fromNode, fromNode.isDirectory());
   }
 
   @Override
   public final long getSize(FileNode node) {
-    if (node.isFolder()) {
+    if (node.isDirectory()) {
       throw new IllegalArgumentException("Size of folder not determined. " + node.getPath());
     }
     return getSize(node.getPath());
@@ -262,12 +258,12 @@ public abstract class AbstractFileService implements FileService {
   }
 
   protected long defaultFileCount(FileNode node) {
-    return list(node).stream().filter(fileNode -> !fileNode.isFolder()).count();
+    return list(node).stream().filter(fileNode -> !fileNode.isDirectory()).count();
   }
 
   @Override
   public void walk(FileNode node, FileNodeVisitor visitor) {
-    if (node.isFolder()) {
+    if (node.isDirectory()) {
       visitor.pre(node);
       for (FileNode child : list(node)) {
         walk(child, visitor);

@@ -24,10 +24,9 @@ import org.apache.commons.lang3.StringUtils;
 public class S3FileService extends AbstractFileService {
 
   private static final String FOLDER_MARKER_OBJECT_NAME = ".folder";
-  private final AmazonS3 s3;
   private final String bucketName;
   private final String prefix;
-
+  private final AmazonS3 s3;
 
   S3FileService(AmazonS3 s3, String bucketName, String prefix) {
     this.s3 = s3;
@@ -35,93 +34,8 @@ public class S3FileService extends AbstractFileService {
     this.prefix = prefix;
   }
 
-  @SuppressWarnings("unused")
   public S3FileService(AmazonS3 s3, String bucketName) {
     this(s3, bucketName, "");
-  }
-
-  @Override
-  protected void mkFolders(String path) {
-    put(combine(toObjectKey(path), FOLDER_MARKER_OBJECT_NAME),
-        new ByteArrayInputStream(new byte[]{1}), toMetadata(1));
-  }
-
-  @Override
-  protected void copyContent(FileNode source, String to) {
-    String sourceKey = toObjectKey(source.getPath());
-    String destinationKey = toObjectKey(to);
-
-    try {
-      s3.copyObject(bucketName, sourceKey, bucketName, destinationKey);
-    } catch (Exception e) {
-      throw new RuntimeException("The S3 server threw an error when copying from " + sourceKey +
-          " to " + destinationKey, e);
-    }
-  }
-
-  @Override
-  protected FileNodeType getFileNodeType(String path) {
-    return isFile(path) ? FileNodeType.FILE
-        : isFolder(path) ? FileNodeType.FOLDER : FileNodeType.NONE_EXISTENT;
-  }
-
-  private boolean isFile(String path) {
-    try {
-      return s3.doesObjectExist(bucketName, toObjectKey(path));
-    } catch (Exception e) {
-      throw new RuntimeException("The S3 server threw an error accessing " + path, e);
-    }
-  }
-
-  @Override
-  protected boolean isFolder(String path) {
-    try {
-      final ListObjectsRequest objectList = new ListObjectsRequest(bucketName, toObjectKey(path),
-          null, null, 1);
-      return CollectionUtils.isNotEmpty(s3.listObjects(objectList).getObjectSummaries());
-    } catch (Exception e) {
-      throw new RuntimeException("The S3 server threw an error listing objects on " + path, e);
-    }
-  }
-
-  @Override
-  protected boolean exists(String path) {
-    return isFile(path) || isFolder(path);
-  }
-
-  @Override
-  protected long getSize(String path) {
-    ObjectMetadata objectMetadata;
-    objectMetadata = getMetaData(path);
-    if (objectMetadata == null) {
-      throw new IllegalArgumentException("Path does not exist: " + path);
-    }
-    return objectMetadata.getContentLength();
-  }
-
-  ObjectMetadata getMetaData(String path) {
-    final String key = toObjectKey(path);
-    return s3.getObjectMetadata(bucketName, key);
-  }
-
-  @Override
-  public List<FileNode> list(FileNode root) {
-    return list(root, false);
-  }
-
-  @Override
-  public InputStream open(FileNode node) {
-    String key = toObjectKey(node.getPath());
-    try {
-      return s3.getObject(bucketName, key).getObjectContent();
-    } catch (Exception e) {
-      throw new RuntimeException("The S3 server threw an error opening " + key, e);
-    }
-  }
-
-  @Override
-  public void save(InputStream is, String path, long size) {
-    put(toObjectKey(path), is, toMetadata(size));
   }
 
   @Override
@@ -134,7 +48,7 @@ public class S3FileService extends AbstractFileService {
       return;
     }
 
-    if (node.isFolder()) {
+    if (node.isDirectory()) {
       List<FileNode> list = list(node, true);
       if (CollectionUtils.size(list) == 1) {
         FileNode sub = list.get(0);
@@ -160,8 +74,94 @@ public class S3FileService extends AbstractFileService {
     }
   }
 
-  private String toObjectKey(String path) {
-    return combine(prefix, path);
+  @Override
+  public String getMimeType(FileNode fileNode) {
+    return getMetaData(fileNode.getPath()).getContentType();
+  }
+
+  @Override
+  public List<FileNode> list(FileNode root) {
+    return list(root, false);
+  }
+
+  @Override
+  public InputStream open(FileNode node) {
+    String key = toObjectKey(node.getPath());
+    try {
+      return s3.getObject(bucketName, key).getObjectContent();
+    } catch (Exception e) {
+      throw new RuntimeException("The S3 server threw an error opening " + key, e);
+    }
+  }
+
+  @Override
+  public void save(InputStream is, String path, long size) {
+    put(toObjectKey(path), is, toMetadata(size));
+  }
+
+  @Override
+  public Stream<FileNode> streamDirectory(FileNode root) {
+    List<S3ObjectSummary> objectSummaries = getObjectSummaries(root.getPath());
+    return objectSummaries.stream().map(s3ObjectSummary -> {
+      String location = getLocation(s3ObjectSummary);
+      return getFileNode(location);
+    });
+  }
+
+  @Override
+  protected void copyContent(FileNode source, String to) {
+    String sourceKey = toObjectKey(source.getPath());
+    String destinationKey = toObjectKey(to);
+
+    try {
+      s3.copyObject(bucketName, sourceKey, bucketName, destinationKey);
+    } catch (Exception e) {
+      throw new RuntimeException("The S3 server threw an error when copying from " + sourceKey +
+          " to " + destinationKey, e);
+    }
+  }
+
+  @Override
+  protected boolean exists(String path) {
+    return isFile(path) || isFolder(path);
+  }
+
+  @Override
+  protected FileNodeType getFileNodeType(String path) {
+    return isFile(path) ? FileNodeType.FILE
+        : isFolder(path) ? FileNodeType.FOLDER : FileNodeType.NONE_EXISTENT;
+  }
+
+  @Override
+  protected long getSize(String path) {
+    ObjectMetadata objectMetadata;
+    objectMetadata = getMetaData(path);
+    if (objectMetadata == null) {
+      throw new IllegalArgumentException("Path does not exist: " + path);
+    }
+    return objectMetadata.getContentLength();
+  }
+
+  @Override
+  protected boolean isFolder(String path) {
+    try {
+      final ListObjectsRequest objectList = new ListObjectsRequest(bucketName, toObjectKey(path),
+          null, null, 1);
+      return CollectionUtils.isNotEmpty(s3.listObjects(objectList).getObjectSummaries());
+    } catch (Exception e) {
+      throw new RuntimeException("The S3 server threw an error listing objects on " + path, e);
+    }
+  }
+
+  @Override
+  protected void mkFolders(String path) {
+    put(combine(toObjectKey(path), FOLDER_MARKER_OBJECT_NAME),
+        new ByteArrayInputStream(new byte[]{1}), toMetadata(1));
+  }
+
+  ObjectMetadata getMetaData(String path) {
+    final String key = toObjectKey(path);
+    return s3.getObjectMetadata(bucketName, key);
   }
 
   void put(String key, InputStream is, ObjectMetadata metadata) {
@@ -217,30 +217,24 @@ public class S3FileService extends AbstractFileService {
       if (!objectListing.get().isTruncated()) {
         break;
       }
-      objectListing.set(next(objectListing.get()));
+      objectListing.set(s3.listNextBatchOfObjects(objectListing.get()));
     }
     return result;
   }
 
-  @Override
-  public Stream<FileNode> streamDirectory(FileNode root) {
-    List<S3ObjectSummary> objectSummaries = getObjectSummaries(root.getPath());
-    return objectSummaries.stream().map(s3ObjectSummary -> {
-      String location = getLocation(s3ObjectSummary);
-      return get(location);
-    });
-  }
-
-  @Override
-  public String getMimeType(FileNode fileNode) {
-    return getMetaData(fileNode.getPath()).getContentType();
-  }
-
-  private ObjectListing next(ObjectListing objectListing) {
-    return s3.listNextBatchOfObjects(objectListing);
-  }
-
   private String getLocation(S3ObjectSummary s3ObjectSummary) {
     return s3ObjectSummary.getKey().substring(prefix.length());
+  }
+
+  private boolean isFile(String path) {
+    try {
+      return s3.doesObjectExist(bucketName, toObjectKey(path));
+    } catch (Exception e) {
+      throw new RuntimeException("The S3 server threw an error accessing " + path, e);
+    }
+  }
+
+  private String toObjectKey(String path) {
+    return combine(prefix, path);
   }
 }
