@@ -22,29 +22,61 @@ import org.apache.commons.lang3.tuple.Pair;
 
 public abstract class AbstractFileService implements FileService {
 
+  public static final char extensionSeparator = '.';
+
+  /**
+   * Combine multiple strings to a path using the {@link File} separator
+   *
+   * @param parts Path parts
+   * @return The combined path {@link String}
+   */
   public static String combine(String... parts) {
     if (parts == null) {
       return null;
     }
 
-    return Joiner.on("/").skipNulls().join(
+    return Joiner.on(File.separator).skipNulls().join(
         Arrays.stream(parts).map(input -> {
-          String stripped = strip(input, "/" + " ");
+          String stripped = strip(input, File.separatorChar);
           return StringUtils.isEmpty(stripped) ? null : stripped;
         }).collect(Collectors.toList())
     );
   }
 
+  /**
+   * Returns the extension (determined by checking the last ".") of a path
+   *
+   * @param parts Pah parts
+   * @return The extension as {@link String} excluding the "." character
+   */
   public static String getExtension(String... parts) {
     String combined = combine(parts);
     return Optional.ofNullable(combined)
-        .filter(f -> f.contains("."))
-        .map(f -> f.substring(combined.lastIndexOf(".") + 1))
-        .orElseThrow(() -> new IllegalArgumentException("No '.' found in path: " + combined));
+        .filter(f -> f.contains(String.valueOf(extensionSeparator)))
+        .map(f -> f.substring(combined.lastIndexOf(extensionSeparator) + 1))
+        .orElseThrow(() -> new IllegalArgumentException(
+            "No '" + extensionSeparator + "' found in path: " + combined));
   }
 
-  public static String strip(String path, String separator) {
-    return StringUtils.strip(path, separator + " ");
+  /**
+   * Gets the parent path of a given path
+   *
+   * @param path Path part
+   * @return Path of the parent
+   */
+  public static String getParentPath(String... path) {
+    return split(combine(path)).getLeft();
+  }
+
+  /**
+   * Strips all given separators from a given {@link String}. Spaces are always stripped.
+   *
+   * @param input     The input {@link String}
+   * @param separator The separator char to strip
+   * @return The stripped {@link String}
+   */
+  public static String strip(String input, char separator) {
+    return StringUtils.strip(input, separator + " ");
   }
 
   private static Pair<String, String> split(String path) {
@@ -56,7 +88,7 @@ public abstract class AbstractFileService implements FileService {
 
   @Override
   public void copy(FileNode source, String target) {
-    String targetPath = strip(target, File.separator);
+    String targetPath = strip(target, File.separatorChar);
     if (!exists(source.getPath())) {
       throw new RuntimeException("File " + source.getPath() + " does not exist.");
     }
@@ -124,11 +156,6 @@ public abstract class AbstractFileService implements FileService {
   }
 
   @Override
-  public String getParentPath(String... path) {
-    return split(combine(path)).getLeft();
-  }
-
-  @Override
   public List<FileNode> list(String... parts) {
     FileNode node = getOptionalFileNode(parts);
     return node != null ? list(node) : Collections.emptyList();
@@ -189,16 +216,12 @@ public abstract class AbstractFileService implements FileService {
 
   protected abstract long getSize(String path);
 
-  protected String strip(String path) {
-    return strip(path, File.separator);
-  }
-
 
   private FileNode getForPath(String parts, boolean shouldExist) {
     if (StringUtils.isBlank(parts)) {
       return new FileNodeImpl(null, "", true, 0);
     }
-    String path = strip(parts, File.separator);
+    String path = strip(parts, File.separatorChar);
     FileNodeType fileNodeType = getFileNodeType(path);
     if (FileNodeType.NONE_EXISTENT == fileNodeType) {
       if (!shouldExist) {

@@ -110,14 +110,6 @@ public interface FileService {
   FileNode getParent(FileNode node);
 
   /**
-   * Gets the parent path of a given path
-   *
-   * @param path Path part
-   * @return Path of the parent
-   */
-  String getParentPath(String... path);
-
-  /**
    * Returns the size (content length) of the given {@link FileNode}
    *
    * @param node {@link FileNode} to query

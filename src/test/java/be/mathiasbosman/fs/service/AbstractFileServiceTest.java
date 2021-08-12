@@ -136,8 +136,7 @@ public abstract class AbstractFileServiceTest {
 
   @Test
   void getParentPath() {
-    String parent = fs.getParentPath("a/b/c.txt");
-    assertThat(parent).isEqualTo("a/b");
+    assertThat(AbstractFileService.getParentPath("a/b/c.txt")).isEqualTo("a/b");
   }
 
   @Test

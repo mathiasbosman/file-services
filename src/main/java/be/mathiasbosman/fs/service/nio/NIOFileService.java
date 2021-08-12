@@ -5,6 +5,7 @@ import be.mathiasbosman.fs.domain.FileNodeType;
 import be.mathiasbosman.fs.service.AbstractFileService;
 import be.mathiasbosman.fs.service.FileNodeVisitor;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -204,7 +205,7 @@ public class NIOFileService extends AbstractFileService {
 
   private FileNode file(Path path) {
     String subPath = path.toString().substring(workDir.toString().length());
-    return getFileNode(strip(subPath));
+    return getFileNode(strip(subPath, File.pathSeparatorChar));
   }
 
   private Path path(String location) {
