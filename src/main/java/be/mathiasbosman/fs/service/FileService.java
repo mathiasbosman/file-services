@@ -126,6 +126,14 @@ public interface FileService {
   FileNode getParent(String... path);
 
   /**
+   * Validates a given filename
+   *
+   * @param filename The filename to validate
+   * @return result
+   */
+  boolean isValidFilename(String filename);
+
+  /**
    * Checks a given path for being a directory
    *
    * @param parts Path parts

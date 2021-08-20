@@ -49,6 +49,16 @@ public abstract class AbstractFileServiceTest {
   protected abstract void putImageObject(String path);
 
   @Test
+  void combine() {
+    assertThat(AbstractFileService.combine("x", "y", "z")).isEqualTo("x/y/z");
+    assertThat(AbstractFileService.combine("x/y", "/z")).isEqualTo("x/y/z");
+    assertThat(AbstractFileService.combine(false, "x/y", "/z"))
+        .isEqualTo("x/y/z");
+    assertThat(AbstractFileService.combine(true, "x", "y", "z"))
+        .isEqualTo("/x/y/z");
+  }
+
+  @Test
   void countFiles() {
     putObject("x/a", "-");
     putObject("x/z", "-");

@@ -35,12 +35,25 @@ public abstract class AbstractFileService implements FileService {
       return null;
     }
 
-    return Joiner.on(File.separator).skipNulls().join(
+    return Joiner.on(File.separatorChar).skipNulls().join(
         Arrays.stream(parts).map(input -> {
           String stripped = strip(input, File.separatorChar);
           return StringUtils.isEmpty(stripped) ? null : stripped;
         }).collect(Collectors.toList())
     );
+  }
+
+  /**
+   * Combine multiple strings to a path using the {@link File} separator with leading separator or
+   * without
+   *
+   * @param leadingSeparator Either state to include the File.separator or not
+   * @param parts            Path parts
+   * @return The combined path {@link String}
+   */
+  public static String combine(boolean leadingSeparator, String... parts) {
+    String combined = combine(parts);
+    return !leadingSeparator ? combined : File.separatorChar + combined;
   }
 
   /**

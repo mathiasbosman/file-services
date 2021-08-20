@@ -58,14 +58,14 @@ public class S3FileServiceTest extends AbstractFileServiceContainerTest {
   }
 
   @BeforeEach
-  public void setup() {
+  void setup() {
     cleanUp();
     s3.createBucket(bucketName);
     setFs(new S3FileService(this.s3, bucketName, prefix));
   }
 
   @AfterEach
-  public void cleanUp() {
+  void cleanUp() {
     if (!s3.doesBucketExistV2(bucketName)) {
       return;
     }
@@ -131,7 +131,7 @@ public class S3FileServiceTest extends AbstractFileServiceContainerTest {
 
 
   @Test
-  public void copy() throws Exception {
+  void copy() throws Exception {
     FileService fs = getFs();
     fs.save(new StringInputStream("information"), "folder/file.txt");
     fs.save(new StringInputStream("more data"), "folder/more.txt");
@@ -141,7 +141,7 @@ public class S3FileServiceTest extends AbstractFileServiceContainerTest {
   }
 
   @Test
-  public void delete() {
+  void delete() {
     FileService fs = getFs();
     putObject("x/.folder", "-");
     fs.delete(fs.getFileNode("x"));
@@ -150,7 +150,14 @@ public class S3FileServiceTest extends AbstractFileServiceContainerTest {
   }
 
   @Test
-  public void stream() {
+  void isValidFilename() {
+    assertThat(getFs().isValidFilename("valid-file_name.tst")).isTrue();
+    assertThat(getFs().isValidFilename("validFilename")).isTrue();
+    assertThat(S3FileService.isValidObjectKey("validFile01.tst")).isTrue();
+  }
+
+  @Test
+  void stream() {
     putObject("x/a", "-");
     putObject("x/z", "-");
     putObject("x/b/a", "-");

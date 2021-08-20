@@ -39,7 +39,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class NIOFileServiceTest extends AbstractFileServiceTest {
+class NIOFileServiceTest extends AbstractFileServiceTest {
 
   private final FileSystem fileSystem = FileSystems.getDefault();
   private final Path workdir = fileSystem.getPath("/tmp/" + System.identityHashCode(this) + "/");
@@ -51,13 +51,13 @@ public class NIOFileServiceTest extends AbstractFileServiceTest {
   }
 
   @BeforeEach
-  public void setup() throws IOException {
+  void setup() throws IOException {
     cleanup();
     createDirectories(workdir);
   }
 
   @AfterEach
-  public void cleanup() throws IOException {
+  void cleanup() throws IOException {
     FileUtils.deleteDirectory(workdir.toFile());
   }
 
@@ -116,7 +116,7 @@ public class NIOFileServiceTest extends AbstractFileServiceTest {
   }
 
   @Test
-  public void copy() throws IOException {
+  void copy() throws IOException {
     createDirectories(workdir.resolve(targetPath));
     saveContent("template-x", "x");
     saveContent("template-y", "y");
@@ -126,13 +126,31 @@ public class NIOFileServiceTest extends AbstractFileServiceTest {
   }
 
   @Test
-  public void mkFolders() {
+  void isValidFilename() {
+    assertThat(getFs().isValidFilename("valid-file_name.tst")).isTrue();
+    assertThat(getFs().isValidFilename("valid/filename.tst")).isTrue();
+    assertThat(getFs().isValidFilename("validFilename")).isTrue();
+
+    for (Character invalidWindowsSpecificChar : NIOFileService.INVALID_WINDOWS_SPECIFIC_CHARS) {
+      assertThat(NIOFileService
+          .isValidFilename("invalid" + invalidWindowsSpecificChar + "filename.tst", false))
+          .isFalse();
+    }
+    for (Character invalidUnixSpecificChar : NIOFileService.INVALID_UNIX_SPECIFIC_CHARS) {
+      assertThat(NIOFileService
+          .isValidFilename("invalid" + invalidUnixSpecificChar + "filename.tst", true))
+          .isFalse();
+    }
+  }
+
+  @Test
+  void mkFolders() {
     getFs().mkFolders(targetPath);
     assertThat(Files.exists(workdir.resolve(targetPath))).isTrue();
   }
 
   @Test
-  public void stream() {
+  void stream() {
     putObject("x/a", "-");
     putObject("x/z", "-");
     putObject("x/b/a", "-");

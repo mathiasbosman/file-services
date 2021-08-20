@@ -17,25 +17,43 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 public class S3FileService extends AbstractFileService {
 
-  private static final String FOLDER_MARKER_OBJECT_NAME = ".folder";
+  public static final String FOLDER_MARKER_OBJECT_NAME = ".folder";
+  public static final String VALID_FILENAME_REGEX = "([0-9]|[A-Z]|[a-z]|[!\\-_.*'()])+";
+
   private final String bucketName;
   private final String prefix;
   private final AmazonS3 s3;
 
-  S3FileService(AmazonS3 s3, String bucketName, String prefix) {
+  public S3FileService(AmazonS3 s3, String bucketName, String prefix) {
     this.s3 = s3;
     this.bucketName = bucketName;
     this.prefix = prefix;
   }
 
+  public S3FileService(AmazonS3Factory factory, String bucketName) {
+    this(factory.toAmazonS3(), bucketName);
+  }
+
   public S3FileService(AmazonS3 s3, String bucketName) {
     this(s3, bucketName, "");
+  }
+
+
+  /**
+   * Validates a given filename as object key
+   *
+   * @param filename The filename to validate
+   * @return result
+   */
+  public static boolean isValidObjectKey(String filename) {
+    return Pattern.matches(VALID_FILENAME_REGEX, filename);
   }
 
   @Override
@@ -77,6 +95,11 @@ public class S3FileService extends AbstractFileService {
   @Override
   public String getMimeType(FileNode fileNode) {
     return getMetaData(fileNode.getPath()).getContentType();
+  }
+
+  @Override
+  public boolean isValidFilename(String filename) {
+    return isValidObjectKey(filename);
   }
 
   @Override

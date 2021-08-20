@@ -18,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -31,6 +32,10 @@ import org.apache.commons.lang3.SystemUtils;
 
 public class NIOFileService extends AbstractFileService {
 
+  public static final Character[] INVALID_WINDOWS_SPECIFIC_CHARS = {'"', '*', ':', '<', '>', '?',
+      '\\', '|', 0x7F};
+  public static final Character[] INVALID_UNIX_SPECIFIC_CHARS = {'\000'};
+
   private final Path workDir;
   private final Function<Path, FileNode> toFile = this::file;
 
@@ -40,6 +45,20 @@ public class NIOFileService extends AbstractFileService {
 
   public NIOFileService(String prefix) {
     this(FileSystems.getDefault(), prefix);
+  }
+
+  public static boolean isValidFilename(String filename, boolean isUnixSystem) {
+    if (StringUtils.isEmpty(filename) || filename.length() > 255) {
+      return false;
+    }
+    return Arrays
+        .stream(isUnixSystem ? INVALID_UNIX_SPECIFIC_CHARS : INVALID_WINDOWS_SPECIFIC_CHARS)
+        .noneMatch(ch -> filename.contains(ch.toString()));
+  }
+
+  public boolean isValidFilename(String filename) {
+    return isValidFilename(filename,
+        SystemUtils.IS_OS_UNIX || SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC);
   }
 
   @Override
