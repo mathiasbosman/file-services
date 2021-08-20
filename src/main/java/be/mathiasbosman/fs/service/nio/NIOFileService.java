@@ -133,8 +133,7 @@ public class NIOFileService extends AbstractFileService {
       Files.walkFileTree(path, Collections.emptySet(), 1, accumulator);
       List<Path> fromIterable = accumulator.toList();
       return fromIterable.stream().map(toFile).sorted((Comparator.comparing(FileNode::getName)))
-          .collect(
-              Collectors.toList());
+          .collect(Collectors.toList());
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }

@@ -3,7 +3,6 @@ package be.mathiasbosman.fs.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.shouldHaveThrown;
-import static org.junit.Assert.assertThrows;
 
 import be.mathiasbosman.fs.domain.FileNode;
 import com.google.common.base.Predicate;
@@ -91,7 +90,9 @@ public abstract class AbstractFileServiceTest {
 
   @Test
   void getExtension() {
-    assertThrows(IllegalArgumentException.class, () -> AbstractFileService.getExtension("a"));
+    assertThat(AbstractFileService.getExtension((String) null)).isNull();
+    assertThat(AbstractFileService.getExtension("")).isNull();
+    assertThat(AbstractFileService.getExtension("a")).isNull();
     assertThat(AbstractFileService.getExtension("a.jpeg")).isEqualTo("jpeg");
     assertThat(AbstractFileService.getExtension("a", "b", "c.xml")).isEqualTo("xml");
   }

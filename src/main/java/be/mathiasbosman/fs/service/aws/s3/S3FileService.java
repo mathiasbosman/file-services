@@ -9,6 +9,7 @@ import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -24,6 +25,8 @@ import org.apache.commons.lang3.StringUtils;
 
 public class S3FileService extends AbstractFileService {
 
+  public static final String CONTENT_ENCODING = "aws-chunked";
+  public static final String CONTENT_TYPE = "application/octet-stream";
   public static final String FOLDER_MARKER_OBJECT_NAME = ".folder";
   public static final String VALID_FILENAME_REGEX = "([0-9]|[A-Z]|[a-z]|[!\\-_.*'()])+";
 
@@ -198,8 +201,8 @@ public class S3FileService extends AbstractFileService {
 
   ObjectMetadata toMetadata(long size) {
     ObjectMetadata metadata = new ObjectMetadata();
-    metadata.setContentEncoding("aws-chunked");
-    metadata.setContentType("application/octet-stream");
+    metadata.setContentEncoding(CONTENT_ENCODING);
+    metadata.setContentType(CONTENT_TYPE);
     if (0 <= size) {
       metadata.setContentLength(size);
     }
@@ -209,13 +212,13 @@ public class S3FileService extends AbstractFileService {
   private List<FileNode> list(FileNode folder, boolean includeHiddenFolderMarkers) {
     List<FileNode> result = new LinkedList<>();
     boolean root = StringUtils.isEmpty(folder.getPath());
-    String prefix = root ? "" : folder.getPath() + "/";
+    String prefix = root ? "" : folder.getPath() + File.separatorChar;
     Iterable<S3ObjectSummary> objectListing = getObjectSummaries(folder.getPath());
     Set<String> subfolders = new HashSet<>();
     for (S3ObjectSummary objectSummary : objectListing) {
       String location = getLocation(objectSummary);
       String subPad = location.substring(prefix.length());
-      int firstSlash = subPad.indexOf('/');
+      int firstSlash = subPad.indexOf(File.separatorChar);
       if (firstSlash < 0) {
         if (includeHiddenFolderMarkers || !FOLDER_MARKER_OBJECT_NAME.equals(subPad)) {
           result.add(createFileNode(location, false, objectSummary.getSize()));
@@ -234,7 +237,7 @@ public class S3FileService extends AbstractFileService {
   private List<S3ObjectSummary> getObjectSummaries(String path) {
     List<S3ObjectSummary> result = new ArrayList<>();
     AtomicReference<ObjectListing> objectListing = new AtomicReference<>(
-        s3.listObjects(bucketName, toObjectKey(path) + "/"));
+        s3.listObjects(bucketName, toObjectKey(path) + File.separatorChar));
     while (true) {
       result.addAll(objectListing.get().getObjectSummaries());
       if (!objectListing.get().isTruncated()) {

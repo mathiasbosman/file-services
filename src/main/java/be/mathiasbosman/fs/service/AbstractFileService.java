@@ -67,8 +67,7 @@ public abstract class AbstractFileService implements FileService {
     return Optional.ofNullable(combined)
         .filter(f -> f.contains(String.valueOf(extensionSeparator)))
         .map(f -> f.substring(combined.lastIndexOf(extensionSeparator) + 1))
-        .orElseThrow(() -> new IllegalArgumentException(
-            "No '" + extensionSeparator + "' found in path: " + combined));
+        .orElse(null);
   }
 
   /**
