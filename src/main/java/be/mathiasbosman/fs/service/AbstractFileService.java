@@ -25,7 +25,8 @@ public abstract class AbstractFileService implements FileService {
   public static final char extensionSeparator = '.';
 
   /**
-   * Combine multiple strings to a path using the {@link File} separator
+   * Combine multiple strings to a path using the {@link File} separator. Paths are also stripped
+   * from excessive {@link File#separatorChar}.
    *
    * @param parts Path parts
    * @return The combined path {@link String}
@@ -45,7 +46,7 @@ public abstract class AbstractFileService implements FileService {
 
   /**
    * Combine multiple strings to a path using the {@link File} separator with leading separator or
-   * without
+   * without.
    *
    * @param leadingSeparator Either state to include the File.separator or not
    * @param parts            Path parts
@@ -57,7 +58,7 @@ public abstract class AbstractFileService implements FileService {
   }
 
   /**
-   * Returns the extension (determined by checking the last ".") of a path
+   * Returns the extension (determined by checking the last ".") of a path.
    *
    * @param parts Pah parts
    * @return The extension as {@link String} excluding the "." character
@@ -114,7 +115,7 @@ public abstract class AbstractFileService implements FileService {
     if (source.isDirectory()) {
       List<FileNode> list = list(source);
       if (CollectionUtils.isEmpty(list)) {
-        mkFolders(targetPath);
+        mkDirectories(targetPath);
       } else {
         for (FileNode node : list) {
           copy(node, combine(targetPath, node.getName()));
@@ -169,9 +170,9 @@ public abstract class AbstractFileService implements FileService {
   }
 
   @Override
-  public void mkFolders(String... path) {
+  public void mkDirectories(String... path) {
     checkPath(path);
-    mkFolders(combine(path));
+    mkDirectories(combine(path));
   }
 
   @Override
@@ -223,18 +224,17 @@ public abstract class AbstractFileService implements FileService {
     return read(getFileNode(parts));
   }
 
-  protected abstract void mkFolders(String path);
+  protected abstract void mkDirectories(String path);
 
   protected abstract void copyContent(FileNode source, String to);
 
   protected abstract FileNodeType getFileNodeType(String path);
 
-  protected abstract boolean isFolder(String path);
+  protected abstract boolean isDirectory(String path);
 
   protected abstract boolean exists(String path);
 
   protected abstract long getSize(String path);
-
 
   private FileNode getForPath(String parts, boolean shouldExist) {
     if (StringUtils.isBlank(parts)) {
@@ -248,20 +248,20 @@ public abstract class AbstractFileService implements FileService {
       }
       throw new IllegalArgumentException("Path does not exist on filesystem: " + path);
     }
-    boolean folder = FileNodeType.FOLDER == fileNodeType;
-    return createFileNode(path, folder, folder ? 0 : getSize(path));
+    boolean directory = FileNodeType.DIRECTORY == fileNodeType;
+    return createFileNode(path, directory, directory ? 0 : getSize(path));
   }
 
-  protected FileNode createFileNode(String path, boolean isFolder, long size) {
-    Pair<String, String> folderAndName = split(path);
-    String parentFolder = folderAndName.getLeft();
-    String name = folderAndName.getRight();
-    return new FileNodeImpl(parentFolder, name, isFolder, size);
+  protected FileNode createFileNode(String path, boolean isDirectory, long size) {
+    Pair<String, String> dirAndName = split(path);
+    String parentDir = dirAndName.getLeft();
+    String name = dirAndName.getRight();
+    return new FileNodeImpl(parentDir, name, isDirectory, size);
   }
 
   @Override
   public boolean isDirectory(String... parts) {
-    return isFolder(combine(parts));
+    return isDirectory(combine(parts));
   }
 
   @Override
@@ -290,7 +290,7 @@ public abstract class AbstractFileService implements FileService {
   @Override
   public final long getSize(FileNode node) {
     if (node.isDirectory()) {
-      throw new IllegalArgumentException("Size of folder not determined. " + node.getPath());
+      throw new IllegalArgumentException("Size of directory not determined. " + node.getPath());
     }
     return getSize(node.getPath());
   }

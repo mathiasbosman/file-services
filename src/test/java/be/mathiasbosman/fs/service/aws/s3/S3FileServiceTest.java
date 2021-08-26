@@ -2,7 +2,7 @@ package be.mathiasbosman.fs.service.aws.s3;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import be.mathiasbosman.fs.AbstractFileServiceContainerTest;
+import be.mathiasbosman.fs.AbstractContainerTest;
 import be.mathiasbosman.fs.domain.FileNode;
 import be.mathiasbosman.fs.service.FileService;
 import com.amazonaws.services.s3.AmazonS3;
@@ -22,10 +22,12 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
-public class S3FileServiceTest extends AbstractFileServiceContainerTest {
+public class S3FileServiceTest extends AbstractContainerTest {
 
   private static final String dockerComposeFile = "src/test/resources/docker/docker-compose.yml";
   private static final String dockerS3Service = "fs-test-minio";
@@ -52,7 +54,8 @@ public class S3FileServiceTest extends AbstractFileServiceContainerTest {
     return new DockerComposeContainer<>(
         new File(dockerComposeFile))
         .withExposedService(dockerS3Service, dockerS3Port, Wait.forListeningPort())
-        .withLogConsumer(dockerS3Service, getContainerLogConsumer(dockerS3Service))
+        .withLogConsumer(dockerS3Service, new Slf4jLogConsumer(
+            LoggerFactory.getLogger("container." + dockerS3Service)))
         .withLocalCompose(true)
         .withPull(false);
   }
@@ -86,8 +89,8 @@ public class S3FileServiceTest extends AbstractFileServiceContainerTest {
   }
 
   @Override
-  protected void putFolder(String path) {
-    getFs().mkFolders(path);
+  protected void putDirectory(String path) {
+    getFs().mkDirectories(path);
   }
 
   private void putObject(String path, String data, String contentType) {
@@ -105,7 +108,7 @@ public class S3FileServiceTest extends AbstractFileServiceContainerTest {
   }
 
   @Override
-  protected void assertFolderExists(String path) {
+  protected void assertDirectoryExists(String path) {
     assertThat(getFs().isDirectory(path)).isTrue();
   }
 
@@ -133,9 +136,9 @@ public class S3FileServiceTest extends AbstractFileServiceContainerTest {
   @Test
   void copy() throws Exception {
     FileService fs = getFs();
-    fs.save(new StringInputStream("information"), "folder/file.txt");
-    fs.save(new StringInputStream("more data"), "folder/more.txt");
-    fs.copy(fs.getFileNode("folder"), "copy");
+    fs.save(new StringInputStream("information"), "dir/file.txt");
+    fs.save(new StringInputStream("more data"), "dir/more.txt");
+    fs.copy(fs.getFileNode("dir"), "copy");
     assertThat(fs.exists("copy/more.txt")).isTrue();
     assertThat(fs.read("copy/file.txt")).isEqualTo("information");
   }
@@ -143,9 +146,10 @@ public class S3FileServiceTest extends AbstractFileServiceContainerTest {
   @Test
   void delete() {
     FileService fs = getFs();
-    putObject("x/.folder", "-");
+    String directoryPath = "x/" + S3FileService.DIRECTORY_MARKER_OBJECT_NAME;
+    putObject(directoryPath, "-");
     fs.delete(fs.getFileNode("x"));
-    assertNotExists("x/.folder");
+    assertNotExists(directoryPath);
     assertNotExists("x");
   }
 

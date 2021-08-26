@@ -35,13 +35,13 @@ public abstract class AbstractFileServiceTest {
 
   protected abstract void assertExists(String path);
 
-  protected abstract void assertFolderExists(String path);
+  protected abstract void assertDirectoryExists(String path);
 
   protected abstract void assertNotExists(String path);
 
   protected abstract String getContent(String path);
 
-  protected abstract void putFolder(String path);
+  protected abstract void putDirectory(String path);
 
   protected abstract void putObject(String path, String data);
 
@@ -93,13 +93,13 @@ public abstract class AbstractFileServiceTest {
     assertThat(file.getName()).isEqualTo("y");
     assertThat(file.getPath()).isEqualTo("x/y");
     assertThat(file.isDirectory()).isFalse();
-    // test folder
-    putFolder("z");
-    FileNode folder = fs.getFileNode("z");
-    assertThat(folder.getParentPath()).isNull();
-    assertThat(folder.getName()).isEqualTo("z");
-    assertThat(folder.getPath()).isEqualTo("z");
-    assertThat(folder.isDirectory()).isTrue();
+    // test directory
+    putDirectory("z");
+    FileNode directory = fs.getFileNode("z");
+    assertThat(directory.getParentPath()).isNull();
+    assertThat(directory.getName()).isEqualTo("z");
+    assertThat(directory.getPath()).isEqualTo("z");
+    assertThat(directory.isDirectory()).isTrue();
   }
 
   @Test
@@ -133,9 +133,9 @@ public abstract class AbstractFileServiceTest {
   }
 
   @Test
-  void isFolder() {
+  void isDirectory() {
     assertThat(fs.isDirectory("-")).isFalse();
-    putObject("x/.folder", "");
+    putObject("x/.directory", "");
     assertThat(fs.getFileNode("x").isDirectory()).isTrue();
     assertThat(fs.getFileNode("/x").isDirectory()).isTrue();
     assertThat(fs.getFileNode("x/").isDirectory()).isTrue();
@@ -159,29 +159,30 @@ public abstract class AbstractFileServiceTest {
     assertThat(transform).containsExactly("John", "Doe");
     // check size
     assertThat(list.size()).isEqualTo(2);
-    // check if folders are included
-    putFolder("x");
-    putFolder("x/c");
+    // check if directories are included
+    putDirectory("x");
+    putDirectory("x/c");
     putObject("x/c/1", "-");
-    putFolder("x/c/d");
+    putDirectory("x/c/d");
     putObject("y/e", "-");
-    putObject("z", "-");
     assertThat(transformToPath(fs.list(fs.getFileNode("x")))).containsExactly("x/a", "x/b", "x/c");
     List<FileNode> subList = fs.list("x/c");
     assertThat(transformToPath(subList)).containsExactly("x/c/1", "x/c/d");
+    putDirectory("z");
+    assertThat(fs.list("z")).isEmpty();
   }
 
   @Test
-  void mkFolders() {
-    fs.mkFolders("x");
-    assertFolderExists("x");
+  void mkDirectories() {
+    fs.mkDirectories("x");
+    assertDirectoryExists("x");
   }
 
   @Test
   void move() {
-    putFolder("x/source");
+    putDirectory("x/source");
     putObject("x/source/y.txt", "-");
-    putFolder("x/target");
+    putDirectory("x/target");
     fs.move("x/source/y.txt", "x/target/y.txt");
     assertExists("x/target/y.txt");
   }
@@ -202,10 +203,10 @@ public abstract class AbstractFileServiceTest {
     assertThat(getContent("x/y")).isEqualTo("-");
     fs.save(stringToInputStream("+"), "a/b/c");
     assertThat(getContent("a/b/c")).isEqualTo("+");
-    // check if parent folders are created
+    // check if parent directories are created
     fs.save(stringToInputStream("-"), "1/2/3");
-    assertFolderExists("1/2");
-    assertFolderExists("1");
+    assertDirectoryExists("1/2");
+    assertDirectoryExists("1");
     // check creation from path
     assertLocationAndName(fs.getFileNode("1"), null, "1");
     assertLocationAndName(fs.getFileNode("/1"), null, "1");
@@ -229,13 +230,13 @@ public abstract class AbstractFileServiceTest {
 
   @Test
   void walk() {
-    putFolder("x");
+    putDirectory("x");
     putObject("x/a", "-");
     putObject("x/b", "-");
-    putFolder("x/c");
+    putDirectory("x/c");
     putObject("x/c/1", "-");
-    putFolder("x/c/d");
-    putFolder("y");
+    putDirectory("x/c/d");
+    putDirectory("y");
     putObject("y/e", "-");
     putObject("z", "-");
     SpyingTreeVisitor spy = new SpyingTreeVisitor();
@@ -243,7 +244,7 @@ public abstract class AbstractFileServiceTest {
       fs.walk(file, spy);
     }
     assertThat(Arrays.asList("x/a", "x/b", "x/c/1", "y/e", "z")).isEqualTo(spy.visitedFiles);
-    assertThat(Arrays.asList("x", "x/c", "x/c/d", "y")).isEqualTo(spy.visitedFolders);
+    assertThat(Arrays.asList("x", "x/c", "x/c/d", "y")).isEqualTo(spy.visitedDirectories);
     assertThat(Arrays
         .asList("> x", "x/a", "x/b", "> x/c", "x/c/1", "> x/c/d", "< x/c/d", "< x/c", "< x", "> y",
             "y/e", "< y", "z")).isEqualTo(spy.visitationOrder);
@@ -277,7 +278,7 @@ public abstract class AbstractFileServiceTest {
 
     private final List<String> visitationOrder = new ArrayList<>();
     private final List<String> visitedFiles = new ArrayList<>();
-    private final List<String> visitedFolders = new ArrayList<>();
+    private final List<String> visitedDirectories = new ArrayList<>();
 
     @Override
     public void on(FileNode file) {
@@ -286,14 +287,14 @@ public abstract class AbstractFileServiceTest {
     }
 
     @Override
-    public void pre(FileNode folder) {
-      visitedFolders.add(folder.getPath());
-      visitationOrder.add("> " + folder.getPath());
+    public void pre(FileNode directory) {
+      visitedDirectories.add(directory.getPath());
+      visitationOrder.add("> " + directory.getPath());
     }
 
     @Override
-    public void post(FileNode folder) {
-      visitationOrder.add("< " + folder.getPath());
+    public void post(FileNode directory) {
+      visitationOrder.add("< " + directory.getPath());
     }
   }
 }
