@@ -11,7 +11,7 @@
 
   <groupId>be.mathiasbosman</groupId>
   <artifactId>file-services</artifactId>
-  <version>1.0.2-SNAPSHOT</version>
+  <version>1.0.2</version>
   <description>File services</description>
 
   <properties>
