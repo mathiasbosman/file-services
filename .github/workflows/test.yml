@@ -1,6 +1,12 @@
 name: Test build
 
-on: push
+on:
+  push:
+    branches-ignore:
+      - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
   analyze:
