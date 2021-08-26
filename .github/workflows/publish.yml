@@ -1,9 +1,10 @@
 name: Publish package to GitHub Packages
 on:
   release:
-    types: [created]
+    types: [ published ]
 jobs:
   publish:
+    name: Publish 🚀
     runs-on: ubuntu-latest
     permissions:
       contents: read

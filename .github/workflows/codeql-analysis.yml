@@ -2,7 +2,8 @@ name: "CodeQL"
 
 on:
   push:
-    branches: [ master ]
+    branches-ignore:
+      - 'dependabot/**'
   pull_request:
     # The branches below must be a subset of the branches above
     branches: [ master ]
@@ -11,7 +12,7 @@ on:
 
 jobs:
   analyze:
-    name: Analyze
+    name: Analyze ⚙
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -47,18 +48,18 @@ jobs:
           java-version: '11'
           distribution: 'adopt'
 
-      - name: Cache dependencies
-        uses: actions/cache@v1
+      - name: Cache Maven packages
+        uses: actions/cache@v2
         with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-      - name: Build with Maven
-        env:
-          GITHUB_USERNAME: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: mvn -B package --file pom.xml
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
 
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v1
+          - name: Build with Maven
+            env:
+              GITHUB_USERNAME: ${{ github.actor }}
+              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            run: mvn -B install -DskipTests
+
+          - name: Perform CodeQL Analysis
+            uses: github/codeql-action/analyze@v1
