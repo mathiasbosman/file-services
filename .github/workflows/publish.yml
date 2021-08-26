@@ -7,7 +7,8 @@ jobs:
     name: Upate version 🌿
     runs-on: ubuntu-latest
     env:
-      GITHUB_ACTOR_EMAIL: ${{ secrets.GITHUB_ACTION_ACTOR_EMAIL }}
+      ACTION_ACTOR_EMAIL: ${{ secrets.ACTION_ACTOR_EMAIL }}
+      TAG_NAME: ${{ github.event.release.tag_name }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-java@v2
@@ -15,11 +16,11 @@ jobs:
           java-version: '11'
           distribution: 'adopt'
       - name: Remove snapshot
-        run: mvn versions:set -DremoveSnapshot versions:commit
+        run: mvn versions:set -DnewVersion=$TAG_NAME versions:commit
       - name: Commit version
         run: |
           git config --global user.name '$GITHUB_ACTOR'
-          git config --global user.email '$GITHUB_ACTOR_EMAIL'
+          git config --global user.email '$ACTION_ACTOR_EMAIL'
           git commit -am "[GitHub action] prepare for release"
           git push
 
@@ -46,7 +47,7 @@ jobs:
     needs: deploy
     runs-on: ubuntu-latest
     env:
-      GITHUB_ACTOR_EMAIL: ${{ secrets.GITHUB_ACTION_ACTOR_EMAIL }}
+      ACTION_ACTOR_EMAIL: ${{ secrets.ACTION_ACTOR_EMAIL }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-java@v2
@@ -58,6 +59,6 @@ jobs:
       - name: Commit snapshot version
         run: |
           git config --global user.name '$GITHUB_ACTOR'
-          git config --global user.email '$GITHUB_ACTOR_EMAIL'
+          git config --global user.email '$ACTION_ACTOR_EMAIL'
           git commit -am "[GitHub action] prepare for next development iteration"
           git push
