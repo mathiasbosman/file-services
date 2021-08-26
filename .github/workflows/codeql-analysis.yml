@@ -3,6 +3,7 @@ name: "CodeQL"
 on:
   push:
     branches-ignore:
+      - master
       - 'dependabot/**'
   pull_request:
     branches:
