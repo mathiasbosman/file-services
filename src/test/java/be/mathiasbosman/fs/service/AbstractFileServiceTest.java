@@ -165,10 +165,11 @@ public abstract class AbstractFileServiceTest {
     putObject("x/c/1", "-");
     putFolder("x/c/d");
     putObject("y/e", "-");
-    putObject("z", "-");
     assertThat(transformToPath(fs.list(fs.getFileNode("x")))).containsExactly("x/a", "x/b", "x/c");
     List<FileNode> subList = fs.list("x/c");
     assertThat(transformToPath(subList)).containsExactly("x/c/1", "x/c/d");
+    putFolder("z");
+    assertThat(fs.list("z")).isEmpty();
   }
 
   @Test

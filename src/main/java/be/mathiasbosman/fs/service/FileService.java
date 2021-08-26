@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 public interface FileService {
 
   /**
-   * Copy from given path to target path
+   * Copy from given path to target path.
    *
    * @param source The path to copy from
    * @param target The target path
@@ -16,7 +16,7 @@ public interface FileService {
   void copy(String source, String target);
 
   /**
-   * Copy a {@link FileNode} to a given target path
+   * Copy a {@link FileNode} to a given target path.
    *
    * @param source The {@link FileNode} to copy
    * @param target The target path
@@ -32,14 +32,14 @@ public interface FileService {
   long countFiles(FileNode fileNode);
 
   /**
-   * Deletes the given {@link FileNode}
+   * Deletes the given {@link FileNode}.
    *
    * @param node The {@link FileNode} to delete
    */
   void delete(FileNode node);
 
   /**
-   * Recursively delete a {@link FileNode}
+   * Recursively delete a {@link FileNode}.
    *
    * @param node      {@link FileNode} to delete
    * @param recursive Flag to delete recursively or not
@@ -47,14 +47,14 @@ public interface FileService {
   void delete(FileNode node, boolean recursive);
 
   /**
-   * Deletes the given path
+   * Deletes the given path.
    *
    * @param path Path parts
    */
   void delete(String... path);
 
   /**
-   * Checks if given path exists
+   * Checks if given path exists.
    *
    * @param parts Path parts
    * @return True or false if none-existing
@@ -62,31 +62,31 @@ public interface FileService {
   boolean exists(String... parts);
 
   /**
-   * Get byte array from a given {@link FileNode}
+   * Get the content as byte array from a given {@link FileNode}.
    *
    * @param node The {@link FileNode} to get byte array from
-   * @return {@link Byte} array
+   * @return content
    */
   byte[] getBytes(FileNode node);
 
   /**
-   * Get byte array from a given path
+   * Get the content as byte array from a given path.
    *
    * @param parts Path parts
-   * @return {@link Byte} array
+   * @return content
    */
   byte[] getBytes(String... parts);
 
   /**
-   * Get the {@link FileNode} on the given path. If not found an exception is thrown
+   * Get the {@link FileNode} on the given path. If not found an exception is thrown.
    *
    * @param parts Path parts
-   * @return {@link FileNode}
+   * @return The node found
    */
   FileNode getFileNode(String... parts);
 
   /**
-   * Get the Mime type of a given {@link FileNode}
+   * Get the Mime type of a given {@link FileNode}.
    *
    * @param fileNode The {@link FileNode} to query
    * @return The Mime type
@@ -97,20 +97,20 @@ public interface FileService {
    * Get the {@link FileNode} on the given path. If not found null is returned.
    *
    * @param parts Path parts
-   * @return {@link FileNode}
+   * @return The node found or null
    */
   FileNode getOptionalFileNode(String... parts);
 
   /**
-   * Returns the parent node of a given {@link FileNode}
+   * Returns the parent node of a given {@link FileNode}.
    *
    * @param node {@link FileNode} to query
-   * @return {@link FileNode}
+   * @return The parent node or null if none found
    */
   FileNode getParent(FileNode node);
 
   /**
-   * Returns the size (content length) of the given {@link FileNode}
+   * Returns the size (content length) of the given {@link FileNode}.
    *
    * @param node {@link FileNode} to query
    * @return The size of the content
@@ -118,15 +118,15 @@ public interface FileService {
   long getSize(FileNode node);
 
   /**
-   * Returns the parent {@link FileNode} of a given path
+   * Returns the parent {@link FileNode} of a given path.
    *
    * @param path Path parts
-   * @return {@link FileNode}
+   * @return The parent node or null if none found
    */
   FileNode getParent(String... path);
 
   /**
-   * Validates a given filename
+   * Validates a given filename.
    *
    * @param filename The filename to validate
    * @return result
@@ -134,7 +134,7 @@ public interface FileService {
   boolean isValidFilename(String filename);
 
   /**
-   * Checks a given path for being a directory
+   * Checks a given path for being a directory.
    *
    * @param parts Path parts
    * @return True or false if not a directory
@@ -142,15 +142,15 @@ public interface FileService {
   boolean isDirectory(String... parts);
 
   /**
-   * List all file nodes that are children of the given {@link FileNode}
+   * List all file nodes that are children of the given {@link FileNode}.
    *
    * @param root The {@link FileNode} that is the root
-   * @return {@link List} of {@link FileNode}
+   * @return the children nodes
    */
   List<FileNode> list(FileNode root);
 
   /**
-   * List all {@link FileNode}s on the given path
+   * List all {@link FileNode}s on the given path.
    *
    * @param parts Path parts
    * @return {@link List} of {@link FileNode}
@@ -158,14 +158,14 @@ public interface FileService {
   List<FileNode> list(String... parts);
 
   /**
-   * Create all folders for the given path
+   * Create all folders for the given path.
    *
    * @param path Path parts
    */
   void mkFolders(String... path);
 
   /**
-   * Move node from source to target
+   * Move node from source to target.
    *
    * @param source The source path
    * @param target The target path
@@ -173,31 +173,31 @@ public interface FileService {
   void move(String source, String target);
 
   /**
-   * Open a given {@link FileNode}
+   * Open a given {@link FileNode}.
    *
    * @param node The {@link FileNode} to open
-   * @return {@link InputStream}
+   * @return content as stream
    */
   InputStream open(FileNode node);
 
   /**
-   * Open a given {@link FileNode}
+   * Open a given path.
    *
    * @param parts Path parts
-   * @return {@link InputStream}
+   * @return content as stream
    */
   InputStream open(String... parts);
 
   /**
-   * Read a {@link FileNode} as text
+   * Read a {@link FileNode} as text.
    *
    * @param node The {@link FileNode} to read
-   * @return The content of given {@link FileNode} as text
+   * @return The content of given node as text
    */
   String read(FileNode node);
 
   /**
-   * Read the contents of a given path as text
+   * Read the contents of a given path as text.
    *
    * @param parts Path parts
    * @return The content of the given path as text
@@ -205,16 +205,16 @@ public interface FileService {
   String read(String... parts);
 
   /**
-   * Save an {@link InputStream} to the given path with given size
+   * Save an {@link InputStream} to the given path with given size.
    *
    * @param is   {@link InputStream} to save
    * @param path Path to save as
-   * @param size Size of the given stream (the content lenght)
+   * @param size Size of the given stream (the content length)
    */
   void save(InputStream is, String path, long size);
 
   /**
-   * Save an {@link InputStream} to the given path
+   * Save an {@link InputStream} to the given path.
    *
    * @param is    {@link InputStream} to save
    * @param parts Path parts
@@ -222,7 +222,7 @@ public interface FileService {
   void save(InputStream is, String... parts);
 
   /**
-   * Save a {@link Byte} array to the given path
+   * Save a {@link Byte} array to the given path.
    *
    * @param bytes The array of {@link Byte}s to save
    * @param parts Path parts
@@ -230,7 +230,7 @@ public interface FileService {
   void save(byte[] bytes, String... parts);
 
   /**
-   * Save plain text to a given path
+   * Save plain text to a given path.
    *
    * @param content Content to save
    * @param parts   Path parts
@@ -238,15 +238,15 @@ public interface FileService {
   void saveText(String content, String... parts);
 
   /**
-   * Get a {@link Stream<FileNode>} from a given {@link FileNode}
+   * Get a {@link Stream<FileNode>} from a given {@link FileNode}.
    *
    * @param root The {@link FileNode} directory to stream
-   * @return {@link Stream} of {@link FileNode}
+   * @return stream of the directory contents
    */
   Stream<FileNode> streamDirectory(FileNode root);
 
   /**
-   * Walk all objects in given {@link FileNode}
+   * Walk all objects in given {@link FileNode}.
    *
    * @param root    The {@link FileNode} to walk
    * @param visitor The {@link FileNodeVisitor} to use

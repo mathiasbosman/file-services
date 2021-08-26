@@ -25,7 +25,8 @@ public abstract class AbstractFileService implements FileService {
   public static final char extensionSeparator = '.';
 
   /**
-   * Combine multiple strings to a path using the {@link File} separator
+   * Combine multiple strings to a path using the {@link File} separator. Paths are also stripped
+   * from excessive {@link File#separatorChar}.
    *
    * @param parts Path parts
    * @return The combined path {@link String}
@@ -45,7 +46,7 @@ public abstract class AbstractFileService implements FileService {
 
   /**
    * Combine multiple strings to a path using the {@link File} separator with leading separator or
-   * without
+   * without.
    *
    * @param leadingSeparator Either state to include the File.separator or not
    * @param parts            Path parts
@@ -57,7 +58,7 @@ public abstract class AbstractFileService implements FileService {
   }
 
   /**
-   * Returns the extension (determined by checking the last ".") of a path
+   * Returns the extension (determined by checking the last ".") of a path.
    *
    * @param parts Pah parts
    * @return The extension as {@link String} excluding the "." character
@@ -234,7 +235,6 @@ public abstract class AbstractFileService implements FileService {
   protected abstract boolean exists(String path);
 
   protected abstract long getSize(String path);
-
 
   private FileNode getForPath(String parts, boolean shouldExist) {
     if (StringUtils.isBlank(parts)) {

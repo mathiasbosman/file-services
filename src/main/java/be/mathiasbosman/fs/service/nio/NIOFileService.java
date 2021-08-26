@@ -155,7 +155,7 @@ public class NIOFileService extends AbstractFileService {
     try (OutputStream out = Files.newOutputStream(path)) {
       IOUtils.copy(in, out);
     } catch (IOException e) {
-      throw new IllegalArgumentException(e);
+      throw new RuntimeException(e);
     }
   }
 
@@ -205,7 +205,7 @@ public class NIOFileService extends AbstractFileService {
     try {
       Files.createDirectories(path);
     } catch (IOException e) {
-      throw new IllegalStateException(e);
+      throw new RuntimeException(e);
     }
   }
 
