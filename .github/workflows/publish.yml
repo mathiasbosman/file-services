@@ -23,7 +23,7 @@ jobs:
           git config --global user.name '$GITHUB_ACTOR'
           git config --global user.email '$ACTION_ACTOR_EMAIL'
           git commit -am "[GitHub action] prepare for release"
-          git push
+          git push origin HEAD:master
 
   deploy:
     name: Deploy 🚀
@@ -63,4 +63,4 @@ jobs:
           git config --global user.name '$GITHUB_ACTOR'
           git config --global user.email '$ACTION_ACTOR_EMAIL'
           git commit -am "[GitHub action] prepare for next development iteration"
-          git push
+          git push origin HEAD:master
