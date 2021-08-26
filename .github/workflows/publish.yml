@@ -74,7 +74,6 @@ jobs:
           distribution: 'adopt'
       - uses: actions/checkout@v2
         with:
-          fetch-depth: 2 #make sure we get the version commit
           token: ${{ secrets.ACTION_PAT }}
       - name: Set snapshot version
         run: |
@@ -83,5 +82,6 @@ jobs:
         run: |
           git config --global user.name 'githubaction[bot]'
           git config --global user.email '$ACTION_ACTOR_EMAIL'
+          git pull --no-rebase
           git commit -am "[GitHub action] prepare for next development iteration"
           git push origin HEAD:master
