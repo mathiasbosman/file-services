@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          persist-credentials: false
+          token: ${{ secrets.ACTION_PAT }}
       - uses: actions/setup-java@v2
         with:
           java-version: '11'
@@ -22,8 +22,6 @@ jobs:
           mvn versions:set -DremoveSnapshot versions:commit
       - name: Commit version
         run: |
-          git config --global user.name '$GITHUB_ACTOR'
-          git config --global user.email '$ACTION_ACTOR_EMAIL'
           git commit -am "[GitHub action] prepare for release"
           git push origin HEAD:master
 
@@ -54,7 +52,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          persist-credentials: false
+          token: ${{ secrets.ACTION_PAT }}
       - uses: actions/setup-java@v2
         with:
           java-version: '11'
@@ -64,7 +62,5 @@ jobs:
           mvn build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion}-SNAPSHOT versions:commit
       - name: Commit snapshot version
         run: |
-          git config --global user.name '$GITHUB_ACTOR'
-          git config --global user.email '$ACTION_ACTOR_EMAIL'
           git commit -am "[GitHub action] prepare for next development iteration"
           git push origin HEAD:master
