@@ -4,7 +4,7 @@ on:
     types: [ published ]
 jobs:
   prepare-deploy:
-    name: Upate version 🌿
+    name: Update version 🌿
     runs-on: ubuntu-latest
     env:
       ACTION_ACTOR_EMAIL: ${{ secrets.ACTION_ACTOR_EMAIL }}
