@@ -10,6 +10,8 @@ jobs:
       ACTION_ACTOR_EMAIL: ${{ secrets.ACTION_ACTOR_EMAIL }}
     steps:
       - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
       - uses: actions/setup-java@v2
         with:
           java-version: '11'
@@ -51,6 +53,8 @@ jobs:
       ACTION_ACTOR_EMAIL: ${{ secrets.ACTION_ACTOR_EMAIL }}
     steps:
       - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
       - uses: actions/setup-java@v2
         with:
           java-version: '11'
