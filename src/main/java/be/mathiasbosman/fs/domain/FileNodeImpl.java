@@ -1,46 +1,22 @@
 package be.mathiasbosman.fs.domain;
 
 import be.mathiasbosman.fs.service.AbstractFileService;
+import lombok.Getter;
 
+@Getter
 public class FileNodeImpl implements FileNode {
 
   private final String parentPath;
   private final String path;
   private final String name;
-  private final boolean isFolder;
+  private final boolean isDirectory;
   private final long size;
 
-  public FileNodeImpl(String parentPath, String name, boolean isFolder, long size) {
+  public FileNodeImpl(String parentPath, String name, boolean isDirectory, long size) {
     this.parentPath = parentPath;
     this.path = AbstractFileService.combine(parentPath, name);
     this.name = name;
-    this.isFolder = isFolder;
+    this.isDirectory = isDirectory;
     this.size = size;
   }
-
-  @Override
-  public String getName() {
-    return name;
-  }
-
-  @Override
-  public String getPath() {
-    return path;
-  }
-
-  @Override
-  public String getParentPath() {
-    return parentPath;
-  }
-
-  @Override
-  public long getSize() {
-    return size;
-  }
-
-  @Override
-  public boolean isDirectory() {
-    return isFolder;
-  }
-
 }

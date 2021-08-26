@@ -99,13 +99,13 @@ public class NIOFileService extends AbstractFileService {
       }
 
       @Override
-      public void pre(FileNode folder) {
+      public void pre(FileNode directory) {
 
       }
 
       @Override
-      public void post(FileNode folder) {
-        deleteNode(folder);
+      public void post(FileNode directory) {
+        deleteNode(directory);
       }
     });
   }
@@ -121,7 +121,7 @@ public class NIOFileService extends AbstractFileService {
   }
 
   @Override
-  public boolean isFolder(String pad) {
+  public boolean isDirectory(String pad) {
     return Files.isDirectory(path(pad));
   }
 
@@ -151,7 +151,7 @@ public class NIOFileService extends AbstractFileService {
   @Override
   public void save(InputStream in, String pad, long size) {
     Path path = path(pad);
-    mkFolders(path.getParent());
+    mkDirectories(path.getParent());
     try (OutputStream out = Files.newOutputStream(path)) {
       IOUtils.copy(in, out);
     } catch (IOException e) {
@@ -184,7 +184,7 @@ public class NIOFileService extends AbstractFileService {
     if (!exists(pad)) {
       return FileNodeType.NONE_EXISTENT;
     }
-    return isFolder(pad) ? FileNodeType.FOLDER : FileNodeType.FILE;
+    return isDirectory(pad) ? FileNodeType.DIRECTORY : FileNodeType.FILE;
   }
 
   @Override
@@ -197,11 +197,11 @@ public class NIOFileService extends AbstractFileService {
   }
 
   @Override
-  protected void mkFolders(String path) {
-    mkFolders(path(path));
+  protected void mkDirectories(String path) {
+    mkDirectories(path(path));
   }
 
-  private void mkFolders(Path path) {
+  private void mkDirectories(Path path) {
     try {
       Files.createDirectories(path);
     } catch (IOException e) {

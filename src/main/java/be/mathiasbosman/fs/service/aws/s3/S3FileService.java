@@ -27,7 +27,7 @@ public class S3FileService extends AbstractFileService {
 
   public static final String CONTENT_ENCODING = "aws-chunked";
   public static final String CONTENT_TYPE = "application/octet-stream";
-  public static final String FOLDER_MARKER_OBJECT_NAME = ".folder";
+  public static final String DIRECTORY_MARKER_OBJECT_NAME = ".directory";
   public static final String VALID_FILENAME_REGEX = "([0-9]|[A-Z]|[a-z]|[!\\-_.*'()])+";
 
   private final String bucketName;
@@ -73,13 +73,13 @@ public class S3FileService extends AbstractFileService {
       List<FileNode> list = list(node, true);
       if (CollectionUtils.size(list) == 1) {
         FileNode sub = list.get(0);
-        if (FOLDER_MARKER_OBJECT_NAME.equals(sub.getName())) {
+        if (DIRECTORY_MARKER_OBJECT_NAME.equals(sub.getName())) {
           delete(toObjectKey(sub.getPath()));
           return;
         }
       }
       if (CollectionUtils.isNotEmpty(list)) {
-        throw new IllegalArgumentException("Folder not empty for deletion");
+        throw new IllegalArgumentException("Directory not empty for deletion");
       }
       return;
     }
@@ -149,13 +149,13 @@ public class S3FileService extends AbstractFileService {
 
   @Override
   protected boolean exists(String path) {
-    return isFile(path) || isFolder(path);
+    return isFile(path) || isDirectory(path);
   }
 
   @Override
   protected FileNodeType getFileNodeType(String path) {
     return isFile(path) ? FileNodeType.FILE
-        : isFolder(path) ? FileNodeType.FOLDER : FileNodeType.NONE_EXISTENT;
+        : isDirectory(path) ? FileNodeType.DIRECTORY : FileNodeType.NONE_EXISTENT;
   }
 
   @Override
@@ -169,7 +169,7 @@ public class S3FileService extends AbstractFileService {
   }
 
   @Override
-  protected boolean isFolder(String path) {
+  protected boolean isDirectory(String path) {
     try {
       final ListObjectsRequest objectList = new ListObjectsRequest(bucketName, toObjectKey(path),
           null, null, 1);
@@ -180,8 +180,8 @@ public class S3FileService extends AbstractFileService {
   }
 
   @Override
-  protected void mkFolders(String path) {
-    put(combine(toObjectKey(path), FOLDER_MARKER_OBJECT_NAME),
+  protected void mkDirectories(String path) {
+    put(combine(toObjectKey(path), DIRECTORY_MARKER_OBJECT_NAME),
         new ByteArrayInputStream(new byte[]{1}), toMetadata(1));
   }
 
@@ -209,26 +209,26 @@ public class S3FileService extends AbstractFileService {
     return metadata;
   }
 
-  private List<FileNode> list(FileNode folder, boolean includeHiddenFolderMarkers) {
+  private List<FileNode> list(FileNode directory, boolean includeHiddenDirectoryMarkers) {
     List<FileNode> result = new LinkedList<>();
-    boolean root = StringUtils.isEmpty(folder.getPath());
-    String prefix = root ? "" : folder.getPath() + File.separatorChar;
-    Iterable<S3ObjectSummary> objectListing = getObjectSummaries(folder.getPath());
-    Set<String> subfolders = new HashSet<>();
+    boolean root = StringUtils.isEmpty(directory.getPath());
+    String prefix = root ? "" : directory.getPath() + File.separatorChar;
+    Iterable<S3ObjectSummary> objectListing = getObjectSummaries(directory.getPath());
+    Set<String> subDirs = new HashSet<>();
     for (S3ObjectSummary objectSummary : objectListing) {
       String location = getLocation(objectSummary);
       String subPad = location.substring(prefix.length());
       int firstSlash = subPad.indexOf(File.separatorChar);
       if (firstSlash < 0) {
-        if (includeHiddenFolderMarkers || !FOLDER_MARKER_OBJECT_NAME.equals(subPad)) {
+        if (includeHiddenDirectoryMarkers || !DIRECTORY_MARKER_OBJECT_NAME.equals(subPad)) {
           result.add(createFileNode(location, false, objectSummary.getSize()));
         }
       } else {
-        subfolders.add(prefix + subPad.substring(0, firstSlash));
+        subDirs.add(prefix + subPad.substring(0, firstSlash));
       }
     }
-    for (String subfolder : subfolders) {
-      result.add(createFileNode(subfolder, true, 0));
+    for (String subDir : subDirs) {
+      result.add(createFileNode(subDir, true, 0));
     }
     result.sort(Comparator.comparing(FileNode::getName));
     return result;

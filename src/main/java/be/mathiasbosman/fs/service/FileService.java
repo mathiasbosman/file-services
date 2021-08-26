@@ -158,11 +158,11 @@ public interface FileService {
   List<FileNode> list(String... parts);
 
   /**
-   * Create all folders for the given path.
+   * Create all directories for the given path.
    *
    * @param path Path parts
    */
-  void mkFolders(String... path);
+  void mkDirectories(String... path);
 
   /**
    * Move node from source to target.

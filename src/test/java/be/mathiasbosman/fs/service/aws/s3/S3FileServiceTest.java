@@ -89,8 +89,8 @@ public class S3FileServiceTest extends AbstractContainerTest {
   }
 
   @Override
-  protected void putFolder(String path) {
-    getFs().mkFolders(path);
+  protected void putDirectory(String path) {
+    getFs().mkDirectories(path);
   }
 
   private void putObject(String path, String data, String contentType) {
@@ -108,7 +108,7 @@ public class S3FileServiceTest extends AbstractContainerTest {
   }
 
   @Override
-  protected void assertFolderExists(String path) {
+  protected void assertDirectoryExists(String path) {
     assertThat(getFs().isDirectory(path)).isTrue();
   }
 
@@ -136,9 +136,9 @@ public class S3FileServiceTest extends AbstractContainerTest {
   @Test
   void copy() throws Exception {
     FileService fs = getFs();
-    fs.save(new StringInputStream("information"), "folder/file.txt");
-    fs.save(new StringInputStream("more data"), "folder/more.txt");
-    fs.copy(fs.getFileNode("folder"), "copy");
+    fs.save(new StringInputStream("information"), "dir/file.txt");
+    fs.save(new StringInputStream("more data"), "dir/more.txt");
+    fs.copy(fs.getFileNode("dir"), "copy");
     assertThat(fs.exists("copy/more.txt")).isTrue();
     assertThat(fs.read("copy/file.txt")).isEqualTo("information");
   }
@@ -146,9 +146,10 @@ public class S3FileServiceTest extends AbstractContainerTest {
   @Test
   void delete() {
     FileService fs = getFs();
-    putObject("x/.folder", "-");
+    String directoryPath = "x/" + S3FileService.DIRECTORY_MARKER_OBJECT_NAME;
+    putObject(directoryPath, "-");
     fs.delete(fs.getFileNode("x"));
-    assertNotExists("x/.folder");
+    assertNotExists(directoryPath);
     assertNotExists("x");
   }
 

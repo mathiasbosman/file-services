@@ -43,7 +43,7 @@ class NIOFileServiceTest extends AbstractFileServiceTest {
 
   private final FileSystem fileSystem = FileSystems.getDefault();
   private final Path workdir = fileSystem.getPath("/tmp/" + System.identityHashCode(this) + "/");
-  private static final String targetPath = "TARGET_FOLDER";
+  private static final String targetPath = "TARGET_DIRECTORY";
   private static final String templatePath = "TEMPLATES";
 
   public NIOFileServiceTest() {
@@ -72,7 +72,7 @@ class NIOFileServiceTest extends AbstractFileServiceTest {
   }
 
   @Override
-  protected void assertFolderExists(String path) {
+  protected void assertDirectoryExists(String path) {
     assertExists(path);
   }
 
@@ -91,7 +91,7 @@ class NIOFileServiceTest extends AbstractFileServiceTest {
   }
 
   @Override
-  protected void putFolder(String pad) {
+  protected void putDirectory(String pad) {
     try {
       createDirectories(workdir.resolve(pad));
     } catch (IOException e) {
@@ -104,7 +104,7 @@ class NIOFileServiceTest extends AbstractFileServiceTest {
     try {
       Path path = workdir.resolve(location);
       if (location.lastIndexOf('/') != -1) {
-        putFolder(path.getParent().toString());
+        putDirectory(path.getParent().toString());
       }
       try (OutputStream out = newOutputStream(path)) {
         out.write(data.getBytes());
@@ -144,8 +144,8 @@ class NIOFileServiceTest extends AbstractFileServiceTest {
   }
 
   @Test
-  void mkFolders() {
-    getFs().mkFolders(targetPath);
+  void mkDirectories() {
+    getFs().mkDirectories(targetPath);
     assertThat(Files.exists(workdir.resolve(targetPath))).isTrue();
   }
 
