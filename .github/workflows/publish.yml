@@ -8,7 +8,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ACTION_ACTOR_EMAIL: ${{ secrets.ACTION_ACTOR_EMAIL }}
-      TAG_NAME: ${{ github.event.release.tag_name }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-java@v2
@@ -16,7 +15,9 @@ jobs:
           java-version: '11'
           distribution: 'adopt'
       - name: Remove snapshot
-        run: mvn versions:set -DnewVersion=$TAG_NAME versions:commit
+        # remove the defined prefix and suffix (from GitHub) and use this as new version
+        run: |
+          mvn versions:set -DremoveSnapshot versions:commit
       - name: Commit version
         run: |
           git config --global user.name '$GITHUB_ACTOR'
@@ -55,7 +56,8 @@ jobs:
           java-version: '11'
           distribution: 'adopt'
       - name: Set snapshot version
-        run: mvn build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion}-SNAPSHOT versions:commit
+        run: |
+          mvn build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion}-SNAPSHOT versions:commit
       - name: Commit snapshot version
         run: |
           git config --global user.name '$GITHUB_ACTOR'
