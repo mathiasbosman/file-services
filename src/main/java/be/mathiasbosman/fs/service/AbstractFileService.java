@@ -71,7 +71,7 @@ public abstract class AbstractFileService implements FileService {
   }
 
   /**
-   * Gets the parent path of a given path
+   * Gets the parent path of a given path.
    *
    * @param path Path part
    * @return Path of the parent
@@ -91,7 +91,14 @@ public abstract class AbstractFileService implements FileService {
     return StringUtils.strip(input, separator + " ");
   }
 
-  private static Pair<String, String> split(String path) {
+  /**
+   * Split a given path using the file separator at the last separator. If no separator is present
+   * the left part will be null.
+   *
+   * @param path The path to split
+   * @return the split string as tuple
+   */
+  public static Pair<String, String> split(String path) {
     int i = path == null ? -1 : path.lastIndexOf(File.separator);
     return 0 < i
         ? Pair.of(path.substring(0, i), path.substring(i + 1))

@@ -48,16 +48,6 @@ public abstract class AbstractFileServiceTest {
   protected abstract void putImageObject(String path);
 
   @Test
-  void combine() {
-    assertThat(AbstractFileService.combine("x", "y", "z")).isEqualTo("x/y/z");
-    assertThat(AbstractFileService.combine("x/y", "/z")).isEqualTo("x/y/z");
-    assertThat(AbstractFileService.combine(false, "x/y", "/z"))
-        .isEqualTo("x/y/z");
-    assertThat(AbstractFileService.combine(true, "x", "y", "z"))
-        .isEqualTo("/x/y/z");
-  }
-
-  @Test
   void countFiles() {
     putObject("x/a", "-");
     putObject("x/z", "-");
@@ -86,15 +76,6 @@ public abstract class AbstractFileServiceTest {
     assertThat(fs.getBytes("x/a")).isEqualTo(content.getBytes());
     assertThat(fs.getBytes("x", "a")).isEqualTo(content.getBytes());
     assertThat(fs.getBytes(fs.getFileNode("x/a"))).isEqualTo(content.getBytes());
-  }
-
-  @Test
-  void getExtension() {
-    assertThat(AbstractFileService.getExtension((String) null)).isNull();
-    assertThat(AbstractFileService.getExtension("")).isNull();
-    assertThat(AbstractFileService.getExtension("a")).isNull();
-    assertThat(AbstractFileService.getExtension("a.jpeg")).isEqualTo("jpeg");
-    assertThat(AbstractFileService.getExtension("a", "b", "c.xml")).isEqualTo("xml");
   }
 
   @Test
@@ -143,11 +124,6 @@ public abstract class AbstractFileServiceTest {
     assertThat(root).isNotNull();
     FileNode beyondRoot = fs.getParent(root);
     assertThat(beyondRoot).isNull();
-  }
-
-  @Test
-  void getParentPath() {
-    assertThat(AbstractFileService.getParentPath("a/b/c.txt")).isEqualTo("a/b");
   }
 
   @Test
