@@ -7,4 +7,4 @@ services:
     environment:
       MINIO_ACCESS_KEY: minio_key
       MINIO_SECRET_KEY: minio_secret
-    command: server /sandbox
+    command: server /ut

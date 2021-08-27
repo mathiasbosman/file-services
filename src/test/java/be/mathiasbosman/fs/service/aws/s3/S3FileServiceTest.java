@@ -33,7 +33,6 @@ class S3FileServiceTest extends AbstractContainerTest {
 
   private final AmazonS3 s3;
   private final String bucketName = "test";
-  private final String prefix = "sandbox/";
 
   S3FileServiceTest() {
     // see docker compose
@@ -55,7 +54,7 @@ class S3FileServiceTest extends AbstractContainerTest {
   void setup() {
     cleanUp();
     s3.createBucket(bucketName);
-    setFs(new S3FileService(this.s3, bucketName, prefix));
+    setFs(new S3FileService(this.s3, bucketName));
   }
 
   @AfterEach
@@ -90,12 +89,12 @@ class S3FileServiceTest extends AbstractContainerTest {
     metadata.setContentEncoding("aws-chunked");
     metadata.setContentType(contentType);
     metadata.setContentLength(bytes.length);
-    s3.putObject(bucketName, prefix + path, new ByteArrayInputStream(bytes), metadata);
+    s3.putObject(bucketName, path, new ByteArrayInputStream(bytes), metadata);
   }
 
   @Override
   protected void assertExists(String path) {
-    assertThat(s3.doesObjectExist(bucketName, prefix + path)).isTrue();
+    assertThat(s3.doesObjectExist(bucketName, path)).isTrue();
   }
 
   @Override
@@ -105,12 +104,12 @@ class S3FileServiceTest extends AbstractContainerTest {
 
   @Override
   protected void assertNotExists(String path) {
-    assertThat(s3.doesObjectExist(bucketName, prefix + path)).isFalse();
+    assertThat(s3.doesObjectExist(bucketName, path)).isFalse();
   }
 
   @Override
   protected String getContent(String path) {
-    return s3.getObjectAsString(bucketName, prefix + path);
+    return s3.getObjectAsString(bucketName, path);
   }
 
   @Override

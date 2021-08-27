@@ -130,6 +130,7 @@ class NIOFileServiceTest extends AbstractFileServiceTest {
     assertThat(getFs().isValidFilename("valid-file_name.tst")).isTrue();
     assertThat(getFs().isValidFilename("valid/filename.tst")).isTrue();
     assertThat(getFs().isValidFilename("validFilename")).isTrue();
+    assertThat(getFs().isValidFilename("")).isFalse();
 
     for (Character invalidWindowsSpecificChar : NIOFileService.INVALID_WINDOWS_SPECIFIC_CHARS) {
       assertThat(NIOFileService

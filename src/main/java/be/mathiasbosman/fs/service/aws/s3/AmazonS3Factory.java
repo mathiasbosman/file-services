@@ -6,7 +6,6 @@ import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.amazonaws.regions.Region;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import lombok.experimental.UtilityClass;
 
 /**
  * Factory method for {@link AmazonS3} using the {@link AmazonS3ClientBuilder#standard()} by
@@ -17,8 +16,7 @@ import lombok.experimental.UtilityClass;
  * @see AmazonS3ClientBuilder
  * @since 0.0.1
  */
-@UtilityClass
-public class AmazonS3Factory {
+public final class AmazonS3Factory {
 
   public static AmazonS3 toAmazonS3(String serviceEndpoint, Region region, String key,
       String secret,
