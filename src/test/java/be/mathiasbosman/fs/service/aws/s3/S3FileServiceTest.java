@@ -150,7 +150,9 @@ class S3FileServiceTest extends AbstractContainerTest {
   void getCreationTime() {
     putObject("x", "-");
     FileSystemNode node = getFs().getFileNode("x");
-    assertThatThrownBy(() -> getFs().getCreationTime(node, ZoneId.systemDefault()))
+    FileService fs = getFs();
+    ZoneId zoneId = ZoneId.systemDefault();
+    assertThatThrownBy(() -> fs.getCreationTime(node, zoneId))
         .isInstanceOf(UnsupportedOperationException.class);
   }
 
