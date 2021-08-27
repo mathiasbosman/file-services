@@ -70,8 +70,7 @@ jobs:
     steps:
       - uses: actions/setup-java@v2
         with:
-          java-version: '11'
-          distribution: 'adopt'
+          java-version: 11
       - uses: actions/checkout@v2
         with:
           token: ${{ secrets.ACTION_PAT }}
