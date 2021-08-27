@@ -4,7 +4,7 @@ package be.mathiasbosman.fs.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.shouldHaveThrown;
 
-import be.mathiasbosman.fs.domain.FileNode;
+import be.mathiasbosman.fs.domain.FileSystemNode;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import java.io.ByteArrayInputStream;
@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
 
 public abstract class AbstractFileServiceTest {
 
-  private static final Function<FileNode, String> toPath = FileNode::getPath;
+  private static final Function<FileSystemNode, String> toPath = FileSystemNode::getPath;
   private FileService fs;
 
   protected FileService getFs() {
@@ -88,14 +88,14 @@ public abstract class AbstractFileServiceTest {
     }
     // test file
     putObject("x/y", "-");
-    FileNode file = fs.getFileNode("x/y");
+    FileSystemNode file = fs.getFileNode("x/y");
     assertThat(file.getParentPath()).isEqualTo("x");
     assertThat(file.getName()).isEqualTo("y");
     assertThat(file.getPath()).isEqualTo("x/y");
     assertThat(file.isDirectory()).isFalse();
     // test directory
     putDirectory("z");
-    FileNode directory = fs.getFileNode("z");
+    FileSystemNode directory = fs.getFileNode("z");
     assertThat(directory.getParentPath()).isNull();
     assertThat(directory.getName()).isEqualTo("z");
     assertThat(directory.getPath()).isEqualTo("z");
@@ -113,16 +113,16 @@ public abstract class AbstractFileServiceTest {
   @Test
   void getParent() {
     fs.save(stringToInputStream("testContent"), "a/b/c.txt");
-    FileNode c = fs.getFileNode("a", "b/c.txt");
-    FileNode cParent = fs.getParent(c);
-    FileNode cParentBis = fs.getParent("a", "b/c.txt");
+    FileSystemNode c = fs.getFileNode("a", "b/c.txt");
+    FileSystemNode cParent = fs.getParent(c);
+    FileSystemNode cParentBis = fs.getParent("a", "b/c.txt");
     assertLocationAndName(cParent, "a", "b");
     assertLocationAndName(cParentBis, "a", "b");
-    FileNode cParentParent = fs.getParent(cParent);
+    FileSystemNode cParentParent = fs.getParent(cParent);
     assertThat(cParentParent).isNotNull();
-    FileNode root = fs.getParent(cParentParent);
+    FileSystemNode root = fs.getParent(cParentParent);
     assertThat(root).isNotNull();
-    FileNode beyondRoot = fs.getParent(root);
+    FileSystemNode beyondRoot = fs.getParent(root);
     assertThat(beyondRoot).isNull();
   }
 
@@ -145,10 +145,10 @@ public abstract class AbstractFileServiceTest {
   void list() {
     putObject("x/a", "John");
     putObject("x/b", "Doe");
-    FileNode x = fs.getFileNode("x");
-    List<FileNode> list = fs.list(x);
+    FileSystemNode x = fs.getFileNode("x");
+    List<FileSystemNode> list = fs.list(x);
     assertThat(transformToPath(list)).containsExactly("x/a", "x/b");
-    Iterable<FileNode> filter = Iterables.filter(list, new ByFiles());
+    Iterable<FileSystemNode> filter = Iterables.filter(list, new ByFiles());
     Iterable<String> transform = StreamSupport.stream(filter.spliterator(), false).map(fileNode -> {
       try {
         return IOUtils.toString(fs.open(fileNode), StandardCharsets.UTF_8);
@@ -166,7 +166,7 @@ public abstract class AbstractFileServiceTest {
     putDirectory("x/c/d");
     putObject("y/e", "-");
     assertThat(transformToPath(fs.list(fs.getFileNode("x")))).containsExactly("x/a", "x/b", "x/c");
-    List<FileNode> subList = fs.list("x/c");
+    List<FileSystemNode> subList = fs.list("x/c");
     assertThat(transformToPath(subList)).containsExactly("x/c/1", "x/c/d");
     putDirectory("z");
     assertThat(fs.list("z")).isEmpty();
@@ -218,7 +218,7 @@ public abstract class AbstractFileServiceTest {
   @Test
   void read() {
     putObject("x/y", "-");
-    FileNode file = fs.getFileNode("x/y");
+    FileSystemNode file = fs.getFileNode("x/y");
     assertThat(fs.read(file)).isEqualTo("-");
   }
 
@@ -240,7 +240,7 @@ public abstract class AbstractFileServiceTest {
     putObject("y/e", "-");
     putObject("z", "-");
     SpyingTreeVisitor spy = new SpyingTreeVisitor();
-    for (FileNode file : fs.list()) {
+    for (FileSystemNode file : fs.list()) {
       fs.walk(file, spy);
     }
     assertThat(Arrays.asList("x/a", "x/b", "x/c/1", "y/e", "z")).isEqualTo(spy.visitedFiles);
@@ -250,7 +250,7 @@ public abstract class AbstractFileServiceTest {
             "y/e", "< y", "z")).isEqualTo(spy.visitationOrder);
   }
 
-  private void assertLocationAndName(FileNode node, String expectedParentPath,
+  private void assertLocationAndName(FileSystemNode node, String expectedParentPath,
       String expectedName) {
     assertThat(node.getParentPath()).isEqualTo(expectedParentPath);
     assertThat(node.getName()).isEqualTo(expectedName);
@@ -260,17 +260,17 @@ public abstract class AbstractFileServiceTest {
     return new ByteArrayInputStream(input.getBytes());
   }
 
-  private Iterable<String> transformToPath(Iterable<FileNode> nodes) {
+  private Iterable<String> transformToPath(Iterable<FileSystemNode> nodes) {
     return StreamSupport.stream(nodes.spliterator(), false).map(toPath)
         .collect(Collectors.toList());
   }
 
-  private static class ByFiles implements Predicate<FileNode> {
+  private static class ByFiles implements Predicate<FileSystemNode> {
 
     @Override
-    public boolean apply(FileNode fileNode) {
-      assert fileNode != null;
-      return !fileNode.isDirectory();
+    public boolean apply(FileSystemNode fileSystemNode) {
+      assert fileSystemNode != null;
+      return !fileSystemNode.isDirectory();
     }
   }
 
@@ -281,19 +281,19 @@ public abstract class AbstractFileServiceTest {
     private final List<String> visitedDirectories = new ArrayList<>();
 
     @Override
-    public void on(FileNode file) {
+    public void on(FileSystemNode file) {
       visitedFiles.add(file.getPath());
       visitationOrder.add(file.getPath());
     }
 
     @Override
-    public void pre(FileNode directory) {
+    public void pre(FileSystemNode directory) {
       visitedDirectories.add(directory.getPath());
       visitationOrder.add("> " + directory.getPath());
     }
 
     @Override
-    public void post(FileNode directory) {
+    public void post(FileSystemNode directory) {
       visitationOrder.add("< " + directory.getPath());
     }
   }

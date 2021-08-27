@@ -1,7 +1,7 @@
 package be.mathiasbosman.fs.service.nio;
 
-import be.mathiasbosman.fs.domain.FileNode;
-import be.mathiasbosman.fs.domain.FileNodeType;
+import be.mathiasbosman.fs.domain.FileSystemNode;
+import be.mathiasbosman.fs.domain.FileSystemNodeType;
 import be.mathiasbosman.fs.service.AbstractFileService;
 import be.mathiasbosman.fs.service.FileNodeVisitor;
 import java.io.BufferedReader;
@@ -30,14 +30,29 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 
+/**
+ * An implementation of the {@link be.mathiasbosman.fs.service.FileService} for NIO file systems.
+ * <p>
+ * It holds some static arrays containing invalid filename characters for Windows and Unix systems.
+ *
+ * @author mathiasbosman
+ * @since 0.0.1
+ */
 public class NIOFileService extends AbstractFileService {
 
+  /**
+   * Invalid filename characters for a Windows system.
+   */
   public static final Character[] INVALID_WINDOWS_SPECIFIC_CHARS = {'"', '*', ':', '<', '>', '?',
       '\\', '|', 0x7F};
+
+  /**
+   * Invalid filename characters for a Unix system.
+   */
   public static final Character[] INVALID_UNIX_SPECIFIC_CHARS = {'\000'};
 
   private final Path workDir;
-  private final Function<Path, FileNode> toFile = this::file;
+  private final Function<Path, FileSystemNode> toFile = this::file;
 
   public NIOFileService(FileSystem fs, String prefix) {
     workDir = fs.getPath(prefix);
@@ -47,6 +62,17 @@ public class NIOFileService extends AbstractFileService {
     this(FileSystems.getDefault(), prefix);
   }
 
+  /**
+   * This extra static method of {@link be.mathiasbosman.fs.service.FileService#isValidFilename(String)}
+   * takes an extra parameter so none-unix systems can be used (such as Windows).
+   *
+   * @param filename     The filename to check
+   * @param isUnixSystem Whether or not a Unix system is used
+   * @return result
+   * @see SystemUtils#IS_OS_UNIX
+   * @see SystemUtils#IS_OS_MAC
+   * @see SystemUtils#IS_OS_WINDOWS
+   */
   public static boolean isValidFilename(String filename, boolean isUnixSystem) {
     if (StringUtils.isEmpty(filename) || filename.length() > 255) {
       return false;
@@ -56,18 +82,19 @@ public class NIOFileService extends AbstractFileService {
         .noneMatch(ch -> filename.contains(ch.toString()));
   }
 
+  @Override
   public boolean isValidFilename(String filename) {
     return isValidFilename(filename,
         SystemUtils.IS_OS_UNIX || SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC);
   }
 
   @Override
-  public long countFiles(FileNode fileNode) {
+  public long countFiles(FileSystemNode node) {
     if (!SystemUtils.IS_OS_UNIX) {
-      return defaultFileCount(fileNode);
+      return defaultFileCount(node);
     }
     try {
-      Path path = path(fileNode.getPath());
+      Path path = path(node.getPath());
       String shellCommand = "find . -maxdepth 1 -type f | wc -l";
       String[] cmd = {"/bin/sh", "-c", shellCommand};
       ProcessBuilder builder = new ProcessBuilder();
@@ -86,33 +113,33 @@ public class NIOFileService extends AbstractFileService {
   }
 
   @Override
-  public void delete(FileNode fileNode, boolean recursive) {
+  public void delete(FileSystemNode node, boolean recursive) {
     if (!recursive) {
-      deleteNode(fileNode);
+      deleteNode(node);
       return;
     }
 
-    walk(fileNode, new FileNodeVisitor() {
+    walk(node, new FileNodeVisitor() {
       @Override
-      public void on(FileNode node) {
+      public void on(FileSystemNode node) {
         deleteNode(node);
       }
 
       @Override
-      public void pre(FileNode directory) {
-
+      public void pre(FileSystemNode directory) {
+        // no op on pre() when deleting
       }
 
       @Override
-      public void post(FileNode directory) {
+      public void post(FileSystemNode directory) {
         deleteNode(directory);
       }
     });
   }
 
   @Override
-  public String getMimeType(FileNode fileNode) {
-    Path path = path(fileNode.getPath());
+  public String getMimeType(FileSystemNode node) {
+    Path path = path(node.getPath());
     try {
       return Files.probeContentType(path);
     } catch (IOException e) {
@@ -126,13 +153,15 @@ public class NIOFileService extends AbstractFileService {
   }
 
   @Override
-  public List<FileNode> list(FileNode root) {
+  public List<FileSystemNode> list(FileSystemNode root) {
     try {
       Path path = path(root.getPath());
       FileAccumulator accumulator = new FileAccumulator(path);
       Files.walkFileTree(path, Collections.emptySet(), 1, accumulator);
       List<Path> fromIterable = accumulator.toList();
-      return fromIterable.stream().map(toFile).sorted((Comparator.comparing(FileNode::getName)))
+      return fromIterable.stream()
+          .map(toFile)
+          .sorted((Comparator.comparing(FileSystemNode::getName)))
           .collect(Collectors.toList());
     } catch (IOException e) {
       throw new IllegalStateException(e);
@@ -140,9 +169,9 @@ public class NIOFileService extends AbstractFileService {
   }
 
   @Override
-  public InputStream open(FileNode file) {
+  public InputStream open(FileSystemNode node) {
     try {
-      return Files.newInputStream(path(file.getPath()));
+      return Files.newInputStream(path(node.getPath()));
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -160,7 +189,7 @@ public class NIOFileService extends AbstractFileService {
   }
 
   @Override
-  public Stream<FileNode> streamDirectory(FileNode root) {
+  public Stream<FileSystemNode> streamDirectory(FileSystemNode root) {
     try {
       Path path = path(root.getPath());
       return Files.walk(path).map(toFile);
@@ -170,7 +199,7 @@ public class NIOFileService extends AbstractFileService {
   }
 
   @Override
-  protected void copyContent(FileNode source, String target) {
+  protected void copyContent(FileSystemNode source, String target) {
     save(open(source), target);
   }
 
@@ -180,11 +209,11 @@ public class NIOFileService extends AbstractFileService {
   }
 
   @Override
-  protected FileNodeType getFileNodeType(String pad) {
+  protected FileSystemNodeType getFileNodeType(String pad) {
     if (!exists(pad)) {
-      return FileNodeType.NONE_EXISTENT;
+      return FileSystemNodeType.NONE_EXISTENT;
     }
-    return isDirectory(pad) ? FileNodeType.DIRECTORY : FileNodeType.FILE;
+    return isDirectory(pad) ? FileSystemNodeType.DIRECTORY : FileSystemNodeType.FILE;
   }
 
   @Override
@@ -209,11 +238,11 @@ public class NIOFileService extends AbstractFileService {
     }
   }
 
-  protected Path path(FileNode node) {
+  protected Path path(FileSystemNode node) {
     return path(node.getPath());
   }
 
-  private void deleteNode(FileNode node) {
+  private void deleteNode(FileSystemNode node) {
     try {
       Files.delete(path(node));
     } catch (IOException e) {
@@ -221,7 +250,7 @@ public class NIOFileService extends AbstractFileService {
     }
   }
 
-  private FileNode file(Path path) {
+  private FileSystemNode file(Path path) {
     String subPath = path.toString().substring(workDir.toString().length());
     return getFileNode(strip(subPath, File.pathSeparatorChar));
   }

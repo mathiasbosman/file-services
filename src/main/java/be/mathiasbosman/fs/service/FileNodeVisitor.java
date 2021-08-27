@@ -1,12 +1,18 @@
 package be.mathiasbosman.fs.service;
 
-import be.mathiasbosman.fs.domain.FileNode;
+import be.mathiasbosman.fs.domain.FileSystemNode;
 
+/**
+ * Simple visitor for {@link FileSystemNode}s.
+ *
+ * @author mathiasbosman
+ * @since 0.0.1
+ */
 public interface FileNodeVisitor {
 
-  void on(FileNode node);
+  void on(FileSystemNode node);
 
-  void pre(FileNode node);
+  void pre(FileSystemNode node);
 
-  void post(FileNode node);
+  void post(FileSystemNode node);
 }

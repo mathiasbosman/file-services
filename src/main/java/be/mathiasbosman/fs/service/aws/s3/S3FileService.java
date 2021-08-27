@@ -1,7 +1,7 @@
 package be.mathiasbosman.fs.service.aws.s3;
 
-import be.mathiasbosman.fs.domain.FileNode;
-import be.mathiasbosman.fs.domain.FileNodeType;
+import be.mathiasbosman.fs.domain.FileSystemNode;
+import be.mathiasbosman.fs.domain.FileSystemNodeType;
 import be.mathiasbosman.fs.service.AbstractFileService;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
@@ -23,6 +23,16 @@ import java.util.stream.Stream;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * An implementation of the {@link be.mathiasbosman.fs.service.FileService} for AmazonS3 file
+ * systems.
+ * <p>
+ * A marker object name is used to mock directories.
+ *
+ * @author mathiasbosman
+ * @see AmazonS3
+ * @since 0.0.1
+ */
 public class S3FileService extends AbstractFileService {
 
   public static final String CONTENT_ENCODING = "aws-chunked";
@@ -38,10 +48,6 @@ public class S3FileService extends AbstractFileService {
     this.s3 = s3;
     this.bucketName = bucketName;
     this.prefix = prefix;
-  }
-
-  public S3FileService(AmazonS3Factory factory, String bucketName) {
-    this(factory.toAmazonS3(), bucketName);
   }
 
   public S3FileService(AmazonS3 s3, String bucketName) {
@@ -60,19 +66,17 @@ public class S3FileService extends AbstractFileService {
   }
 
   @Override
-  public void delete(FileNode node, boolean recursive) {
+  public void delete(FileSystemNode node, boolean recursive) {
     if (recursive) {
       final List<S3ObjectSummary> objectSummaries = getObjectSummaries(node.getPath());
-      for (S3ObjectSummary objectSummary : objectSummaries) {
-        delete(objectSummary.getKey());
-      }
+      objectSummaries.forEach(s3ObjectSummary -> delete(s3ObjectSummary.getKey()));
       return;
     }
 
     if (node.isDirectory()) {
-      List<FileNode> list = list(node, true);
+      List<FileSystemNode> list = list(node, true);
       if (CollectionUtils.size(list) == 1) {
-        FileNode sub = list.get(0);
+        FileSystemNode sub = list.get(0);
         if (DIRECTORY_MARKER_OBJECT_NAME.equals(sub.getName())) {
           delete(toObjectKey(sub.getPath()));
           return;
@@ -96,8 +100,8 @@ public class S3FileService extends AbstractFileService {
   }
 
   @Override
-  public String getMimeType(FileNode fileNode) {
-    return getMetaData(fileNode.getPath()).getContentType();
+  public String getMimeType(FileSystemNode node) {
+    return getMetaData(node.getPath()).getContentType();
   }
 
   @Override
@@ -106,12 +110,12 @@ public class S3FileService extends AbstractFileService {
   }
 
   @Override
-  public List<FileNode> list(FileNode root) {
+  public List<FileSystemNode> list(FileSystemNode root) {
     return list(root, false);
   }
 
   @Override
-  public InputStream open(FileNode node) {
+  public InputStream open(FileSystemNode node) {
     String key = toObjectKey(node.getPath());
     try {
       return s3.getObject(bucketName, key).getObjectContent();
@@ -126,7 +130,7 @@ public class S3FileService extends AbstractFileService {
   }
 
   @Override
-  public Stream<FileNode> streamDirectory(FileNode root) {
+  public Stream<FileSystemNode> streamDirectory(FileSystemNode root) {
     List<S3ObjectSummary> objectSummaries = getObjectSummaries(root.getPath());
     return objectSummaries.stream().map(s3ObjectSummary -> {
       String location = getLocation(s3ObjectSummary);
@@ -135,7 +139,7 @@ public class S3FileService extends AbstractFileService {
   }
 
   @Override
-  protected void copyContent(FileNode source, String to) {
+  protected void copyContent(FileSystemNode source, String to) {
     String sourceKey = toObjectKey(source.getPath());
     String destinationKey = toObjectKey(to);
 
@@ -153,9 +157,9 @@ public class S3FileService extends AbstractFileService {
   }
 
   @Override
-  protected FileNodeType getFileNodeType(String path) {
-    return isFile(path) ? FileNodeType.FILE
-        : isDirectory(path) ? FileNodeType.DIRECTORY : FileNodeType.NONE_EXISTENT;
+  protected FileSystemNodeType getFileNodeType(String path) {
+    return isFile(path) ? FileSystemNodeType.FILE
+        : isDirectory(path) ? FileSystemNodeType.DIRECTORY : FileSystemNodeType.NONE_EXISTENT;
   }
 
   @Override
@@ -209,8 +213,9 @@ public class S3FileService extends AbstractFileService {
     return metadata;
   }
 
-  private List<FileNode> list(FileNode directory, boolean includeHiddenDirectoryMarkers) {
-    List<FileNode> result = new LinkedList<>();
+  private List<FileSystemNode> list(FileSystemNode directory,
+      boolean includeHiddenDirectoryMarkers) {
+    List<FileSystemNode> result = new LinkedList<>();
     boolean root = StringUtils.isEmpty(directory.getPath());
     String prefix = root ? "" : directory.getPath() + File.separatorChar;
     Iterable<S3ObjectSummary> objectListing = getObjectSummaries(directory.getPath());
@@ -230,7 +235,7 @@ public class S3FileService extends AbstractFileService {
     for (String subDir : subDirs) {
       result.add(createFileNode(subDir, true, 0));
     }
-    result.sort(Comparator.comparing(FileNode::getName));
+    result.sort(Comparator.comparing(FileSystemNode::getName));
     return result;
   }
 

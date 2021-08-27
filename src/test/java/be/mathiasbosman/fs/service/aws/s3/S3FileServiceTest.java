@@ -3,7 +3,7 @@ package be.mathiasbosman.fs.service.aws.s3;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import be.mathiasbosman.fs.AbstractContainerTest;
-import be.mathiasbosman.fs.domain.FileNode;
+import be.mathiasbosman.fs.domain.FileSystemNode;
 import be.mathiasbosman.fs.service.FileService;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectListing;
@@ -39,14 +39,9 @@ public class S3FileServiceTest extends AbstractContainerTest {
 
   S3FileServiceTest() {
     // see docker compose
-    s3 = AmazonS3Factory.builder()
-        .bucket(bucketName)
-        .serviceEndpoint("http://localhost:" + dockerS3Port)
-        .key("minio_key")
-        .secret("minio_secret")
-        .pathStyleAccessEnabled(true)
-        .region(Region.EU_London.toAWSRegion())
-        .build().toAmazonS3();
+    s3 = AmazonS3Factory.toAmazonS3("http://localhost:" + dockerS3Port,
+        Region.EU_London.toAWSRegion(), "minio_key", "minio_secret", bucketName,
+        true, false);
   }
 
   @Override
@@ -165,9 +160,9 @@ public class S3FileServiceTest extends AbstractContainerTest {
     putObject("x/a", "-");
     putObject("x/z", "-");
     putObject("x/b/a", "-");
-    Stream<FileNode> stream = getFs().streamDirectory(getFs().getFileNode("x"));
+    Stream<FileSystemNode> stream = getFs().streamDirectory(getFs().getFileNode("x"));
     assertThat(stream).isNotNull();
-    List<FileNode> collected = stream.collect(Collectors.toList());
+    List<FileSystemNode> collected = stream.collect(Collectors.toList());
     assertThat(collected).hasSize(3);
   }
 
