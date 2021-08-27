@@ -31,17 +31,17 @@ private final FileService fileService = new NIOFileService(FileSystems.getDefaul
 
 ### S3 file system
 
-To set up a file service that uses Amazon's S3 file system provide the S3 system and the bucket
-name:
+To set up a file service that uses Amazon's S3 file system provide the S3-system as well as the
+bucket name:
 
 ```java
 private final FileService fileService = new S3FileSystem(s3, "bucketName");
 ```
 
-To create an Amazon S3 file system the provided factory can be used:
+To create an Amazon S3 file system the provided static factory method can be used:
 
 ```java
-AmazonS3 s3 = AmazonS3Factory.ToAmazonS3(
+AmazonS3 s3 = AmazonS3Factory.toAmazonS3(
     "endpointUrl",
     Region.EU_London.toAWSRegion(),
     "key",
