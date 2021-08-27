@@ -22,9 +22,7 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.DockerComposeContainer;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 class S3FileServiceTest extends AbstractContainerTest {
@@ -49,8 +47,6 @@ class S3FileServiceTest extends AbstractContainerTest {
     return new DockerComposeContainer<>(
         new File(dockerComposeFile))
         .withExposedService(dockerS3Service, dockerS3Port, Wait.forListeningPort())
-        .withLogConsumer(dockerS3Service, new Slf4jLogConsumer(
-            LoggerFactory.getLogger("container." + dockerS3Service)))
         .withLocalCompose(true)
         .withPull(false);
   }
