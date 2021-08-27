@@ -6,21 +6,31 @@ import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.amazonaws.regions.Region;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import lombok.Builder;
+import lombok.experimental.UtilityClass;
 
-@Builder
+/**
+ * Factory method for {@link AmazonS3} using the {@link AmazonS3ClientBuilder#standard()} by
+ * default. The client builder can be overriden if need bee.
+ *
+ * @author mathiasbosman
+ * @see AmazonS3
+ * @see AmazonS3ClientBuilder
+ * @since 0.0.1
+ */
+@UtilityClass
 public class AmazonS3Factory {
 
-  private final String serviceEndpoint;
-  private final Region region;
-  private final String key;
-  private final String secret;
-  private final String bucket;
-  private final boolean pathStyleAccessEnabled;
-  private final boolean createBucketIfMissing;
+  public static AmazonS3 toAmazonS3(String serviceEndpoint, Region region, String key,
+      String secret,
+      String bucket, boolean pathStyleAccessEnabled, boolean createBucketIfMissing) {
+    return toAmazonS3(AmazonS3ClientBuilder.standard(), serviceEndpoint, region, key, secret,
+        bucket, pathStyleAccessEnabled, createBucketIfMissing);
+  }
 
-  public AmazonS3 toAmazonS3() {
-    AmazonS3 s3 = AmazonS3ClientBuilder.standard()
+  public static AmazonS3 toAmazonS3(AmazonS3ClientBuilder clientBuilder,
+      String serviceEndpoint, Region region, String key, String secret,
+      String bucket, boolean pathStyleAccessEnabled, boolean createBucketIfMissing) {
+    AmazonS3 s3 = clientBuilder
         .withCredentials(
             new AWSStaticCredentialsProvider(new BasicAWSCredentials(key, secret)))
         .withEndpointConfiguration(

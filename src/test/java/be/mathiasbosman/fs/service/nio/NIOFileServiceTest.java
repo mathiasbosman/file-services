@@ -11,7 +11,7 @@ import static java.nio.file.Files.walkFileTree;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import be.mathiasbosman.fs.domain.FileNode;
+import be.mathiasbosman.fs.domain.FileSystemNode;
 import be.mathiasbosman.fs.service.AbstractFileServiceTest;
 import java.io.IOException;
 import java.io.InputStream;
@@ -154,9 +154,9 @@ class NIOFileServiceTest extends AbstractFileServiceTest {
     putObject("x/a", "-");
     putObject("x/z", "-");
     putObject("x/b/a", "-");
-    Stream<FileNode> stream = getFs().streamDirectory(getFs().getFileNode("x"));
+    Stream<FileSystemNode> stream = getFs().streamDirectory(getFs().getFileNode("x"));
     assertThat(stream).isNotNull();
-    List<FileNode> collected = stream.collect(Collectors.toList());
+    List<FileSystemNode> collected = stream.collect(Collectors.toList());
     assertThat(collected).hasSize(5);
   }
 

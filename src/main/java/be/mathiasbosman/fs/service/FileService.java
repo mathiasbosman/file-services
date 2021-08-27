@@ -1,10 +1,16 @@
 package be.mathiasbosman.fs.service;
 
-import be.mathiasbosman.fs.domain.FileNode;
+import be.mathiasbosman.fs.domain.FileSystemNode;
 import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Stream;
 
+/**
+ * Simple interface for handling file operations on a file system such as any NIO system or S3.
+ *
+ * @author mathiasbosman
+ * @since 0.0.1
+ */
 public interface FileService {
 
   /**
@@ -16,35 +22,35 @@ public interface FileService {
   void copy(String source, String target);
 
   /**
-   * Copy a {@link FileNode} to a given target path.
+   * Copy a {@link FileSystemNode} to a given target path.
    *
-   * @param source The {@link FileNode} to copy
+   * @param source The {@link FileSystemNode} to copy
    * @param target The target path
    */
-  void copy(FileNode source, String target);
+  void copy(FileSystemNode source, String target);
 
   /**
-   * Count all files in a given {@link FileNode}. Directories are not counted.
+   * Count all files in a given {@link FileSystemNode}. Directories are not counted.
    *
-   * @param fileNode The {@link FileNode} to count all files
-   * @return Amount of files in the given {@link FileNode}
+   * @param fileSystemNode The {@link FileSystemNode} to count all files
+   * @return Amount of files in the given {@link FileSystemNode}
    */
-  long countFiles(FileNode fileNode);
+  long countFiles(FileSystemNode fileSystemNode);
 
   /**
-   * Deletes the given {@link FileNode}.
+   * Deletes the given {@link FileSystemNode}.
    *
-   * @param node The {@link FileNode} to delete
+   * @param node The {@link FileSystemNode} to delete
    */
-  void delete(FileNode node);
+  void delete(FileSystemNode node);
 
   /**
-   * Recursively delete a {@link FileNode}.
+   * Recursively delete a {@link FileSystemNode}.
    *
-   * @param node      {@link FileNode} to delete
+   * @param node      {@link FileSystemNode} to delete
    * @param recursive Flag to delete recursively or not
    */
-  void delete(FileNode node, boolean recursive);
+  void delete(FileSystemNode node, boolean recursive);
 
   /**
    * Deletes the given path.
@@ -62,12 +68,12 @@ public interface FileService {
   boolean exists(String... parts);
 
   /**
-   * Get the content as byte array from a given {@link FileNode}.
+   * Get the content as byte array from a given {@link FileSystemNode}.
    *
-   * @param node The {@link FileNode} to get byte array from
+   * @param node The {@link FileSystemNode} to get byte array from
    * @return content
    */
-  byte[] getBytes(FileNode node);
+  byte[] getBytes(FileSystemNode node);
 
   /**
    * Get the content as byte array from a given path.
@@ -78,52 +84,52 @@ public interface FileService {
   byte[] getBytes(String... parts);
 
   /**
-   * Get the {@link FileNode} on the given path. If not found an exception is thrown.
+   * Get the {@link FileSystemNode} on the given path. If not found an exception is thrown.
    *
    * @param parts Path parts
    * @return The node found
    */
-  FileNode getFileNode(String... parts);
+  FileSystemNode getFileNode(String... parts);
 
   /**
-   * Get the Mime type of a given {@link FileNode}.
+   * Get the Mime type of a given {@link FileSystemNode}.
    *
-   * @param fileNode The {@link FileNode} to query
+   * @param fileSystemNode The {@link FileSystemNode} to query
    * @return The Mime type
    */
-  String getMimeType(FileNode fileNode);
+  String getMimeType(FileSystemNode fileSystemNode);
 
   /**
-   * Get the {@link FileNode} on the given path. If not found null is returned.
+   * Get the {@link FileSystemNode} on the given path. If not found null is returned.
    *
    * @param parts Path parts
    * @return The node found or null
    */
-  FileNode getOptionalFileNode(String... parts);
+  FileSystemNode getOptionalFileNode(String... parts);
 
   /**
-   * Returns the parent node of a given {@link FileNode}.
+   * Returns the parent node of a given {@link FileSystemNode}.
    *
-   * @param node {@link FileNode} to query
+   * @param node {@link FileSystemNode} to query
    * @return The parent node or null if none found
    */
-  FileNode getParent(FileNode node);
+  FileSystemNode getParent(FileSystemNode node);
 
   /**
-   * Returns the size (content length) of the given {@link FileNode}.
+   * Returns the size (content length) of the given {@link FileSystemNode}.
    *
-   * @param node {@link FileNode} to query
+   * @param node {@link FileSystemNode} to query
    * @return The size of the content
    */
-  long getSize(FileNode node);
+  long getSize(FileSystemNode node);
 
   /**
-   * Returns the parent {@link FileNode} of a given path.
+   * Returns the parent {@link FileSystemNode} of a given path.
    *
    * @param path Path parts
    * @return The parent node or null if none found
    */
-  FileNode getParent(String... path);
+  FileSystemNode getParent(String... path);
 
   /**
    * Validates a given filename.
@@ -142,20 +148,20 @@ public interface FileService {
   boolean isDirectory(String... parts);
 
   /**
-   * List all file nodes that are children of the given {@link FileNode}.
+   * List all file nodes that are children of the given {@link FileSystemNode}.
    *
-   * @param root The {@link FileNode} that is the root
+   * @param root The {@link FileSystemNode} that is the root
    * @return the children nodes
    */
-  List<FileNode> list(FileNode root);
+  List<FileSystemNode> list(FileSystemNode root);
 
   /**
-   * List all {@link FileNode}s on the given path.
+   * List all {@link FileSystemNode}s on the given path.
    *
    * @param parts Path parts
-   * @return {@link List} of {@link FileNode}
+   * @return {@link List} of {@link FileSystemNode}
    */
-  List<FileNode> list(String... parts);
+  List<FileSystemNode> list(String... parts);
 
   /**
    * Create all directories for the given path.
@@ -173,12 +179,12 @@ public interface FileService {
   void move(String source, String target);
 
   /**
-   * Open a given {@link FileNode}.
+   * Open a given {@link FileSystemNode}.
    *
-   * @param node The {@link FileNode} to open
+   * @param node The {@link FileSystemNode} to open
    * @return content as stream
    */
-  InputStream open(FileNode node);
+  InputStream open(FileSystemNode node);
 
   /**
    * Open a given path.
@@ -189,12 +195,12 @@ public interface FileService {
   InputStream open(String... parts);
 
   /**
-   * Read a {@link FileNode} as text.
+   * Read a {@link FileSystemNode} as text.
    *
-   * @param node The {@link FileNode} to read
+   * @param node The {@link FileSystemNode} to read
    * @return The content of given node as text
    */
-  String read(FileNode node);
+  String read(FileSystemNode node);
 
   /**
    * Read the contents of a given path as text.
@@ -238,19 +244,19 @@ public interface FileService {
   void saveText(String content, String... parts);
 
   /**
-   * Get a {@link Stream<FileNode>} from a given {@link FileNode}.
+   * Get a {@link Stream< FileSystemNode >} from a given {@link FileSystemNode}.
    *
-   * @param root The {@link FileNode} directory to stream
+   * @param root The {@link FileSystemNode} directory to stream
    * @return stream of the directory contents
    */
-  Stream<FileNode> streamDirectory(FileNode root);
+  Stream<FileSystemNode> streamDirectory(FileSystemNode root);
 
   /**
-   * Walk all objects in given {@link FileNode}.
+   * Walk all objects in given {@link FileSystemNode}.
    *
-   * @param root    The {@link FileNode} to walk
+   * @param root    The {@link FileSystemNode} to walk
    * @param visitor The {@link FileNodeVisitor} to use
    */
-  void walk(FileNode root, FileNodeVisitor visitor);
+  void walk(FileSystemNode root, FileNodeVisitor visitor);
 
 }

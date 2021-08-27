@@ -1,8 +1,8 @@
 package be.mathiasbosman.fs.service;
 
-import be.mathiasbosman.fs.domain.FileNode;
-import be.mathiasbosman.fs.domain.FileNodeImpl;
-import be.mathiasbosman.fs.domain.FileNodeType;
+import be.mathiasbosman.fs.domain.FileSystemNode;
+import be.mathiasbosman.fs.domain.FileSystemNodeImpl;
+import be.mathiasbosman.fs.domain.FileSystemNodeType;
 import com.google.common.base.Joiner;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -20,8 +20,19 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+/**
+ * Abstract implementation of {@link FileService}.
+ * <p>
+ * Also holding some static methods that can be used for path manipulation.
+ *
+ * @author mathiasbosman
+ * @since 0.0.1
+ */
 public abstract class AbstractFileService implements FileService {
 
+  /**
+   * The character used for separating the file extension (defaults to '.').
+   */
   public static final char extensionSeparator = '.';
 
   /**
@@ -107,19 +118,17 @@ public abstract class AbstractFileService implements FileService {
   }
 
   @Override
-  public void copy(FileNode source, String target) {
+  public void copy(FileSystemNode source, String target) {
     String targetPath = strip(target, File.separatorChar);
     if (!exists(source.getPath())) {
       throw new RuntimeException("File " + source.getPath() + " does not exist.");
     }
     if (source.isDirectory()) {
-      List<FileNode> list = list(source);
+      List<FileSystemNode> list = list(source);
       if (CollectionUtils.isEmpty(list)) {
         mkDirectories(targetPath);
       } else {
-        for (FileNode node : list) {
-          copy(node, combine(targetPath, node.getName()));
-        }
+        list.forEach(node -> copy(node, combine(targetPath, node.getName())));
       }
       return;
     }
@@ -136,7 +145,7 @@ public abstract class AbstractFileService implements FileService {
   }
 
   @Override
-  public byte[] getBytes(FileNode node) {
+  public byte[] getBytes(FileSystemNode node) {
     try (InputStream inputStream = open(node)) {
       return IOUtils.toByteArray(inputStream);
     } catch (IOException e) {
@@ -150,22 +159,22 @@ public abstract class AbstractFileService implements FileService {
   }
 
   @Override
-  public FileNode getFileNode(String... parts) {
+  public FileSystemNode getFileNode(String... parts) {
     return getForPath(combine(parts), true);
   }
 
   @Override
-  public FileNode getOptionalFileNode(String... parts) {
+  public FileSystemNode getOptionalFileNode(String... parts) {
     return getForPath(combine(parts), false);
   }
 
   @Override
-  public FileNode getParent(FileNode node) {
+  public FileSystemNode getParent(FileSystemNode node) {
     return StringUtils.isEmpty(node.getPath()) ? null : getFileNode(node.getParentPath());
   }
 
   @Override
-  public FileNode getParent(String... path) {
+  public FileSystemNode getParent(String... path) {
     return getForPath(getParentPath(path), false);
   }
 
@@ -176,8 +185,8 @@ public abstract class AbstractFileService implements FileService {
   }
 
   @Override
-  public List<FileNode> list(String... parts) {
-    FileNode node = getOptionalFileNode(parts);
+  public List<FileSystemNode> list(String... parts) {
+    FileSystemNode node = getOptionalFileNode(parts);
     return node != null ? list(node) : Collections.emptyList();
   }
 
@@ -205,7 +214,7 @@ public abstract class AbstractFileService implements FileService {
   }
 
   @Override
-  public String read(FileNode node) {
+  public String read(FileSystemNode node) {
     try (InputStream inputStream = open(node)) {
       return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
     } catch (IOException e) {
@@ -226,9 +235,9 @@ public abstract class AbstractFileService implements FileService {
 
   protected abstract void mkDirectories(String path);
 
-  protected abstract void copyContent(FileNode source, String to);
+  protected abstract void copyContent(FileSystemNode source, String to);
 
-  protected abstract FileNodeType getFileNodeType(String path);
+  protected abstract FileSystemNodeType getFileNodeType(String path);
 
   protected abstract boolean isDirectory(String path);
 
@@ -236,27 +245,27 @@ public abstract class AbstractFileService implements FileService {
 
   protected abstract long getSize(String path);
 
-  private FileNode getForPath(String parts, boolean shouldExist) {
+  private FileSystemNode getForPath(String parts, boolean shouldExist) {
     if (StringUtils.isBlank(parts)) {
-      return new FileNodeImpl(null, "", true, 0);
+      return new FileSystemNodeImpl(null, "", true, 0);
     }
     String path = strip(parts, File.separatorChar);
-    FileNodeType fileNodeType = getFileNodeType(path);
-    if (FileNodeType.NONE_EXISTENT == fileNodeType) {
+    FileSystemNodeType fileSystemNodeType = getFileNodeType(path);
+    if (FileSystemNodeType.NONE_EXISTENT == fileSystemNodeType) {
       if (!shouldExist) {
         return null;
       }
       throw new IllegalArgumentException("Path does not exist on filesystem: " + path);
     }
-    boolean directory = FileNodeType.DIRECTORY == fileNodeType;
+    boolean directory = FileSystemNodeType.DIRECTORY == fileSystemNodeType;
     return createFileNode(path, directory, directory ? 0 : getSize(path));
   }
 
-  protected FileNode createFileNode(String path, boolean isDirectory, long size) {
+  protected FileSystemNode createFileNode(String path, boolean isDirectory, long size) {
     Pair<String, String> dirAndName = split(path);
     String parentDir = dirAndName.getLeft();
     String name = dirAndName.getRight();
-    return new FileNodeImpl(parentDir, name, isDirectory, size);
+    return new FileSystemNodeImpl(parentDir, name, isDirectory, size);
   }
 
   @Override
@@ -276,40 +285,38 @@ public abstract class AbstractFileService implements FileService {
   }
 
   @Override
-  public void delete(FileNode node) {
+  public void delete(FileSystemNode node) {
     delete(node, false);
   }
 
   @Override
   public void move(String from, String to) {
     copy(from, to);
-    final FileNode fromNode = getFileNode(from);
+    final FileSystemNode fromNode = getFileNode(from);
     delete(fromNode, fromNode.isDirectory());
   }
 
   @Override
-  public final long getSize(FileNode node) {
+  public final long getSize(FileSystemNode node) {
     if (node.isDirectory()) {
       throw new IllegalArgumentException("Size of directory not determined. " + node.getPath());
     }
     return getSize(node.getPath());
   }
 
-  public long countFiles(FileNode node) {
+  public long countFiles(FileSystemNode node) {
     return defaultFileCount(node);
   }
 
-  protected long defaultFileCount(FileNode node) {
+  protected long defaultFileCount(FileSystemNode node) {
     return list(node).stream().filter(fileNode -> !fileNode.isDirectory()).count();
   }
 
   @Override
-  public void walk(FileNode node, FileNodeVisitor visitor) {
+  public void walk(FileSystemNode node, FileNodeVisitor visitor) {
     if (node.isDirectory()) {
       visitor.pre(node);
-      for (FileNode child : list(node)) {
-        walk(child, visitor);
-      }
+      list(node).forEach(child -> walk(child, visitor));
       visitor.post(node);
     } else {
       visitor.on(node);
