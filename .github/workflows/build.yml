@@ -1,12 +1,6 @@
 name: Build and analyze
-on:
-  push:
-    branches:
-      - master
-  pull_request:
-    types: [ opened, synchronize, reopened ]
-  schedule:
-    - cron: '0 1 * * 6'
+on: [ push, pull_request ]
+
 jobs:
   build:
     name: Build and analyze 🧪
