@@ -1,4 +1,4 @@
-# File Services
+# 🗃️ File Services
 
 This package holds some simple interfaces to use certain file services.
 
@@ -41,15 +41,15 @@ private final FileService fileService = new S3FileSystem(s3, "bucketName");
 To create an Amazon S3 file system the provided factory can be used:
 
 ```java
-AmazonS3 s3 = AmazonS3Factory.builder()
-    .key("minio_key")
-    .secret("minio_secret")
-    .bucket("bucket_name")
-    .serviceEndpoint("minio_url")
-    .pathStyleAccessEnabled(true)
-    .createBucketIfMissing(true)
-    .build()
-    .toAmazonS3();
+AmazonS3 s3 = AmazonS3Factory.ToAmazonS3(
+    "endpointUrl",
+    Region.EU_London.toAWSRegion(),
+    "key",
+    "secret",
+    "bucketName",
+    true,
+    false
+);
 FileService fileService = new S3FileService(s3, "bucket_name");
 ```
 
