@@ -1,13 +1,15 @@
-name: Build
+name: Build and anlyze
 on:
   push:
     branches:
       - master
   pull_request:
     types: [ opened, synchronize, reopened ]
+  schedule:
+    - cron: '0 1 * * 6'
 jobs:
   build:
-    name: Build and anlyze 🧪
+    name: Build and analyze 🧪
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -30,16 +32,12 @@ jobs:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v1
       - name: Build and analyze
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=mathiasbosman_file-services
-
-      - name: List reports (testing) REMOVE THIS
-        shell: bash
-        run: |
-          for f in ./target/surefire-reports; do
-            echo running $f
-            bash $f
-          done
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v1
