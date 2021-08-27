@@ -1,6 +1,7 @@
 package be.mathiasbosman.fs.service.aws.s3;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import be.mathiasbosman.fs.AbstractContainerTest;
 import be.mathiasbosman.fs.domain.FileSystemNode;
@@ -14,6 +15,8 @@ import com.amazonaws.util.StringInputStream;
 import com.google.common.base.Charsets;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -141,6 +144,23 @@ class S3FileServiceTest extends AbstractContainerTest {
     fs.delete(fs.getFileNode("x"));
     assertNotExists(directoryPath);
     assertNotExists("x");
+  }
+
+  @Test
+  void getCreationTime() {
+    putObject("x", "-");
+    FileSystemNode node = getFs().getFileNode("x");
+    assertThatThrownBy(() -> getFs().getCreationTime(node, ZoneId.systemDefault()))
+        .isInstanceOf(UnsupportedOperationException.class);
+  }
+
+  @Test
+  void getLastModifiedTime() {
+    putObject("x", "-");
+    FileSystemNode fileNode = getFs().getFileNode("x");
+    LocalDateTime lastModifiedTimeFile = getFs()
+        .getLastModifiedTime(fileNode, ZoneId.systemDefault());
+    assertThat(lastModifiedTimeFile).isNotNull();
   }
 
   @Test

@@ -2,6 +2,8 @@ package be.mathiasbosman.fs.service;
 
 import be.mathiasbosman.fs.domain.FileSystemNode;
 import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -83,6 +85,16 @@ public interface FileService {
    */
   byte[] getBytes(String... parts);
 
+
+  /**
+   * Get the creation time.
+   *
+   * @param node   The node to check
+   * @param zoneId The zone id to convert to
+   * @return the timestamp of creation
+   */
+  LocalDateTime getCreationTime(FileSystemNode node, ZoneId zoneId);
+
   /**
    * Get the {@link FileSystemNode} on the given path. If not found an exception is thrown.
    *
@@ -90,6 +102,15 @@ public interface FileService {
    * @return The node found
    */
   FileSystemNode getFileNode(String... parts);
+
+  /**
+   * Get the last modified time.
+   *
+   * @param node   The node to check
+   * @param zoneId The zone id to convert to
+   * @return the timestamp of modification
+   */
+  LocalDateTime getLastModifiedTime(FileSystemNode node, ZoneId zoneId);
 
   /**
    * Get the Mime type of a given {@link FileSystemNode}.
@@ -244,7 +265,7 @@ public interface FileService {
   void saveText(String content, String... parts);
 
   /**
-   * Get a {@link Stream< FileSystemNode >} from a given {@link FileSystemNode}.
+   * Get a {@link Stream<FileSystemNode>} from a given {@link FileSystemNode}.
    *
    * @param root The {@link FileSystemNode} directory to stream
    * @return stream of the directory contents

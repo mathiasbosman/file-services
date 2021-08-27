@@ -22,7 +22,6 @@ import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * Abstract implementation of {@link FileService}.
- * <p>
  * Also holding some static methods that can be used for path manipulation.
  *
  * @author mathiasbosman
