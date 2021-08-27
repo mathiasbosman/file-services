@@ -8,6 +8,23 @@ Before you begin:
 - Have you read the [code of conduct](CODE_OF_CONDUCT.md)?
 - Check out the [existing issues](https://github.com/mathiasbosman/file-services/issues)
 
+### Development guidelines
+
+#### Java
+
+We currently use Java 11 to compile and build the project as defined in the
+parent [Maven pom](pom.xml).
+
+#### Code style
+
+The code style used
+is [the one defined by Google](https://google.github.io/styleguide/javaguide.html).
+
+#### Editor specific files
+
+In case you use an IDE that has not yet been used before, and it generates IDE specific files make
+sure to exclude this by adding them to the [.gitignore](.gitignore) file.
+
 ### Don't see your issue? Open one
 
 If you spot something new, open an issue using
@@ -37,11 +54,12 @@ Fork with [GitHub Codespaces](https://github.com/features/codespaces):
 
 ### Make your update:
 
-Make your changes to the file(s) you'd like to update.
+Make your changes to the file(s) you would like to update.
 
 ### Open a pull request
 
-When you're done making changes and you'd like to propose them for review create a pull request.
+When you're done making changes, and you would like to propose them for review create a pull
+request.
 
 ### Submit your PR & get it reviewed
 
@@ -56,7 +74,7 @@ When you're done making changes and you'd like to propose them for review create
 
 Congratulations!
 
-Once your PR is merged, you will be proudly listed as a contributor in
+Once your PR has been merged, you will be proudly listed as a contributor in
 the [contributor chart](https://github.com/mathiasbosman/file-services/graphs/contributors).
 
 ### Keep contributing as you use the File Services

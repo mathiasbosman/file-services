@@ -8,4 +8,4 @@
 
 ## Reporting a Vulnerability
 
-If a vulnerability is found please create an issue on GitHub.
+In case a vulnerability has been found please create an issue on GitHub.
