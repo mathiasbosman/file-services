@@ -139,11 +139,22 @@ class S3FileServiceTest extends AbstractContainerTest {
   @Test
   void delete() {
     FileService fs = getFs();
-    String directoryPath = "x/" + S3FileService.DIRECTORY_MARKER_OBJECT_NAME;
-    putObject(directoryPath, "-");
+    putObject("x", "-");
     fs.delete(fs.getFileNode("x"));
-    assertNotExists(directoryPath);
     assertNotExists("x");
+
+    putObject("x/y/a", "-");
+    putObject("x/z", "-");
+    fs.delete(fs.getFileNode("x"), true);
+    assertNotExists("x");
+    assertNotExists("x/y/a");
+
+    putDirectory("x");
+    putObject("x/a", "-");
+    FileSystemNode nodeToDelete = fs.getFileNode("x");
+    assertThatThrownBy(() -> fs.delete(nodeToDelete))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Directory not empty for deletion");
   }
 
   @Test
