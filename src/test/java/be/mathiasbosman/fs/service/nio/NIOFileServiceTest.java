@@ -86,7 +86,7 @@ class NIOFileServiceTest extends AbstractFileServiceTest {
     try (InputStream in = newInputStream(workdir.resolve(path))) {
       return IOUtils.toString(in, StandardCharsets.UTF_8);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new IllegalStateException(e);
     }
   }
 
@@ -176,7 +176,7 @@ class NIOFileServiceTest extends AbstractFileServiceTest {
       try (Reader reader = newBufferedReader(input, UTF_8)) {
         return IOUtils.toString(reader);
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new IllegalStateException(e);
       }
     }).collect(Collectors.toList());
     assertThat(contents).containsAll(asList(expected));
@@ -223,7 +223,7 @@ class NIOFileServiceTest extends AbstractFileServiceTest {
         walkFileTree(root, this);
         return helper;
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new IllegalStateException(e);
       }
     }
   }

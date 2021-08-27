@@ -93,6 +93,7 @@ public abstract class AbstractFileServiceTest {
     assertThat(file.getName()).isEqualTo("y");
     assertThat(file.getPath()).isEqualTo("x/y");
     assertThat(file.isDirectory()).isFalse();
+    assertThat(file.getSize()).isPositive();
     // test directory
     putDirectory("z");
     FileSystemNode directory = fs.getFileNode("z");
@@ -100,6 +101,7 @@ public abstract class AbstractFileServiceTest {
     assertThat(directory.getName()).isEqualTo("z");
     assertThat(directory.getPath()).isEqualTo("z");
     assertThat(directory.isDirectory()).isTrue();
+    assertThat(directory.getSize()).isZero();
   }
 
   @Test
@@ -153,7 +155,7 @@ public abstract class AbstractFileServiceTest {
       try {
         return IOUtils.toString(fs.open(fileNode), StandardCharsets.UTF_8);
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new IllegalStateException(e);
       }
     }).collect(Collectors.toList());
     assertThat(transform).containsExactly("John", "Doe");
@@ -243,11 +245,11 @@ public abstract class AbstractFileServiceTest {
     for (FileSystemNode file : fs.list()) {
       fs.walk(file, spy);
     }
-    assertThat(Arrays.asList("x/a", "x/b", "x/c/1", "y/e", "z")).isEqualTo(spy.visitedFiles);
-    assertThat(Arrays.asList("x", "x/c", "x/c/d", "y")).isEqualTo(spy.visitedDirectories);
-    assertThat(Arrays
+    assertThat(spy.visitedFiles).isEqualTo(Arrays.asList("x/a", "x/b", "x/c/1", "y/e", "z"));
+    assertThat(spy.visitedDirectories).isEqualTo(Arrays.asList("x", "x/c", "x/c/d", "y"));
+    assertThat(spy.visitationOrder).isEqualTo(Arrays
         .asList("> x", "x/a", "x/b", "> x/c", "x/c/1", "> x/c/d", "< x/c/d", "< x/c", "< x", "> y",
-            "y/e", "< y", "z")).isEqualTo(spy.visitationOrder);
+            "y/e", "< y", "z"));
   }
 
   private void assertLocationAndName(FileSystemNode node, String expectedParentPath,

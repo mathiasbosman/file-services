@@ -38,16 +38,16 @@ public class S3FileService extends AbstractFileService {
   public static final String CONTENT_ENCODING = "aws-chunked";
   public static final String CONTENT_TYPE = "application/octet-stream";
   public static final String DIRECTORY_MARKER_OBJECT_NAME = ".directory";
-  public static final String VALID_FILENAME_REGEX = "([0-9]|[A-Z]|[a-z]|[!\\-_.*'()])+";
+  public static final String VALID_FILENAME_REGEX = "([0-9A-Za-z!\\-_.*+'()])+";
 
   private final String bucketName;
-  private final String prefix;
+  private final String bucketPrefix;
   private final AmazonS3 s3;
 
-  public S3FileService(AmazonS3 s3, String bucketName, String prefix) {
+  public S3FileService(AmazonS3 s3, String bucketName, String bucketPrefix) {
     this.s3 = s3;
     this.bucketName = bucketName;
-    this.prefix = prefix;
+    this.bucketPrefix = bucketPrefix;
   }
 
   public S3FileService(AmazonS3 s3, String bucketName) {
@@ -94,7 +94,7 @@ public class S3FileService extends AbstractFileService {
     try {
       s3.deleteObject(bucketName, key);
     } catch (Exception e) {
-      throw new RuntimeException(
+      throw new IllegalStateException(
           "The S3 server threw an array deleting the object with key = " + key, e);
     }
   }
@@ -120,7 +120,7 @@ public class S3FileService extends AbstractFileService {
     try {
       return s3.getObject(bucketName, key).getObjectContent();
     } catch (Exception e) {
-      throw new RuntimeException("The S3 server threw an error opening " + key, e);
+      throw new IllegalStateException("The S3 server threw an error opening " + key, e);
     }
   }
 
@@ -146,8 +146,9 @@ public class S3FileService extends AbstractFileService {
     try {
       s3.copyObject(bucketName, sourceKey, bucketName, destinationKey);
     } catch (Exception e) {
-      throw new RuntimeException("The S3 server threw an error when copying from " + sourceKey +
-          " to " + destinationKey, e);
+      throw new IllegalStateException(
+          "The S3 server threw an error when copying from " + sourceKey +
+              " to " + destinationKey, e);
     }
   }
 
@@ -179,7 +180,7 @@ public class S3FileService extends AbstractFileService {
           null, null, 1);
       return CollectionUtils.isNotEmpty(s3.listObjects(objectList).getObjectSummaries());
     } catch (Exception e) {
-      throw new RuntimeException("The S3 server threw an error listing objects on " + path, e);
+      throw new IllegalStateException("The S3 server threw an error listing objects on " + path, e);
     }
   }
 
@@ -198,7 +199,8 @@ public class S3FileService extends AbstractFileService {
     try {
       s3.putObject(bucketName, key, is, metadata);
     } catch (Exception e) {
-      throw new RuntimeException("The S3 server threw an array for the object with key = " + key,
+      throw new IllegalStateException(
+          "The S3 server threw an array for the object with key = " + key,
           e);
     }
   }
@@ -254,18 +256,18 @@ public class S3FileService extends AbstractFileService {
   }
 
   private String getLocation(S3ObjectSummary s3ObjectSummary) {
-    return s3ObjectSummary.getKey().substring(prefix.length());
+    return s3ObjectSummary.getKey().substring(bucketPrefix.length());
   }
 
   private boolean isFile(String path) {
     try {
       return s3.doesObjectExist(bucketName, toObjectKey(path));
     } catch (Exception e) {
-      throw new RuntimeException("The S3 server threw an error accessing " + path, e);
+      throw new IllegalStateException("The S3 server threw an error accessing " + path, e);
     }
   }
 
   private String toObjectKey(String path) {
-    return combine(prefix, path);
+    return combine(bucketPrefix, path);
   }
 }

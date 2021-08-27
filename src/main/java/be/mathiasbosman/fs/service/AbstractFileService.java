@@ -33,7 +33,7 @@ public abstract class AbstractFileService implements FileService {
   /**
    * The character used for separating the file extension (defaults to '.').
    */
-  public static final char extensionSeparator = '.';
+  public static final char EXTENSION_SEPARATOR = '.';
 
   /**
    * Combine multiple strings to a path using the {@link File} separator. Paths are also stripped
@@ -77,8 +77,8 @@ public abstract class AbstractFileService implements FileService {
   public static String getExtension(String... parts) {
     String combined = combine(parts);
     return Optional.ofNullable(combined)
-        .filter(f -> f.contains(String.valueOf(extensionSeparator)))
-        .map(f -> f.substring(combined.lastIndexOf(extensionSeparator) + 1))
+        .filter(f -> f.contains(String.valueOf(EXTENSION_SEPARATOR)))
+        .map(f -> f.substring(combined.lastIndexOf(EXTENSION_SEPARATOR) + 1))
         .orElse(null);
   }
 
@@ -111,7 +111,10 @@ public abstract class AbstractFileService implements FileService {
    * @return the split string as tuple
    */
   public static Pair<String, String> split(String path) {
-    int i = path == null ? -1 : path.lastIndexOf(File.separator);
+    if (path == null) {
+      return Pair.of(null, null);
+    }
+    int i = path.lastIndexOf(File.separator);
     return 0 < i
         ? Pair.of(path.substring(0, i), path.substring(i + 1))
         : Pair.of((String) null, path);
@@ -121,7 +124,7 @@ public abstract class AbstractFileService implements FileService {
   public void copy(FileSystemNode source, String target) {
     String targetPath = strip(target, File.separatorChar);
     if (!exists(source.getPath())) {
-      throw new RuntimeException("File " + source.getPath() + " does not exist.");
+      throw new IllegalArgumentException("File " + source.getPath() + " does not exist.");
     }
     if (source.isDirectory()) {
       List<FileSystemNode> list = list(source);
@@ -149,7 +152,7 @@ public abstract class AbstractFileService implements FileService {
     try (InputStream inputStream = open(node)) {
       return IOUtils.toByteArray(inputStream);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new IllegalStateException(e);
     }
   }
 
@@ -218,7 +221,7 @@ public abstract class AbstractFileService implements FileService {
     try (InputStream inputStream = open(node)) {
       return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new IllegalStateException(e);
     }
   }
 

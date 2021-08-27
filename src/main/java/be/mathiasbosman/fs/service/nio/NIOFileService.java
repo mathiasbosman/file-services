@@ -43,13 +43,13 @@ public class NIOFileService extends AbstractFileService {
   /**
    * Invalid filename characters for a Windows system.
    */
-  public static final Character[] INVALID_WINDOWS_SPECIFIC_CHARS = {'"', '*', ':', '<', '>', '?',
+  protected static final Character[] INVALID_WINDOWS_SPECIFIC_CHARS = {'"', '*', ':', '<', '>', '?',
       '\\', '|', 0x7F};
 
   /**
    * Invalid filename characters for a Unix system.
    */
-  public static final Character[] INVALID_UNIX_SPECIFIC_CHARS = {'\000'};
+  protected static final Character[] INVALID_UNIX_SPECIFIC_CHARS = {'\000'};
 
   private final Path workDir;
   private final Function<Path, FileSystemNode> toFile = this::file;
@@ -108,7 +108,7 @@ public class NIOFileService extends AbstractFileService {
       reader.close();
       return Long.parseLong(line.trim());
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new IllegalStateException(e);
     }
   }
 
@@ -143,7 +143,7 @@ public class NIOFileService extends AbstractFileService {
     try {
       return Files.probeContentType(path);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new IllegalStateException(e);
     }
   }
 
@@ -172,8 +172,8 @@ public class NIOFileService extends AbstractFileService {
   public InputStream open(FileSystemNode node) {
     try {
       return Files.newInputStream(path(node.getPath()));
-    } catch (Exception e) {
-      throw new RuntimeException(e);
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
     }
   }
 
@@ -184,7 +184,7 @@ public class NIOFileService extends AbstractFileService {
     try (OutputStream out = Files.newOutputStream(path)) {
       IOUtils.copy(in, out);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new IllegalStateException(e);
     }
   }
 
@@ -194,7 +194,7 @@ public class NIOFileService extends AbstractFileService {
       Path path = path(root.getPath());
       return Files.walk(path).map(toFile);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new IllegalStateException(e);
     }
   }
 
@@ -221,7 +221,7 @@ public class NIOFileService extends AbstractFileService {
     try {
       return Files.size(path(pad));
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new IllegalStateException(e);
     }
   }
 
@@ -234,7 +234,7 @@ public class NIOFileService extends AbstractFileService {
     try {
       Files.createDirectories(path);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new IllegalStateException(e);
     }
   }
 
@@ -246,7 +246,7 @@ public class NIOFileService extends AbstractFileService {
     try {
       Files.delete(path(node));
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new IllegalStateException(e);
     }
   }
 
