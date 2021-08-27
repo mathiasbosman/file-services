@@ -159,8 +159,10 @@ public class S3FileService extends AbstractFileService {
 
   @Override
   protected FileSystemNodeType getFileNodeType(String path) {
-    return isFile(path) ? FileSystemNodeType.FILE
-        : isDirectory(path) ? FileSystemNodeType.DIRECTORY : FileSystemNodeType.NONE_EXISTENT;
+    if (isFile(path)) {
+      return FileSystemNodeType.FILE;
+    }
+    return isDirectory(path) ? FileSystemNodeType.DIRECTORY : FileSystemNodeType.NONE_EXISTENT;
   }
 
   @Override
