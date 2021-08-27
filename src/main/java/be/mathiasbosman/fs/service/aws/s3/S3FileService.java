@@ -11,6 +11,8 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -26,7 +28,6 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * An implementation of the {@link be.mathiasbosman.fs.service.FileService} for AmazonS3 file
  * systems.
- * <p>
  * A marker object name is used to mock directories.
  *
  * @author mathiasbosman
@@ -56,7 +57,7 @@ public class S3FileService extends AbstractFileService {
 
 
   /**
-   * Validates a given filename as object key
+   * Validates a given filename as object key.
    *
    * @param filename The filename to validate
    * @return result
@@ -100,8 +101,19 @@ public class S3FileService extends AbstractFileService {
   }
 
   @Override
+  public LocalDateTime getCreationTime(FileSystemNode node, ZoneId zoneId) {
+    throw new UnsupportedOperationException("Amazon S3 does not support creation times.");
+  }
+
+  @Override
   public String getMimeType(FileSystemNode node) {
     return getMetaData(node.getPath()).getContentType();
+  }
+
+  @Override
+  public LocalDateTime getLastModifiedTime(FileSystemNode node, ZoneId zoneId) {
+    ObjectMetadata metaData = getMetaData(node.getPath());
+    return LocalDateTime.ofInstant(metaData.getLastModified().toInstant(), zoneId);
   }
 
   @Override

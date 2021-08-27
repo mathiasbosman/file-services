@@ -26,6 +26,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -123,6 +125,25 @@ class NIOFileServiceTest extends AbstractFileServiceTest {
     getFs().copy(templatePath, targetPath);
     assertTemplatesCopied("template-x", "template-y");
     assertContentCopied("x", "y");
+  }
+
+  @Test
+  void getCreationTime() {
+    putObject("x", "-");
+    FileSystemNode fileNode = getFs().getFileNode("x");
+    assertThat(getFs().getCreationTime(fileNode, ZoneId.systemDefault()))
+        .isNotNull()
+        .isBefore(LocalDateTime.now());
+  }
+
+  @Test
+  void getLastModifiedTime() {
+    putObject("x", "-");
+    FileSystemNode fileNode = getFs().getFileNode("x");
+    LocalDateTime lastModifiedTime = getFs().getLastModifiedTime(fileNode, ZoneId.systemDefault());
+    assertThat(lastModifiedTime)
+        .isNotNull()
+        .isBefore(LocalDateTime.now());
   }
 
   @Test

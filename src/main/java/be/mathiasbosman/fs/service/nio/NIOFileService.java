@@ -18,6 +18,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -31,9 +34,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 
 /**
- * An implementation of the {@link be.mathiasbosman.fs.service.FileService} for NIO file systems.
- * <p>
- * It holds some static arrays containing invalid filename characters for Windows and Unix systems.
+ * An implementation of the {@link be.mathiasbosman.fs.service.FileService} for NIO file systems. It
+ * holds some static arrays containing invalid filename characters for Windows and Unix systems.
  *
  * @author mathiasbosman
  * @since 0.0.1
@@ -138,6 +140,14 @@ public class NIOFileService extends AbstractFileService {
   }
 
   @Override
+  public LocalDateTime getCreationTime(FileSystemNode node, ZoneId zoneId) {
+    Path path = path(node.getPath());
+    BasicFileAttributes attributes = getAttributes(path);
+    FileTime fileTime = attributes.creationTime();
+    return LocalDateTime.ofInstant(fileTime.toInstant(), zoneId);
+  }
+
+  @Override
   public String getMimeType(FileSystemNode node) {
     Path path = path(node.getPath());
     try {
@@ -145,6 +155,14 @@ public class NIOFileService extends AbstractFileService {
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  @Override
+  public LocalDateTime getLastModifiedTime(FileSystemNode node, ZoneId zoneId) {
+    Path path = path(node.getPath());
+    BasicFileAttributes attributes = getAttributes(path);
+    FileTime fileTime = attributes.lastModifiedTime();
+    return LocalDateTime.ofInstant(fileTime.toInstant(), zoneId);
   }
 
   @Override
@@ -253,6 +271,14 @@ public class NIOFileService extends AbstractFileService {
   private FileSystemNode file(Path path) {
     String subPath = path.toString().substring(workDir.toString().length());
     return getFileNode(strip(subPath, File.pathSeparatorChar));
+  }
+
+  private BasicFileAttributes getAttributes(Path path) {
+    try {
+      return Files.readAttributes(path, BasicFileAttributes.class);
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
   private Path path(String location) {
