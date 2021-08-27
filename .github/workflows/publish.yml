@@ -83,6 +83,6 @@ jobs:
         run: |
           git config --global user.name 'githubaction[bot]'
           git config --global user.email '$ACTION_ACTOR_EMAIL'
-          git pull --no-rebase
+          git pull origin master --no-rebase
           git commit -am "[GitHub action] prepare for next development iteration"
           git push origin HEAD:master
