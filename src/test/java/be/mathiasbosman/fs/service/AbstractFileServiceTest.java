@@ -93,6 +93,7 @@ public abstract class AbstractFileServiceTest {
     assertThat(file.getName()).isEqualTo("y");
     assertThat(file.getPath()).isEqualTo("x/y");
     assertThat(file.isDirectory()).isFalse();
+    assertThat(file.getSize()).isPositive();
     // test directory
     putDirectory("z");
     FileSystemNode directory = fs.getFileNode("z");
@@ -100,6 +101,7 @@ public abstract class AbstractFileServiceTest {
     assertThat(directory.getName()).isEqualTo("z");
     assertThat(directory.getPath()).isEqualTo("z");
     assertThat(directory.isDirectory()).isTrue();
+    assertThat(directory.getSize()).isZero();
   }
 
   @Test

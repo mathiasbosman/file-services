@@ -10,7 +10,7 @@ import lombok.experimental.UtilityClass;
 
 /**
  * Factory method for {@link AmazonS3} using the {@link AmazonS3ClientBuilder#standard()} by
- * default. The client builder can be overriden if need bee.
+ * default. The client builder can be overridden if need bee.
  *
  * @author mathiasbosman
  * @see AmazonS3
