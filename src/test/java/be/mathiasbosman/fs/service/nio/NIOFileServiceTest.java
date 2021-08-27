@@ -144,10 +144,6 @@ class NIOFileServiceTest extends AbstractFileServiceTest {
     assertThat(lastModifiedTime)
         .isNotNull()
         .isBefore(LocalDateTime.now());
-    putObject("x", "--");
-    assertThat(getFs().getLastModifiedTime(fileNode, ZoneId.systemDefault()))
-        .isNotNull()
-        .isNotEqualTo(lastModifiedTime);
   }
 
   @Test
