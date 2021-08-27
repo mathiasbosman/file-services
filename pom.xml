@@ -22,6 +22,7 @@
     <!-- sonar -->
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <sonar.organization>mathiasbosman</sonar.organization>
+    <sonar.junit.reportPaths>${build.directory}/surefire-reports</sonar.junit.reportPaths>
   </properties>
 
   <build>
@@ -29,10 +30,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <groupId>org.apache.maven.plugins</groupId>
       </plugin>
     </plugins>
   </build>
