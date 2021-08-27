@@ -27,7 +27,7 @@ import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
-public class S3FileServiceTest extends AbstractContainerTest {
+class S3FileServiceTest extends AbstractContainerTest {
 
   private static final String dockerComposeFile = "src/test/resources/docker/docker-compose.yml";
   private static final String dockerS3Service = "fs-test-minio";

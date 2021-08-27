@@ -1,9 +1,11 @@
-name: Test build
+name: Build
 
 on:
-  pull_request:
+  push:
     branches:
       - master
+  pull_request:
+    types: [ opened, synchronize, reopened ]
 
 jobs:
   analyze:

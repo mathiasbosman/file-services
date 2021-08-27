@@ -41,6 +41,7 @@ class AbstractFileServiceUnitTest {
 
   @Test
   void split() {
+    assertThat(AbstractFileService.split(null)).isEqualTo(Pair.of(null, null));
     assertThat(AbstractFileService.split("a")).isEqualTo(Pair.of(null, "a"));
     assertThat(AbstractFileService.split("a/b")).isEqualTo(Pair.of("a", "b"));
     assertThat(AbstractFileService.split("a/b/c")).isEqualTo(Pair.of("a/b", "c"));
