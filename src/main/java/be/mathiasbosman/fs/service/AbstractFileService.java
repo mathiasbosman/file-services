@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -17,6 +19,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -246,6 +249,39 @@ public abstract class AbstractFileService implements FileService {
   protected abstract boolean exists(String path);
 
   protected abstract long getSize(String path);
+
+
+  // optional methods
+  @Override
+  public LocalDateTime getCreationTime(FileSystemNode node, ZoneId zoneId) {
+    throw new NotImplementedException("getCreationTime() is not implemented.");
+  }
+
+  @Override
+  public LocalDateTime getLastModifiedTime(FileSystemNode node, ZoneId zoneId) {
+    throw new NotImplementedException("getLastModifiedTime() is not implemented.");
+  }
+
+  @Override
+  public String getMimeType(FileSystemNode node) {
+    throw new NotImplementedException("getMimeType is not implemented.");
+  }
+
+  // methods that should be overridden
+  @Override
+  public abstract InputStream open(FileSystemNode node);
+
+  @Override
+  public abstract boolean isValidFilename(String filename);
+
+  @Override
+  public abstract List<FileSystemNode> list(FileSystemNode root);
+
+  @Override
+  public abstract void save(InputStream is, String path, long size);
+
+  @Override
+  public abstract void delete(FileSystemNode node, boolean recursive);
 
   private FileSystemNode getForPath(String parts, boolean shouldExist) {
     if (StringUtils.isBlank(parts)) {
