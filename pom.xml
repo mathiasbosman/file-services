@@ -77,6 +77,18 @@
       <version>2.11.0</version>
     </dependency>
     <dependency>
+      <artifactId>lombok</artifactId>
+      <groupId>org.projectlombok</groupId>
+    </dependency>
+    <!-- file services -->
+    <dependency>
+      <artifactId>aws-java-sdk-s3</artifactId>
+      <groupId>com.amazonaws</groupId>
+      <version>1.12.56</version>
+    </dependency>
+
+    <!-- testing -->
+    <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers</artifactId>
       <version>1.16.0</version>
@@ -88,21 +100,10 @@
       <version>1.2</version>
       <scope>test</scope>
     </dependency>
-
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-s3</artifactId>
-      <version>1.12.56</version>
-    </dependency>
-    <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
     </dependency>
   </dependencies>
 
