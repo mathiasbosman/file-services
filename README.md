@@ -1,5 +1,4 @@
 [![Build and analyze](https://github.com/mathiasbosman/file-services/actions/workflows/build.yml/badge.svg)](https://github.com/mathiasbosman/file-services/actions/workflows/build.yml)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=mathiasbosman_file-services&metric=alert_status)](https://sonarcloud.io/dashboard?id=mathiasbosman_file-services)
 # 🗃️ File Services
 
 This package holds some simple interfaces to use certain file services.
