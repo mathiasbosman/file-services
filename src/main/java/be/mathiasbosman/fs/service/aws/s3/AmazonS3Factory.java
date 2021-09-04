@@ -1,5 +1,6 @@
 package be.mathiasbosman.fs.service.aws.s3;
 
+import be.mathiasbosman.fs.config.Generated;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
@@ -17,6 +18,7 @@ import lombok.experimental.UtilityClass;
  * @see AmazonS3ClientBuilder
  * @since 0.0.1
  */
+@Generated
 @UtilityClass
 public class AmazonS3Factory {
 
