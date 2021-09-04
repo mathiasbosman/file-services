@@ -27,13 +27,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 @Slf4j
-class NIOFileServiceTest extends AbstractFileServiceTest {
+class NioFileServiceTest extends AbstractFileServiceTest {
 
   private final FileSystem fileSystem = FileSystems.getDefault();
   private final Path workdir = fileSystem.getPath("/tmp/" + System.identityHashCode(this) + "/");
 
-  public NIOFileServiceTest() {
-    setFs(new NIOFileService(fileSystem, workdir.toString()));
+  public NioFileServiceTest() {
+    setFs(new NioFileService(fileSystem, workdir.toString()));
   }
 
   @BeforeEach

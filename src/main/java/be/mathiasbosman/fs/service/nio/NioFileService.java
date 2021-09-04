@@ -39,16 +39,16 @@ import org.apache.commons.lang3.SystemUtils;
  * @author mathiasbosman
  * @since 0.0.1
  */
-public class NIOFileService extends AbstractFileService {
+public class NioFileService extends AbstractFileService {
 
   private final Path workDir;
   private final Function<Path, FileSystemNode> toFile = this::file;
 
-  public NIOFileService(FileSystem fs, String prefix) {
+  public NioFileService(FileSystem fs, String prefix) {
     workDir = fs.getPath(prefix);
   }
 
-  public NIOFileService(String prefix) {
+  public NioFileService(String prefix) {
     this(FileSystems.getDefault(), prefix);
   }
 
