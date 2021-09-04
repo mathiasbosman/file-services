@@ -155,7 +155,7 @@ public class S3FileService extends AbstractFileService {
   }
 
   @Override
-  public void save(InputStream is, String path, long size) {
+  protected void save(InputStream is, String path, long size) {
     put(toObjectKey(path), is, toMetadata(size));
   }
 
