@@ -16,6 +16,9 @@ jobs:
         with:
           java-version: 11
           distribution: adopt
+      - uses: codecov/codecov-action@v2
+        with:
+          name: codecov ☂️
       - name: Cache Maven packages
         uses: actions/cache@v1
         with:
