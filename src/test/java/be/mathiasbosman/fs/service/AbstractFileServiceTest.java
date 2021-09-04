@@ -66,6 +66,14 @@ public abstract class AbstractFileServiceTest {
     fs.copy(fs.getFileNode(getRemotePath("dir")), getRemotePath("copy"));
     assertThat(fs.exists(getRemotePath("copy/more.txt"))).isTrue();
     assertThat(fs.read(getRemotePath("copy/file.txt"))).isEqualTo("information");
+    assertThatThrownBy(
+        () -> fs.copy(fs.getFileNode(getRemotePath("mock.txt")), getRemotePath("target")))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("mock.txt")
+        .hasMessageContaining("does not exist");
+    fs.mkDirectories(getRemotePath("sourceDir"));
+    fs.copy(getRemotePath("sourceDir"), getRemotePath("targetDir"));
+    fs.copy(fs.getFileNode(getRemotePath("dir")), getRemotePath("copy"));
   }
 
   @Test
@@ -118,6 +126,13 @@ public abstract class AbstractFileServiceTest {
   }
 
   @Test
+  void getOptionalFileNode() {
+    putObject("x/y", "-");
+    assertThat(getFs().getOptionalFileNode(getRemotePath("x/y"))).isNotNull();
+    assertThat(getFs().getOptionalFileNode(getRemotePath("x/z"))).isNull();
+  }
+
+  @Test
   void getMimeType() {
     putImageObject("a.jpeg");
     putImageObject("x/a.jpg");
@@ -143,15 +158,21 @@ public abstract class AbstractFileServiceTest {
   void getSize() {
     putObject("x/a", "John");
     assertThat(fs.getSize(fs.getFileNode(getRemotePath("x/a")))).isEqualTo(4);
+    putDirectory("dir");
+    assertThatThrownBy(() -> fs.getSize(fs.getFileNode(getRemotePath("dir"))))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Size of directory not determined.");
   }
 
   @Test
   void isDirectory() {
     assertThat(fs.isDirectory(getRemotePath("-"))).isFalse();
-    putObject("x/.directory", "");
+    putDirectory("x/.directory");
     assertThat(fs.getFileNode(getRemotePath("x")).isDirectory()).isTrue();
     assertThat(fs.getFileNode(getRemotePath("/x")).isDirectory()).isTrue();
     assertThat(fs.getFileNode(getRemotePath("x/")).isDirectory()).isTrue();
+    putObject("x/.directory/y", "-");
+    assertThat(fs.getFileNode(getRemotePath("x/.directory/y")).isDirectory()).isFalse();
   }
 
   @Test
@@ -185,6 +206,10 @@ public abstract class AbstractFileServiceTest {
         getRemotePath("x/c/1"), getRemotePath("x/c/d"));
     putDirectory("z");
     assertThat(fs.list(getRemotePath("z"))).isEmpty();
+    assertThat(fs.list(getRemotePath("invalid"))).isEmpty();
+    assertThatThrownBy(() -> fs.list(getRemotePath("x/c/1")))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Cannot list contents of a file node");
   }
 
   @Test

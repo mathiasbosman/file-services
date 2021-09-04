@@ -1,6 +1,7 @@
 # 🗃️ File Services
 
 [![Build and analyze](https://github.com/mathiasbosman/file-services/actions/workflows/build.yml/badge.svg)](https://github.com/mathiasbosman/file-services/actions/workflows/build.yml)
+[![codecov](https://codecov.io/gh/mathiasbosman/file-services/branch/master/graph/badge.svg?token=DFI7YQADNQ)](https://codecov.io/gh/mathiasbosman/file-services)
 
 This package holds some simple interfaces to use certain file services.
 

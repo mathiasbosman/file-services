@@ -79,7 +79,7 @@ public class NioFileService extends AbstractFileService {
   @Override
   public void delete(FileSystemNode node, boolean recursive) {
     if (!recursive) {
-      if (node.isDirectory() && countFiles(node) > 1) {
+      if (node.isDirectory() && countFiles(node) > 0) {
         throw new IllegalStateException("Directory is not empty for deletion");
       }
       deleteNode(node);

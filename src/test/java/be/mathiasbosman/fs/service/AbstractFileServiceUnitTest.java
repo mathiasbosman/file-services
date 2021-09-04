@@ -1,6 +1,7 @@
 package be.mathiasbosman.fs.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
@@ -8,7 +9,15 @@ import org.junit.jupiter.api.Test;
 class AbstractFileServiceUnitTest {
 
   @Test
+  void checkPath() {
+    String[] nullString = new String[0];
+    assertThatThrownBy(() -> AbstractFileService.checkPath(nullString))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
   void combine() {
+    assertThat(AbstractFileService.combine("x", " y", " ", "z")).isEqualTo("x/y/z");
     assertThat(AbstractFileService.combine("x", "y", "z")).isEqualTo("x/y/z");
     assertThat(AbstractFileService.combine("x/y", "/z")).isEqualTo("x/y/z");
     assertThat(AbstractFileService.combine(false, "x/y", "/z"))

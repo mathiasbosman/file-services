@@ -113,9 +113,6 @@ public class NextcloudFileService extends AbstractFileService {
 
   @Override
   public List<FileSystemNode> list(FileSystemNode root) {
-    if (!root.isDirectory()) {
-      throw new IllegalArgumentException("Cannot list contents of a file node: " + root);
-    }
     return streamDirectory(root).collect(Collectors.toList());
   }
 
@@ -151,11 +148,7 @@ public class NextcloudFileService extends AbstractFileService {
   }
 
   @Override
-  // if root = x/c @ file = c
   public Stream<FileSystemNode> streamDirectory(FileSystemNode root) {
-    if (!root.isDirectory()) {
-      throw new IllegalArgumentException("Cannot list contents of a file node: " + root);
-    }
     String dirName = split(root.getPath()).getRight();
     String rootPath = root.getPath();
     log.debug("Listing directory content of {}", rootPath);

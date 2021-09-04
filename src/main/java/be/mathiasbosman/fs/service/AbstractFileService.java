@@ -42,9 +42,6 @@ public abstract class AbstractFileService implements FileService {
    * @return The combined path {@link String}
    */
   public static String combine(String... parts) {
-    if (parts == null) {
-      return null;
-    }
 
     return Joiner.on(File.separatorChar).skipNulls().join(
         Arrays.stream(parts).map(input -> {
@@ -188,10 +185,10 @@ public abstract class AbstractFileService implements FileService {
 
   protected abstract void mkDirectories(String path);
 
-  @Override
-  public List<FileSystemNode> list(String... parts) {
-    FileSystemNode node = getOptionalFileNode(parts);
-    return node != null ? list(node) : Collections.emptyList();
+  static void checkPath(String[] parts) {
+    if (parts == null || parts.length == 0) {
+      throw new IllegalArgumentException("Operation only possible with path in second argument.");
+    }
   }
 
   @Override
@@ -340,9 +337,15 @@ public abstract class AbstractFileService implements FileService {
     return createFileNode(path, directory, directory ? 0 : getSize(path));
   }
 
-  private void checkPath(String[] parts) {
-    if (parts == null || parts.length == 0) {
-      throw new IllegalArgumentException("Operation only possible with path in second argument.");
+  @Override
+  public List<FileSystemNode> list(String... parts) {
+    FileSystemNode node = getOptionalFileNode(parts);
+    if (node == null) {
+      return Collections.emptyList();
     }
+    if (!node.isDirectory()) {
+      throw new IllegalArgumentException("Cannot list contents of a file node: " + node);
+    }
+    return list(node);
   }
 }
