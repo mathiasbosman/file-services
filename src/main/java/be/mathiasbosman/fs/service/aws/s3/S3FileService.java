@@ -20,8 +20,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -33,12 +33,12 @@ import org.apache.commons.lang3.StringUtils;
  * @see AmazonS3
  * @since 0.0.1
  */
+@Slf4j
 public class S3FileService extends AbstractFileService {
 
   public static final String CONTENT_ENCODING = "aws-chunked";
   public static final String CONTENT_TYPE = "application/octet-stream";
   public static final String DIRECTORY_MARKER_OBJECT_NAME = ".directory";
-  public static final String VALID_FILENAME_REGEX = "([0-9A-Za-z!\\-_.*+'()])+";
 
   private final String bucketName;
   private final String bucketPrefix;
@@ -59,17 +59,6 @@ public class S3FileService extends AbstractFileService {
 
   public S3FileService(AmazonS3 s3, String bucketName) {
     this(s3, bucketName, "");
-  }
-
-
-  /**
-   * Validates a given filename as object key.
-   *
-   * @param filename The filename to validate
-   * @return result
-   */
-  public static boolean isValidObjectKey(String filename) {
-    return Pattern.matches(VALID_FILENAME_REGEX, filename);
   }
 
   @Override
@@ -99,6 +88,7 @@ public class S3FileService extends AbstractFileService {
 
   private void delete(String key) {
     try {
+      log.debug("Deleting {}/{}", bucketName, key);
       s3.deleteObject(bucketName, key);
     } catch (Exception e) {
       throw new IllegalStateException(
@@ -120,11 +110,6 @@ public class S3FileService extends AbstractFileService {
   public LocalDateTime getLastModifiedTime(FileSystemNode node, ZoneId zoneId) {
     ObjectMetadata metaData = getMetaData(node.getPath());
     return LocalDateTime.ofInstant(metaData.getLastModified().toInstant(), zoneId);
-  }
-
-  @Override
-  public boolean isValidFilename(String filename) {
-    return isValidObjectKey(filename);
   }
 
   @Override
@@ -162,6 +147,7 @@ public class S3FileService extends AbstractFileService {
   public InputStream open(FileSystemNode node) {
     String key = toObjectKey(node.getPath());
     try {
+      log.debug("Getting {}/{}", bucketName, key);
       return s3.getObject(bucketName, key).getObjectContent();
     } catch (Exception e) {
       throw new IllegalStateException("The S3 server threw an error opening " + key, e);
@@ -188,6 +174,7 @@ public class S3FileService extends AbstractFileService {
     String destinationKey = toObjectKey(to);
 
     try {
+      log.debug("Copying object {}/{} to {}/{}", bucketName, source, bucketName, destinationKey);
       s3.copyObject(bucketName, sourceKey, bucketName, destinationKey);
     } catch (Exception e) {
       throw new IllegalStateException(
@@ -243,6 +230,7 @@ public class S3FileService extends AbstractFileService {
 
   void put(String key, InputStream is, ObjectMetadata metadata) {
     try {
+      log.debug("Putting object {}/{}", bucketName, key);
       s3.putObject(bucketName, key, is, metadata);
     } catch (Exception e) {
       throw new IllegalStateException(

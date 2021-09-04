@@ -21,7 +21,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -42,17 +41,6 @@ import org.apache.commons.lang3.SystemUtils;
  */
 public class NioFileService extends AbstractFileService {
 
-  /**
-   * Invalid filename characters for a Windows system.
-   */
-  protected static final Character[] INVALID_WINDOWS_SPECIFIC_CHARS = {'"', '*', ':', '<', '>', '?',
-      '\\', '|', 0x7F};
-
-  /**
-   * Invalid filename characters for a Unix system.
-   */
-  protected static final Character[] INVALID_UNIX_SPECIFIC_CHARS = {'\000'};
-
   private final Path workDir;
   private final Function<Path, FileSystemNode> toFile = this::file;
 
@@ -62,32 +50,6 @@ public class NioFileService extends AbstractFileService {
 
   public NioFileService(String prefix) {
     this(FileSystems.getDefault(), prefix);
-  }
-
-  /**
-   * This extra static method of {@link be.mathiasbosman.fs.service.FileService#isValidFilename}
-   * takes an extra parameter so none-unix systems can be used (such as Windows).
-   *
-   * @param filename     The filename to check
-   * @param isUnixSystem Whether or not a Unix system is used
-   * @return result
-   * @see SystemUtils#IS_OS_UNIX
-   * @see SystemUtils#IS_OS_MAC
-   * @see SystemUtils#IS_OS_WINDOWS
-   */
-  public static boolean isValidFilename(String filename, boolean isUnixSystem) {
-    if (StringUtils.isEmpty(filename) || filename.length() > 255) {
-      return false;
-    }
-    return Arrays
-        .stream(isUnixSystem ? INVALID_UNIX_SPECIFIC_CHARS : INVALID_WINDOWS_SPECIFIC_CHARS)
-        .noneMatch(ch -> filename.contains(ch.toString()));
-  }
-
-  @Override
-  public boolean isValidFilename(String filename) {
-    return isValidFilename(filename,
-        SystemUtils.IS_OS_UNIX || SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC);
   }
 
   @Override
@@ -117,6 +79,9 @@ public class NioFileService extends AbstractFileService {
   @Override
   public void delete(FileSystemNode node, boolean recursive) {
     if (!recursive) {
+      if (node.isDirectory() && countFiles(node) > 1) {
+        throw new IllegalStateException("Directory is not empty for deletion");
+      }
       deleteNode(node);
       return;
     }

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import be.mathiasbosman.fs.AbstractContainerTest;
+import be.mathiasbosman.fs.ContainerServiceDto;
 import be.mathiasbosman.fs.domain.FileSystemNode;
 import be.mathiasbosman.fs.service.FileService;
 import com.amazonaws.services.s3.AmazonS3;
@@ -11,26 +12,23 @@ import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.Region;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.amazonaws.util.StringInputStream;
 import com.google.common.base.Charsets;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.DockerComposeContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
 
+@Slf4j
 class S3FileServiceTest extends AbstractContainerTest {
 
-  private static final String dockerComposeFile = "src/test/resources/docker/docker-compose.yml";
+  private static final String dockerComposeFile = "src/test/resources/docker/docker-compose-minio.yml";
   private static final String dockerS3Service = "fs-test-minio";
   private static final int dockerS3Port = 9000;
 
@@ -38,26 +36,20 @@ class S3FileServiceTest extends AbstractContainerTest {
   private final String bucketName = "test";
 
   S3FileServiceTest() {
+    super(dockerComposeFile, new ContainerServiceDto(dockerS3Service, dockerS3Port));
     // see docker compose
-    s3 = AmazonS3Factory.toAmazonS3("http://localhost:" + dockerS3Port,
+    String endpoint = "http://localhost:" + dockerS3Port;
+    log.debug("Creating s3 connection on {}", endpoint);
+    s3 = AmazonS3Factory.toAmazonS3(endpoint,
         Region.EU_London.toAWSRegion(), "minio_key", "minio_secret", bucketName,
         true, false);
-  }
-
-  @Override
-  public DockerComposeContainer<?> createContainer() {
-    return new DockerComposeContainer<>(
-        new File(dockerComposeFile))
-        .withExposedService(dockerS3Service, dockerS3Port, Wait.forListeningPort())
-        .withLocalCompose(true)
-        .withPull(false);
   }
 
   @BeforeEach
   void setup() {
     cleanUp();
     s3.createBucket(bucketName);
-    setFs(new S3FileService(this.s3, bucketName));
+    setFs(new S3FileService(s3, bucketName));
   }
 
   @AfterEach
@@ -92,6 +84,7 @@ class S3FileServiceTest extends AbstractContainerTest {
     metadata.setContentEncoding("aws-chunked");
     metadata.setContentType(contentType);
     metadata.setContentLength(bytes.length);
+    log.debug("Putting remote object to {}", path);
     s3.putObject(bucketName, path, new ByteArrayInputStream(bytes), metadata);
   }
 
@@ -125,34 +118,17 @@ class S3FileServiceTest extends AbstractContainerTest {
     putObject(path, "-", "image/jpeg");
   }
 
-
-  @Test
-  void copy() throws Exception {
-    FileService fs = getFs();
-    fs.save(new StringInputStream("information"), "dir/file.txt");
-    fs.save(new StringInputStream("more data"), "dir/more.txt");
-    fs.copy(fs.getFileNode("dir"), "copy");
-    assertThat(fs.exists("copy/more.txt")).isTrue();
-    assertThat(fs.read("copy/file.txt")).isEqualTo("information");
+  @Override
+  protected String getRemotePath(String path) {
+    return path;
   }
 
   @Test
   void delete() {
-    FileService fs = getFs();
-    putObject("x", "-");
-    fs.delete(fs.getFileNode("x"));
-    assertNotExists("x");
-
-    putObject("x/y/a", "-");
-    putObject("x/z", "-");
-    fs.delete(fs.getFileNode("x"), true);
-    assertNotExists("x");
-    assertNotExists("x/y/a");
-
     putDirectory("x");
     putObject("x/a", "-");
-    FileSystemNode nodeToDelete = fs.getFileNode("x");
-    assertThatThrownBy(() -> fs.delete(nodeToDelete))
+    FileSystemNode nodeToDelete = getFs().getFileNode("x");
+    assertThatThrownBy(() -> getFs().delete(nodeToDelete))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Directory not empty for deletion");
   }
@@ -176,22 +152,15 @@ class S3FileServiceTest extends AbstractContainerTest {
     assertThat(lastModifiedTimeFile).isNotNull();
   }
 
-  @Test
-  void isValidFilename() {
-    assertThat(getFs().isValidFilename("valid-file_name.tst")).isTrue();
-    assertThat(getFs().isValidFilename("validFilename")).isTrue();
-    assertThat(S3FileService.isValidObjectKey("validFile01.tst")).isTrue();
-  }
 
   @Test
-  void stream() {
+  void streamDirectory() {
     putObject("x/a", "-");
     putObject("x/z", "-");
     putObject("x/b/a", "-");
-    Stream<FileSystemNode> stream = getFs().streamDirectory(getFs().getFileNode("x"));
-    assertThat(stream).isNotNull();
-    List<FileSystemNode> collected = stream.collect(Collectors.toList());
-    assertThat(collected).hasSize(3);
+    List<FileSystemNode> files = getFs().streamDirectory(getFs().getFileNode("x"))
+        .collect(Collectors.toList());
+    assertThat(files).hasSize(3);
   }
 
 }

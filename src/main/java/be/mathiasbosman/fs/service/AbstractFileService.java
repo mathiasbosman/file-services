@@ -10,8 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -19,7 +17,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -240,31 +237,14 @@ public abstract class AbstractFileService implements FileService {
     }
   }
 
-
   @Override
   public String read(String... parts) {
     return read(getFileNode(parts));
   }
 
-  // optional methods
-  @Override
-  public LocalDateTime getCreationTime(FileSystemNode node, ZoneId zoneId) {
-    throw new NotImplementedException("getCreationTime() is not implemented.");
-  }
-
-  @Override
-  public LocalDateTime getLastModifiedTime(FileSystemNode node, ZoneId zoneId) {
-    throw new NotImplementedException("getLastModifiedTime() is not implemented.");
-  }
-
-  @Override
-  public String getMimeType(FileSystemNode node) {
-    throw new NotImplementedException("getMimeType is not implemented.");
-  }
-
   @Override
   public boolean isDirectory(String... parts) {
-    return isDirectory(combine(parts));
+    return exists(parts) && isDirectory(combine(parts));
   }
 
   protected abstract boolean isDirectory(String path);
@@ -317,9 +297,6 @@ public abstract class AbstractFileService implements FileService {
       visitor.on(node);
     }
   }
-
-  @Override
-  public abstract boolean isValidFilename(String filename);
 
   protected abstract void copyContent(FileSystemNode source, String to);
 
