@@ -225,6 +225,10 @@ public class NioFileService extends AbstractFileService {
     return path(node.getPath());
   }
 
+  private Path path(String location) {
+    return StringUtils.isEmpty(location) ? workDir : workDir.resolve(location);
+  }
+
   private void deleteNode(FileSystemNode node) {
     try {
       Files.delete(path(node));
@@ -244,10 +248,6 @@ public class NioFileService extends AbstractFileService {
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
-  }
-
-  private Path path(String location) {
-    return StringUtils.isEmpty(location) ? workDir : workDir.resolve(location);
   }
 
   private static class FileAccumulator extends SimpleFileVisitor<Path> {
