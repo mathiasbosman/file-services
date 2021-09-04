@@ -38,8 +38,8 @@ jobs:
           mvn versions:set -DremoveSnapshot versions:commit
       - name: Commit version
         run: |
-          git config user.name 'githubaction[bot]'
-          git config user.email '$ACTION_ACTOR_EMAIL'
+          git config user.name "githubaction[bot]"
+          git config user.email "$ACTION_ACTOR_EMAIL"
           git commit -am "[GitHub action] prepare for release"
           git push origin HEAD:master
 
@@ -78,8 +78,8 @@ jobs:
           token: ${{ secrets.ACTION_PAT }}
       - name: Pull new version
         run: |
-          git config user.name 'githubaction[bot]'
-          git config user.email '$ACTION_ACTOR_EMAIL'
+          git config user.name "githubaction[bot]"
+          git config user.email "$ACTION_ACTOR_EMAIL"
           git pull origin master --no-rebase
       - name: Set snapshot version
         run: |
