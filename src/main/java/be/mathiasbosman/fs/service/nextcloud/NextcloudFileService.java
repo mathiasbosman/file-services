@@ -22,6 +22,14 @@ import org.aarboard.nextcloud.api.webdav.ResourceProperties;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+/**
+ * An implementation of the {@link be.mathiasbosman.fs.service.FileService} for Nextcloud systems.
+ * The underlying system is Webdav
+ *
+ * @author mathiasbosman
+ * @see org.aarboard.nextcloud.api.webdav.AWebdavHandler
+ * @since 1.1.0
+ */
 @Slf4j
 public class NextcloudFileService extends AbstractFileService {
 

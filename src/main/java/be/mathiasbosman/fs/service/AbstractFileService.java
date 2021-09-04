@@ -195,6 +195,18 @@ public abstract class AbstractFileService implements FileService {
   public abstract List<FileSystemNode> list(FileSystemNode root);
 
   @Override
+  public List<FileSystemNode> list(String... parts) {
+    FileSystemNode node = getOptionalFileNode(parts);
+    if (node == null) {
+      return Collections.emptyList();
+    }
+    if (!node.isDirectory()) {
+      throw new IllegalArgumentException("Cannot list contents of a file node: " + node);
+    }
+    return list(node);
+  }
+
+  @Override
   public InputStream open(String... parts) {
     checkPath(parts);
     return open(getFileNode(parts));
@@ -337,15 +349,4 @@ public abstract class AbstractFileService implements FileService {
     return createFileNode(path, directory, directory ? 0 : getSize(path));
   }
 
-  @Override
-  public List<FileSystemNode> list(String... parts) {
-    FileSystemNode node = getOptionalFileNode(parts);
-    if (node == null) {
-      return Collections.emptyList();
-    }
-    if (!node.isDirectory()) {
-      throw new IllegalArgumentException("Cannot list contents of a file node: " + node);
-    }
-    return list(node);
-  }
 }
