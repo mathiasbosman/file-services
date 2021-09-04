@@ -93,6 +93,11 @@ class NioFileServiceTest extends AbstractFileServiceTest {
   }
 
   @Override
+  protected String getRemotePath(String path) {
+    return path;
+  }
+
+  @Override
   protected void putDirectory(String pad) {
     try {
       createDirectories(workdir.resolve(pad));
@@ -144,25 +149,6 @@ class NioFileServiceTest extends AbstractFileServiceTest {
     assertThat(lastModifiedTime)
         .isNotNull()
         .isBefore(LocalDateTime.now());
-  }
-
-  @Test
-  void isValidFilename() {
-    assertThat(getFs().isValidFilename("valid-file_name.tst")).isTrue();
-    assertThat(getFs().isValidFilename("valid/filename.tst")).isTrue();
-    assertThat(getFs().isValidFilename("validFilename")).isTrue();
-    assertThat(getFs().isValidFilename("")).isFalse();
-
-    for (Character invalidWindowsSpecificChar : NioFileService.INVALID_WINDOWS_SPECIFIC_CHARS) {
-      assertThat(NioFileService
-          .isValidFilename("invalid" + invalidWindowsSpecificChar + "filename.tst", false))
-          .isFalse();
-    }
-    for (Character invalidUnixSpecificChar : NioFileService.INVALID_UNIX_SPECIFIC_CHARS) {
-      assertThat(NioFileService
-          .isValidFilename("invalid" + invalidUnixSpecificChar + "filename.tst", true))
-          .isFalse();
-    }
   }
 
   @Test
