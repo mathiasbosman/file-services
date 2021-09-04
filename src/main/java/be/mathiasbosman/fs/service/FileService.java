@@ -115,10 +115,10 @@ public interface FileService {
   /**
    * Get the Mime type of a given {@link FileSystemNode}.
    *
-   * @param node The {@link FileSystemNode} to query
+   * @param fileSystemNode The {@link FileSystemNode} to query
    * @return The Mime type
    */
-  String getMimeType(FileSystemNode node);
+  String getMimeType(FileSystemNode fileSystemNode);
 
   /**
    * Get the {@link FileSystemNode} on the given path. If not found null is returned.
@@ -137,20 +137,20 @@ public interface FileService {
   FileSystemNode getParent(FileSystemNode node);
 
   /**
-   * Returns the size (content length) of the given {@link FileSystemNode}.
-   *
-   * @param node {@link FileSystemNode} to query
-   * @return The size of the content
-   */
-  long getSize(FileSystemNode node);
-
-  /**
    * Returns the parent {@link FileSystemNode} of a given path.
    *
    * @param path Path parts
    * @return The parent node or null if none found
    */
   FileSystemNode getParent(String... path);
+
+  /**
+   * Returns the size (content length) of the given {@link FileSystemNode}.
+   *
+   * @param node {@link FileSystemNode} to query
+   * @return The size of the content
+   */
+  long getSize(FileSystemNode node);
 
   /**
    * Checks a given path for being a directory.
@@ -257,7 +257,7 @@ public interface FileService {
   void saveText(String content, String... parts);
 
   /**
-   * Get a {@link Stream<FileSystemNode>} from a given {@link FileSystemNode}.
+   * Get a {@link Stream} from a given {@link FileSystemNode}.
    *
    * @param root The {@link FileSystemNode} directory to stream
    * @return stream of the directory contents
