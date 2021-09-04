@@ -72,7 +72,7 @@ public abstract class AbstractFileService implements FileService {
    */
   public static String getExtension(String... parts) {
     String combined = combine(parts);
-    return Optional.ofNullable(combined)
+    return Optional.of(combined)
         .filter(f -> f.contains(String.valueOf(EXTENSION_SEPARATOR)))
         .map(f -> f.substring(combined.lastIndexOf(EXTENSION_SEPARATOR) + 1))
         .orElse(null);
