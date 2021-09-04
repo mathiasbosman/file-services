@@ -27,8 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 
 /**
  * An implementation of the {@link be.mathiasbosman.fs.service.FileService} for AmazonS3 file
- * systems.
- * A marker object name is used to mock directories.
+ * systems. A marker object name is used to mock directories.
  *
  * @author mathiasbosman
  * @see AmazonS3
@@ -45,6 +44,13 @@ public class S3FileService extends AbstractFileService {
   private final String bucketPrefix;
   private final AmazonS3 s3;
 
+  /**
+   * Create the S3FileService.
+   *
+   * @param s3           The {@link AmazonS3} to use
+   * @param bucketName   Name of the bucket used
+   * @param bucketPrefix Prefix of the bucket (optional)
+   */
   public S3FileService(AmazonS3 s3, String bucketName, String bucketPrefix) {
     this.s3 = s3;
     this.bucketName = bucketName;
@@ -126,6 +132,32 @@ public class S3FileService extends AbstractFileService {
     return list(root, false);
   }
 
+  private List<FileSystemNode> list(FileSystemNode directory,
+      boolean includeHiddenDirectoryMarkers) {
+    List<FileSystemNode> result = new LinkedList<>();
+    boolean root = StringUtils.isEmpty(directory.getPath());
+    String prefix = root ? "" : directory.getPath() + File.separatorChar;
+    Iterable<S3ObjectSummary> objectListing = getObjectSummaries(directory.getPath());
+    Set<String> subDirs = new HashSet<>();
+    for (S3ObjectSummary objectSummary : objectListing) {
+      String location = getLocation(objectSummary);
+      String subPad = location.substring(prefix.length());
+      int firstSlash = subPad.indexOf(File.separatorChar);
+      if (firstSlash < 0) {
+        if (includeHiddenDirectoryMarkers || !DIRECTORY_MARKER_OBJECT_NAME.equals(subPad)) {
+          result.add(createFileNode(location, false, objectSummary.getSize()));
+        }
+      } else {
+        subDirs.add(prefix + subPad.substring(0, firstSlash));
+      }
+    }
+    for (String subDir : subDirs) {
+      result.add(createFileNode(subDir, true, 0));
+    }
+    result.sort(Comparator.comparing(FileSystemNode::getName));
+    return result;
+  }
+
   @Override
   public InputStream open(FileSystemNode node) {
     String key = toObjectKey(node.getPath());
@@ -159,8 +191,8 @@ public class S3FileService extends AbstractFileService {
       s3.copyObject(bucketName, sourceKey, bucketName, destinationKey);
     } catch (Exception e) {
       throw new IllegalStateException(
-          "The S3 server threw an error when copying from " + sourceKey +
-              " to " + destinationKey, e);
+          "The S3 server threw an error when copying from "
+              + sourceKey + " to " + destinationKey, e);
     }
   }
 
@@ -227,32 +259,6 @@ public class S3FileService extends AbstractFileService {
       metadata.setContentLength(size);
     }
     return metadata;
-  }
-
-  private List<FileSystemNode> list(FileSystemNode directory,
-      boolean includeHiddenDirectoryMarkers) {
-    List<FileSystemNode> result = new LinkedList<>();
-    boolean root = StringUtils.isEmpty(directory.getPath());
-    String prefix = root ? "" : directory.getPath() + File.separatorChar;
-    Iterable<S3ObjectSummary> objectListing = getObjectSummaries(directory.getPath());
-    Set<String> subDirs = new HashSet<>();
-    for (S3ObjectSummary objectSummary : objectListing) {
-      String location = getLocation(objectSummary);
-      String subPad = location.substring(prefix.length());
-      int firstSlash = subPad.indexOf(File.separatorChar);
-      if (firstSlash < 0) {
-        if (includeHiddenDirectoryMarkers || !DIRECTORY_MARKER_OBJECT_NAME.equals(subPad)) {
-          result.add(createFileNode(location, false, objectSummary.getSize()));
-        }
-      } else {
-        subDirs.add(prefix + subPad.substring(0, firstSlash));
-      }
-    }
-    for (String subDir : subDirs) {
-      result.add(createFileNode(subDir, true, 0));
-    }
-    result.sort(Comparator.comparing(FileSystemNode::getName));
-    return result;
   }
 
   private List<S3ObjectSummary> getObjectSummaries(String path) {

@@ -52,7 +52,7 @@ Fork with [GitHub Codespaces](https://github.com/features/codespaces):
   using [GitHub Codespaces](https://github.com/features/codespaces) without having to install and
   run the project locally.
 
-### Make your update:
+### Make your update
 
 Make your changes to the file(s) you would like to update.
 
@@ -70,7 +70,7 @@ request.
   our [git tutorial](https://lab.github.com/githubtraining/managing-merge-conflicts) on how to
   resolve merge conflicts and other issues.
 
-### Your PR is merged!
+### Your PR is merged
 
 Congratulations!
 

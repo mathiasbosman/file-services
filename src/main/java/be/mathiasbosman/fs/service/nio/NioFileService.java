@@ -40,7 +40,7 @@ import org.apache.commons.lang3.SystemUtils;
  * @author mathiasbosman
  * @since 0.0.1
  */
-public class NIOFileService extends AbstractFileService {
+public class NioFileService extends AbstractFileService {
 
   /**
    * Invalid filename characters for a Windows system.
@@ -56,16 +56,16 @@ public class NIOFileService extends AbstractFileService {
   private final Path workDir;
   private final Function<Path, FileSystemNode> toFile = this::file;
 
-  public NIOFileService(FileSystem fs, String prefix) {
+  public NioFileService(FileSystem fs, String prefix) {
     workDir = fs.getPath(prefix);
   }
 
-  public NIOFileService(String prefix) {
+  public NioFileService(String prefix) {
     this(FileSystems.getDefault(), prefix);
   }
 
   /**
-   * This extra static method of {@link be.mathiasbosman.fs.service.FileService#isValidFilename(String)}
+   * This extra static method of {@link be.mathiasbosman.fs.service.FileService#isValidFilename}
    * takes an extra parameter so none-unix systems can be used (such as Windows).
    *
    * @param filename     The filename to check
@@ -260,6 +260,10 @@ public class NIOFileService extends AbstractFileService {
     return path(node.getPath());
   }
 
+  private Path path(String location) {
+    return StringUtils.isEmpty(location) ? workDir : workDir.resolve(location);
+  }
+
   private void deleteNode(FileSystemNode node) {
     try {
       Files.delete(path(node));
@@ -279,10 +283,6 @@ public class NIOFileService extends AbstractFileService {
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
-  }
-
-  private Path path(String location) {
-    return StringUtils.isEmpty(location) ? workDir : workDir.resolve(location);
   }
 
   private static class FileAccumulator extends SimpleFileVisitor<Path> {

@@ -1,5 +1,6 @@
-[![Build and analyze](https://github.com/mathiasbosman/file-services/actions/workflows/build.yml/badge.svg)](https://github.com/mathiasbosman/file-services/actions/workflows/build.yml)
 # 🗃️ File Services
+
+[![Build and analyze](https://github.com/mathiasbosman/file-services/actions/workflows/build.yml/badge.svg)](https://github.com/mathiasbosman/file-services/actions/workflows/build.yml)
 
 This package holds some simple interfaces to use certain file services.
 
@@ -23,11 +24,11 @@ To initiate you can pass both the system and the root path. The system can be le
 case `FileSystems.getDefault()` will be used.
 
 ```java
-private final FileService fileService = new NIOFileService(nioSystem, "path/to/root");
+private final FileService fileService=new NIOFileService(nioSystem,"path/to/root");
 // or
-private final FileService fileService = new NIOFileService("path/to/root");
+private final FileService fileService=new NIOFileService("path/to/root");
 // which is the same as
-private final FileService fileService = new NIOFileService(FileSystems.getDefault(), "path/to/root");
+private final FileService fileService=new NIOFileService(FileSystems.getDefault(),"path/to/root");
 ```
 
 ### S3 file system
@@ -42,7 +43,7 @@ private final FileService fileService = new S3FileSystem(s3, "bucketName");
 To create an Amazon S3 file system the provided static factory method can be used:
 
 ```java
-AmazonS3 s3 = AmazonS3Factory.toAmazonS3(
+AmazonS3 s3=AmazonS3Factory.toAmazonS3(
     "endpointUrl",
     Region.EU_London.toAWSRegion(),
     "key",
@@ -50,8 +51,8 @@ AmazonS3 s3 = AmazonS3Factory.toAmazonS3(
     "bucketName",
     true,
     false
-);
-FileService fileService = new S3FileService(s3, "bucket_name");
+    );
+    FileService fileService=new S3FileService(s3,"bucket_name");
 ```
 
 ## Contributing

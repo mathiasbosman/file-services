@@ -41,15 +41,15 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class NIOFileServiceTest extends AbstractFileServiceTest {
+class NioFileServiceTest extends AbstractFileServiceTest {
 
-  private final FileSystem fileSystem = FileSystems.getDefault();
-  private final Path workdir = fileSystem.getPath("/tmp/" + System.identityHashCode(this) + "/");
   private static final String targetPath = "TARGET_DIRECTORY";
   private static final String templatePath = "TEMPLATES";
+  private final FileSystem fileSystem = FileSystems.getDefault();
+  private final Path workdir = fileSystem.getPath("/tmp/" + System.identityHashCode(this) + "/");
 
-  public NIOFileServiceTest() {
-    setFs(new NIOFileService(fileSystem, workdir.toString()));
+  public NioFileServiceTest() {
+    setFs(new NioFileService(fileSystem, workdir.toString()));
   }
 
   @BeforeEach
@@ -153,13 +153,13 @@ class NIOFileServiceTest extends AbstractFileServiceTest {
     assertThat(getFs().isValidFilename("validFilename")).isTrue();
     assertThat(getFs().isValidFilename("")).isFalse();
 
-    for (Character invalidWindowsSpecificChar : NIOFileService.INVALID_WINDOWS_SPECIFIC_CHARS) {
-      assertThat(NIOFileService
+    for (Character invalidWindowsSpecificChar : NioFileService.INVALID_WINDOWS_SPECIFIC_CHARS) {
+      assertThat(NioFileService
           .isValidFilename("invalid" + invalidWindowsSpecificChar + "filename.tst", false))
           .isFalse();
     }
-    for (Character invalidUnixSpecificChar : NIOFileService.INVALID_UNIX_SPECIFIC_CHARS) {
-      assertThat(NIOFileService
+    for (Character invalidUnixSpecificChar : NioFileService.INVALID_UNIX_SPECIFIC_CHARS) {
+      assertThat(NioFileService
           .isValidFilename("invalid" + invalidUnixSpecificChar + "filename.tst", true))
           .isFalse();
     }
@@ -209,7 +209,7 @@ class NIOFileServiceTest extends AbstractFileServiceTest {
   }
 
   private void saveContent(String sub, String content) throws IOException {
-    Path template = workdir.resolve(NIOFileServiceTest.templatePath).resolve(sub);
+    Path template = workdir.resolve(NioFileServiceTest.templatePath).resolve(sub);
     createDirectories(template.getParent());
     try (PrintWriter out = new PrintWriter(Files.newOutputStream(template))) {
       out.print(content);

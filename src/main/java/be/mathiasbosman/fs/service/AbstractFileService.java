@@ -24,8 +24,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 /**
- * Abstract implementation of {@link FileService}.
- * Also holding some static methods that can be used for path manipulation.
+ * Abstract implementation of {@link FileService}. Also holding some static methods that can be used
+ * for path manipulation.
  *
  * @author mathiasbosman
  * @since 0.0.1
@@ -189,6 +189,8 @@ public abstract class AbstractFileService implements FileService {
     mkDirectories(combine(path));
   }
 
+  protected abstract void mkDirectories(String path);
+
   @Override
   public List<FileSystemNode> list(String... parts) {
     FileSystemNode node = getOptionalFileNode(parts);
@@ -196,16 +198,27 @@ public abstract class AbstractFileService implements FileService {
   }
 
   @Override
+  public abstract List<FileSystemNode> list(FileSystemNode root);
+
+  @Override
   public InputStream open(String... parts) {
     checkPath(parts);
     return open(getFileNode(parts));
   }
+
+  // methods that should be overridden
+  @Override
+  public abstract InputStream open(FileSystemNode node);
+
 
   @Override
   public void save(InputStream is, String... parts) {
     checkPath(parts);
     save(is, combine(parts), -1);
   }
+
+  @Override
+  public abstract void save(InputStream is, String path, long size);
 
   @Override
   public void save(byte[] bytes, String... parts) {
@@ -227,29 +240,11 @@ public abstract class AbstractFileService implements FileService {
     }
   }
 
-  private void checkPath(String[] parts) {
-    if (parts == null || parts.length == 0) {
-      throw new IllegalArgumentException("Operation only possible with path in second argument.");
-    }
-  }
 
   @Override
   public String read(String... parts) {
     return read(getFileNode(parts));
   }
-
-  protected abstract void mkDirectories(String path);
-
-  protected abstract void copyContent(FileSystemNode source, String to);
-
-  protected abstract FileSystemNodeType getFileNodeType(String path);
-
-  protected abstract boolean isDirectory(String path);
-
-  protected abstract boolean exists(String path);
-
-  protected abstract long getSize(String path);
-
 
   // optional methods
   @Override
@@ -267,21 +262,90 @@ public abstract class AbstractFileService implements FileService {
     throw new NotImplementedException("getMimeType is not implemented.");
   }
 
-  // methods that should be overridden
   @Override
-  public abstract InputStream open(FileSystemNode node);
+  public boolean isDirectory(String... parts) {
+    return isDirectory(combine(parts));
+  }
+
+  protected abstract boolean isDirectory(String path);
+
+  @Override
+  public boolean exists(String... parts) {
+    return exists(combine(parts));
+  }
+
+  protected abstract boolean exists(String path);
+
+  @Override
+  public void delete(String... path) {
+    checkPath(path);
+    delete(getFileNode(path));
+  }
+
+  @Override
+  public void delete(FileSystemNode node) {
+    delete(node, false);
+  }
+
+  @Override
+  public abstract void delete(FileSystemNode node, boolean recursive);
+
+  @Override
+  public void move(String from, String to) {
+    copy(from, to);
+    final FileSystemNode fromNode = getFileNode(from);
+    delete(fromNode, fromNode.isDirectory());
+  }
+
+  @Override
+  public final long getSize(FileSystemNode node) {
+    if (node.isDirectory()) {
+      throw new IllegalArgumentException("Size of directory not determined. " + node.getPath());
+    }
+    return getSize(node.getPath());
+  }
+
+  protected abstract long getSize(String path);
+
+  @Override
+  public void walk(FileSystemNode node, FileNodeVisitor visitor) {
+    if (node.isDirectory()) {
+      visitor.pre(node);
+      list(node).forEach(child -> walk(child, visitor));
+      visitor.post(node);
+    } else {
+      visitor.on(node);
+    }
+  }
 
   @Override
   public abstract boolean isValidFilename(String filename);
 
-  @Override
-  public abstract List<FileSystemNode> list(FileSystemNode root);
+  protected abstract void copyContent(FileSystemNode source, String to);
 
-  @Override
-  public abstract void save(InputStream is, String path, long size);
+  protected abstract FileSystemNodeType getFileNodeType(String path);
 
-  @Override
-  public abstract void delete(FileSystemNode node, boolean recursive);
+  protected FileSystemNode createFileNode(String path, boolean isDirectory, long size) {
+    Pair<String, String> dirAndName = split(path);
+    String parentDir = dirAndName.getLeft();
+    String name = dirAndName.getRight();
+    return new FileSystemNodeImpl(parentDir, name, isDirectory, size);
+  }
+
+  /**
+   * Counts the files in a given node. Implements {@link AbstractFileService#defaultFileCount} by
+   * default.
+   *
+   * @param node The node to count files in
+   * @return amount of files
+   */
+  public long countFiles(FileSystemNode node) {
+    return defaultFileCount(node);
+  }
+
+  protected long defaultFileCount(FileSystemNode node) {
+    return list(node).stream().filter(fileNode -> !fileNode.isDirectory()).count();
+  }
 
   private FileSystemNode getForPath(String parts, boolean shouldExist) {
     if (StringUtils.isBlank(parts)) {
@@ -299,65 +363,9 @@ public abstract class AbstractFileService implements FileService {
     return createFileNode(path, directory, directory ? 0 : getSize(path));
   }
 
-  protected FileSystemNode createFileNode(String path, boolean isDirectory, long size) {
-    Pair<String, String> dirAndName = split(path);
-    String parentDir = dirAndName.getLeft();
-    String name = dirAndName.getRight();
-    return new FileSystemNodeImpl(parentDir, name, isDirectory, size);
-  }
-
-  @Override
-  public boolean isDirectory(String... parts) {
-    return isDirectory(combine(parts));
-  }
-
-  @Override
-  public boolean exists(String... parts) {
-    return exists(combine(parts));
-  }
-
-  @Override
-  public void delete(String... path) {
-    checkPath(path);
-    delete(getFileNode(path));
-  }
-
-  @Override
-  public void delete(FileSystemNode node) {
-    delete(node, false);
-  }
-
-  @Override
-  public void move(String from, String to) {
-    copy(from, to);
-    final FileSystemNode fromNode = getFileNode(from);
-    delete(fromNode, fromNode.isDirectory());
-  }
-
-  @Override
-  public final long getSize(FileSystemNode node) {
-    if (node.isDirectory()) {
-      throw new IllegalArgumentException("Size of directory not determined. " + node.getPath());
-    }
-    return getSize(node.getPath());
-  }
-
-  public long countFiles(FileSystemNode node) {
-    return defaultFileCount(node);
-  }
-
-  protected long defaultFileCount(FileSystemNode node) {
-    return list(node).stream().filter(fileNode -> !fileNode.isDirectory()).count();
-  }
-
-  @Override
-  public void walk(FileSystemNode node, FileNodeVisitor visitor) {
-    if (node.isDirectory()) {
-      visitor.pre(node);
-      list(node).forEach(child -> walk(child, visitor));
-      visitor.post(node);
-    } else {
-      visitor.on(node);
+  private void checkPath(String[] parts) {
+    if (parts == null || parts.length == 0) {
+      throw new IllegalArgumentException("Operation only possible with path in second argument.");
     }
   }
 }
