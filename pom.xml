@@ -1,24 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-
-  <parent>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.5.4</version>
-    <relativePath/> <!-- lookup parent from repository -->
-  </parent>
-
-  <groupId>be.mathiasbosman</groupId>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <artifactId>file-services</artifactId>
-  <version>1.0.7-SNAPSHOT</version>
-  <description>File services</description>
 
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
+        <groupId>org.apache.maven.plugins</groupId>
       </plugin>
       <plugin>
         <artifactId>jacoco-maven-plugin</artifactId>
@@ -42,12 +32,6 @@
     </plugins>
   </build>
 
-  <properties>
-    <maven.compiler.source>11</maven.compiler.source>
-    <maven.compiler.target>11</maven.compiler.target>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
-
   <dependencies>
     <dependency>
       <artifactId>commons-lang3</artifactId>
@@ -55,13 +39,13 @@
       <version>3.12.0</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.commons</groupId>
       <artifactId>commons-collections4</artifactId>
+      <groupId>org.apache.commons</groupId>
       <version>4.4</version>
     </dependency>
     <dependency>
-      <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
+      <groupId>com.google.guava</groupId>
       <version>30.1.1-jre</version>
     </dependency>
     <dependency>
@@ -80,31 +64,25 @@
       <version>1.12.57</version>
     </dependency>
     <dependency>
-      <artifactId>nextcloud-api</artifactId>
       <groupId>org.aarboard.nextcloud</groupId>
+      <artifactId>nextcloud-api</artifactId>
       <version>11.5.0</version>
     </dependency>
 
     <!-- testing -->
     <dependency>
-      <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers</artifactId>
+      <groupId>org.testcontainers</groupId>
+      <scope>test</scope>
       <version>1.16.0</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.google.jimfs</groupId>
-      <artifactId>jimfs</artifactId>
-      <version>1.2</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
+      <groupId>org.springframework.boot</groupId>
       <scope>test</scope>
     </dependency>
   </dependencies>
-
+  <description>File services</description>
   <distributionManagement>
     <!-- Github distribution -->
     <repository>
@@ -113,4 +91,22 @@
       <url>https://maven.pkg.github.com/mathiasbosman/file-services</url>
     </repository>
   </distributionManagement>
+  <groupId>be.mathiasbosman</groupId>
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <groupId>org.springframework.boot</groupId>
+    <relativePath/>
+    <version>2.5.4</version> <!-- lookup parent from repository -->
+  </parent>
+
+  <properties>
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <version>1.0.7-SNAPSHOT</version>
 </project>
