@@ -200,9 +200,6 @@ public class S3FileService extends AbstractFileService {
   protected long getSize(String path) {
     ObjectMetadata objectMetadata;
     objectMetadata = getMetaData(path);
-    if (objectMetadata == null) {
-      throw new IllegalArgumentException("Path does not exist: " + path);
-    }
     return objectMetadata.getContentLength();
   }
 

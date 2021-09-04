@@ -127,16 +127,21 @@ class S3FileServiceTest extends AbstractContainerTest {
   void delete() {
     putDirectory("x");
     putObject("x/a", "-");
-    FileSystemNode nodeToDelete = getFs().getFileNode("x");
+    FileSystemNode nodeToDelete = getFs().getFileNode(getRemotePath("x"));
     assertThatThrownBy(() -> getFs().delete(nodeToDelete))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Directory not empty for deletion");
+    getFs().delete(nodeToDelete, true);
+    assertNotExists("x");
+    assertNotExists("x/a");
+    putDirectory("x/.directory");
+    getFs().delete(nodeToDelete, false);
   }
 
   @Test
   void getCreationTime() {
     putObject("x", "-");
-    FileSystemNode node = getFs().getFileNode("x");
+    FileSystemNode node = getFs().getFileNode(getRemotePath("x"));
     FileService fs = getFs();
     ZoneId zoneId = ZoneId.systemDefault();
     assertThatThrownBy(() -> fs.getCreationTime(node, zoneId))
@@ -146,19 +151,18 @@ class S3FileServiceTest extends AbstractContainerTest {
   @Test
   void getLastModifiedTime() {
     putObject("x", "-");
-    FileSystemNode fileNode = getFs().getFileNode("x");
+    FileSystemNode fileNode = getFs().getFileNode(getRemotePath("x"));
     LocalDateTime lastModifiedTimeFile = getFs()
         .getLastModifiedTime(fileNode, ZoneId.systemDefault());
     assertThat(lastModifiedTimeFile).isNotNull();
   }
-
 
   @Test
   void streamDirectory() {
     putObject("x/a", "-");
     putObject("x/z", "-");
     putObject("x/b/a", "-");
-    List<FileSystemNode> files = getFs().streamDirectory(getFs().getFileNode("x"))
+    List<FileSystemNode> files = getFs().streamDirectory(getFs().getFileNode(getRemotePath("x")))
         .collect(Collectors.toList());
     assertThat(files).hasSize(3);
   }

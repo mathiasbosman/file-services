@@ -51,7 +51,7 @@ public abstract class AbstractFileServiceTest {
   protected abstract String getRemotePath(String path);
 
   @Test
-  void countFiles() {
+  void abstractCountFiles() {
     putObject("x/a", "-");
     putObject("x/z", "-");
     putObject("x/b/a", "-");
@@ -59,7 +59,7 @@ public abstract class AbstractFileServiceTest {
   }
 
   @Test
-  void copy() throws Exception {
+  void abstractCopy() throws Exception {
     FileService fs = getFs();
     fs.save(new StringInputStream("information"), getRemotePath("dir/file.txt"));
     fs.save(new StringInputStream("more data"), getRemotePath("dir/more.txt"));
@@ -77,25 +77,25 @@ public abstract class AbstractFileServiceTest {
   }
 
   @Test
-  void delete() {
+  void abstractDelete() {
+    putDirectory("x");
     putObject("x/y", "-");
     fs.delete(getRemotePath("x/y"));
     assertNotExists("x/y");
-    assertExists("x");
     putObject("a/b/c", "-");
     fs.delete(fs.getFileNode(getRemotePath("a")), true);
     assertNotExists("a");
   }
 
   @Test
-  void exists() {
+  void abstractExists() {
     assertThat(fs.exists(getRemotePath("-"))).isFalse();
     putObject("b", "-");
     assertThat(fs.exists(getRemotePath("b"))).isTrue();
   }
 
   @Test
-  void getBytes() {
+  void abstractGetBytes() {
     String content = "John";
     putObject("x/a", content);
     assertThat(fs.getBytes(getRemotePath("x/a"))).isEqualTo(content.getBytes());
@@ -104,7 +104,7 @@ public abstract class AbstractFileServiceTest {
   }
 
   @Test
-  void getFileNode() {
+  void abstractGetFileNode() {
     assertThatThrownBy(() -> fs.getFileNode(getRemotePath("x/y")))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Path does not exist on filesystem:");
@@ -126,14 +126,14 @@ public abstract class AbstractFileServiceTest {
   }
 
   @Test
-  void getOptionalFileNode() {
+  void abstractGetOptionalFileNode() {
     putObject("x/y", "-");
     assertThat(getFs().getOptionalFileNode(getRemotePath("x/y"))).isNotNull();
     assertThat(getFs().getOptionalFileNode(getRemotePath("x/z"))).isNull();
   }
 
   @Test
-  void getMimeType() {
+  void abstractGetMimeType() {
     putImageObject("a.jpeg");
     putImageObject("x/a.jpg");
     assertThat(fs.getMimeType(fs.getFileNode(getRemotePath("a.jpeg")))).isEqualTo("image/jpeg");
@@ -141,7 +141,7 @@ public abstract class AbstractFileServiceTest {
   }
 
   @Test
-  void getParent() {
+  void abstractGetParent() {
     fs.save(stringToInputStream("testContent"), getRemotePath("a/b/c.txt"));
     FileSystemNode c = fs.getFileNode(getRemotePath("a", "b/c.txt"));
     FileSystemNode cParent = fs.getParent(c);
@@ -155,7 +155,7 @@ public abstract class AbstractFileServiceTest {
   }
 
   @Test
-  void getSize() {
+  void abstractGetSize() {
     putObject("x/a", "John");
     assertThat(fs.getSize(fs.getFileNode(getRemotePath("x/a")))).isEqualTo(4);
     putDirectory("dir");
@@ -165,7 +165,7 @@ public abstract class AbstractFileServiceTest {
   }
 
   @Test
-  void isDirectory() {
+  void abstractIsDirectory() {
     assertThat(fs.isDirectory(getRemotePath("-"))).isFalse();
     putDirectory("x/.directory");
     assertThat(fs.getFileNode(getRemotePath("x")).isDirectory()).isTrue();
@@ -176,7 +176,7 @@ public abstract class AbstractFileServiceTest {
   }
 
   @Test
-  void list() {
+  void abstractList() {
     putObject("x/a", "John");
     putObject("x/b", "Doe");
     FileSystemNode x = fs.getFileNode(getRemotePath("x"));
@@ -213,13 +213,13 @@ public abstract class AbstractFileServiceTest {
   }
 
   @Test
-  void mkDirectories() {
+  void abstractMkDirectories() {
     fs.mkDirectories(getRemotePath("x"));
     assertDirectoryExists("x");
   }
 
   @Test
-  void move() {
+  void abstractMove() {
     putDirectory("x/source");
     putObject("x/source/y.txt", "-");
     putDirectory("x/target");
@@ -229,7 +229,7 @@ public abstract class AbstractFileServiceTest {
   }
 
   @Test
-  void open() {
+  void abstractOpen() {
     putObject("x/a", "John");
     assertThat(fs.open(getRemotePath("x/a"))).hasContent("John");
     assertThat(fs.open(fs.getFileNode(getRemotePath("x/a")))).hasContent("John");
@@ -237,7 +237,7 @@ public abstract class AbstractFileServiceTest {
 
 
   @Test
-  void save() {
+  void abstractSave() {
     fs.save(stringToInputStream("-"), getRemotePath("x/y"));
     assertExists("x/y");
     assertThat(getContent("x/y")).isEqualTo("-");
@@ -256,20 +256,20 @@ public abstract class AbstractFileServiceTest {
   }
 
   @Test
-  void read() {
+  void abstractRead() {
     putObject("x/y", "-");
     FileSystemNode file = fs.getFileNode(getRemotePath("x/y"));
     assertThat(fs.read(file)).isEqualTo("-");
   }
 
   @Test
-  void saveText() {
+  void abstractSaveText() {
     fs.saveText("-", getRemotePath("x/y/z.txt"));
     assertThat(getContent("x/y/z.txt")).isEqualTo("-");
   }
 
   @Test
-  void walk() {
+  void abstractWalk() {
     putDirectory("x");
     putObject("x/a", "-");
     putObject("x/b", "-");

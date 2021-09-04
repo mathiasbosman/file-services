@@ -41,6 +41,8 @@ import org.apache.commons.lang3.SystemUtils;
  */
 public class NioFileService extends AbstractFileService {
 
+  public static final FileSystem DEFAULT_FILE_SYSTEM = FileSystems.getDefault();
+
   private final Path workDir;
   private final Function<Path, FileSystemNode> toFile = this::file;
 
@@ -49,7 +51,7 @@ public class NioFileService extends AbstractFileService {
   }
 
   public NioFileService(String prefix) {
-    this(FileSystems.getDefault(), prefix);
+    this(DEFAULT_FILE_SYSTEM, prefix);
   }
 
   @Override

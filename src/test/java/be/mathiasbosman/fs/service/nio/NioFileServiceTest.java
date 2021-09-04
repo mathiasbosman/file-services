@@ -13,7 +13,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -30,11 +29,11 @@ import org.junit.jupiter.api.Test;
 class NioFileServiceTest extends AbstractFileServiceTest {
 
   private static final String targetPath = "TARGET_DIRECTORY";
-  private final FileSystem fileSystem = FileSystems.getDefault();
+  private final FileSystem fileSystem = NioFileService.DEFAULT_FILE_SYSTEM;
   private final Path workdir = fileSystem.getPath("/tmp/" + System.identityHashCode(this) + "/");
 
   public NioFileServiceTest() {
-    setFs(new NioFileService(fileSystem, workdir.toString()));
+    setFs(new NioFileService(workdir.toString()));
   }
 
   @BeforeEach
