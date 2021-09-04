@@ -223,8 +223,7 @@ public abstract class AbstractFileService implements FileService {
     save(is, combine(parts), -1);
   }
 
-  @Override
-  public abstract void save(InputStream is, String path, long size);
+  protected abstract void save(InputStream is, String path, long size);
 
   @Override
   public void save(byte[] bytes, String... parts) {

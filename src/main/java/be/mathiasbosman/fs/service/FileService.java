@@ -224,15 +224,6 @@ public interface FileService {
   String read(String... parts);
 
   /**
-   * Save an {@link InputStream} to the given path with given size.
-   *
-   * @param is   {@link InputStream} to save
-   * @param path Path to save as
-   * @param size Size of the given stream (the content length)
-   */
-  void save(InputStream is, String path, long size);
-
-  /**
    * Save an {@link InputStream} to the given path.
    *
    * @param is    {@link InputStream} to save
