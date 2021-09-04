@@ -46,13 +46,6 @@
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-    <!-- sonar -->
-    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-    <sonar.organization>mathiasbosman</sonar.organization>
-    <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml
-    </sonar.coverage.jacoco.xmlReportPaths>
-    <sonar.coverage.exclusions>**/*Factory.java</sonar.coverage.exclusions>
   </properties>
 
   <dependencies>
@@ -85,6 +78,11 @@
       <artifactId>aws-java-sdk-s3</artifactId>
       <groupId>com.amazonaws</groupId>
       <version>1.12.57</version>
+    </dependency>
+    <dependency>
+      <artifactId>nextcloud-api</artifactId>
+      <groupId>org.aarboard.nextcloud</groupId>
+      <version>11.5.0</version>
     </dependency>
 
     <!-- testing -->

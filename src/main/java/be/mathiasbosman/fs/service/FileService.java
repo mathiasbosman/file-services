@@ -115,10 +115,10 @@ public interface FileService {
   /**
    * Get the Mime type of a given {@link FileSystemNode}.
    *
-   * @param fileSystemNode The {@link FileSystemNode} to query
+   * @param node The {@link FileSystemNode} to query
    * @return The Mime type
    */
-  String getMimeType(FileSystemNode fileSystemNode);
+  String getMimeType(FileSystemNode node);
 
   /**
    * Get the {@link FileSystemNode} on the given path. If not found null is returned.
@@ -151,14 +151,6 @@ public interface FileService {
    * @return The parent node or null if none found
    */
   FileSystemNode getParent(String... path);
-
-  /**
-   * Validates a given filename.
-   *
-   * @param filename The filename to validate
-   * @return result
-   */
-  boolean isValidFilename(String filename);
 
   /**
    * Checks a given path for being a directory.

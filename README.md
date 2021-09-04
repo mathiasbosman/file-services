@@ -31,6 +31,26 @@ private final FileService fileService = new NIOFileService("path/to/root");
 private final FileService fileService = new NIOFileService(FileSystems.getDefault(), "path/to/root");
 ```
 
+### Nextcloud
+
+To use a Nextcloud service pass the `NextCloudConnector` instance. It is only possible to use a
+single user to connect.
+
+If need be you can create multiple instances of the service with different connectors.
+
+```java
+NextcloudConnector connector = new NextcloudConnector("localhost", false, 9002,
+    "admin", "admin");
+private final FileService fileService = new NextcloudFileService(connector);
+// or
+private final FileService fileService = new NIOFileService("path/to/root");
+// which is the same as
+private final FileService fileService = new NIOFileService(FileSystems.getDefault(), "path/to/root");
+```
+
+Be aware that this service relies heavily on the underlying supporting systems such as the database
+and the API.
+
 ### S3 file system
 
 To set up a file service that uses Amazon's S3 file system provide the S3-system as well as the
@@ -59,3 +79,9 @@ FileService fileService = new S3FileService(s3, "bucket_name");
 
 If you wish to contribute make sure to read [the guidelines](CONTRIBUTING.md) as to which Java
 version and code style you should use.
+
+## Credits
+
+* Amazon
+* [NextcloudConnector](https://github.com/a-schild/nextcloud-java-api)
+  from [a-schild](https://github.com/a-schild)
