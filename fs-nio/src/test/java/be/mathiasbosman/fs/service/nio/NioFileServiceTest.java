@@ -77,11 +77,6 @@ class NioFileServiceTest extends AbstractFileServiceTest {
   }
 
   @Override
-  protected String getRemotePath(String path) {
-    return path;
-  }
-
-  @Override
   protected void putDirectory(String pad) {
     try {
       createDirectories(workdir.resolve(pad));
