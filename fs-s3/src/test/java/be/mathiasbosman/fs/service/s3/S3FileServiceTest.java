@@ -3,10 +3,10 @@ package be.mathiasbosman.fs.service.s3;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import be.mathiasbosman.fs.core.AbstractContainerTest;
+import be.mathiasbosman.fs.core.ContainerServiceDto;
 import be.mathiasbosman.fs.core.domain.FileSystemNode;
 import be.mathiasbosman.fs.core.service.FileService;
-import be.mathiasbosman.fs.test.AbstractContainerTest;
-import be.mathiasbosman.fs.test.ContainerServiceDto;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -46,10 +46,14 @@ class S3FileServiceTest extends AbstractContainerTest {
   }
 
   @BeforeEach
-  void setup() {
+  protected void setup() {
     cleanUp();
     s3.createBucket(bucketName);
-    setFs(new S3FileService(s3, bucketName));
+  }
+
+  @Override
+  protected FileService getFs() {
+    return new S3FileService(s3, bucketName);
   }
 
   @AfterEach
@@ -78,11 +82,11 @@ class S3FileServiceTest extends AbstractContainerTest {
     getFs().mkDirectories(path);
   }
 
-  private void putObject(String path, String data, String contentType) {
+  protected void putObject(String path, String data) {
     byte[] bytes = data.getBytes(StandardCharsets.UTF_8);
     ObjectMetadata metadata = new ObjectMetadata();
     metadata.setContentEncoding("aws-chunked");
-    metadata.setContentType(contentType);
+    metadata.setContentType("text/plain");
     metadata.setContentLength(bytes.length);
     log.debug("Putting remote object to {}", path);
     s3.putObject(bucketName, path, new ByteArrayInputStream(bytes), metadata);
@@ -106,16 +110,6 @@ class S3FileServiceTest extends AbstractContainerTest {
   @Override
   protected String getContent(String path) {
     return s3.getObjectAsString(bucketName, path);
-  }
-
-  @Override
-  protected void putObject(String path, String data) {
-    putObject(path, data, "text/plain");
-  }
-
-  @Override
-  protected void putImageObject(String path) {
-    putObject(path, "-", "image/jpeg");
   }
 
   @Test

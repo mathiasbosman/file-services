@@ -74,7 +74,6 @@
   <modules>
     <module>fs-core</module>
     <module>fs-s3</module>
-    <module>fs-test</module>
     <module>fs-nio</module>
   </modules>
 

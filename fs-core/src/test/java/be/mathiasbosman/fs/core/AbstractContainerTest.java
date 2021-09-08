@@ -1,5 +1,6 @@
-package be.mathiasbosman.fs.test;
+package be.mathiasbosman.fs.core;
 
+import be.mathiasbosman.fs.core.service.AbstractFileServiceTest;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;

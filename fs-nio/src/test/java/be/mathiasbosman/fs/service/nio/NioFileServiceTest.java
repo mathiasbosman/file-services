@@ -7,7 +7,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import be.mathiasbosman.fs.core.domain.FileSystemNode;
-import be.mathiasbosman.fs.test.AbstractFileServiceTest;
+import be.mathiasbosman.fs.core.service.AbstractFileServiceTest;
+import be.mathiasbosman.fs.core.service.FileService;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -32,8 +33,9 @@ class NioFileServiceTest extends AbstractFileServiceTest {
   private final FileSystem fileSystem = NioFileService.DEFAULT_FILE_SYSTEM;
   private final Path workdir = fileSystem.getPath("/tmp/" + System.identityHashCode(this) + "/");
 
-  public NioFileServiceTest() {
-    setFs(new NioFileService(workdir.toString()));
+  @Override
+  protected FileService getFs() {
+    return new NioFileService(workdir.toString());
   }
 
   @BeforeEach
@@ -45,11 +47,6 @@ class NioFileServiceTest extends AbstractFileServiceTest {
   @AfterEach
   void cleanup() throws IOException {
     FileUtils.deleteDirectory(workdir.toFile());
-  }
-
-  @Override
-  protected void putImageObject(String path) {
-    putObject(path, "-");
   }
 
   @Override
@@ -77,9 +74,9 @@ class NioFileServiceTest extends AbstractFileServiceTest {
   }
 
   @Override
-  protected void putDirectory(String pad) {
+  protected void putDirectory(String path) {
     try {
-      createDirectories(workdir.resolve(pad));
+      createDirectories(workdir.resolve(path));
     } catch (IOException e) {
       throw new IllegalArgumentException(e);
     }

@@ -1,4 +1,4 @@
-package be.mathiasbosman.fs.test;
+package be.mathiasbosman.fs.core;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
