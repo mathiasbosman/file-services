@@ -1,18 +1,11 @@
-package be.mathiasbosman.fs.service.nio;
+package be.mathiasbosman.fs.core.service;
 
 import be.mathiasbosman.fs.core.domain.FileSystemNode;
 import be.mathiasbosman.fs.core.domain.FileSystemNodeType;
-import be.mathiasbosman.fs.core.service.AbstractFileService;
-import be.mathiasbosman.fs.core.service.FileNodeVisitor;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,57 +21,23 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.SystemUtils;
 
 /**
- * An implementation of the {@link be.mathiasbosman.fs.core.service.FileService} for NIO file
- * systems. It holds some static arrays containing invalid filename characters for Windows and Unix
- * systems.
+ * An implementation of the {@link be.mathiasbosman.fs.core.service.FileService} for test purposes.
+ * It is basically a minified NIO implementation.
  *
  * @author mathiasbosman
- * @since 0.0.1
+ * @since 1.1.0
  */
-@Slf4j
-public class NioFileService extends AbstractFileService {
-
-  public static final FileSystem DEFAULT_FILE_SYSTEM = FileSystems.getDefault();
+public class MockFileService extends AbstractFileService {
 
   private final Path workDir;
   private final Function<Path, FileSystemNode> toFile = this::file;
 
-  public NioFileService(FileSystem fs, String prefix) {
-    workDir = fs.getPath(prefix);
-  }
-
-  public NioFileService(String prefix) {
-    this(DEFAULT_FILE_SYSTEM, prefix);
-  }
-
-  @Override
-  public long countFiles(FileSystemNode node) {
-    if (!SystemUtils.IS_OS_UNIX) {
-      return defaultFileCount(node);
-    }
-    try {
-      Path path = path(node.getPath());
-      String shellCommand = "find . -maxdepth 1 -type f | wc -l";
-      String[] cmd = {"/bin/sh", "-c", shellCommand};
-      ProcessBuilder builder = new ProcessBuilder();
-      builder.redirectErrorStream(true);
-      builder.command(cmd);
-      builder.directory(path.toFile());
-      Process process = builder.start();
-      BufferedReader reader = new BufferedReader(
-          new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
-      String line = reader.readLine();
-      reader.close();
-      return Long.parseLong(line.trim());
-    } catch (IOException e) {
-      throw new IllegalStateException(e);
-    }
+  public MockFileService(Path workDir) {
+    this.workDir = workDir;
   }
 
   @Override
@@ -159,7 +118,6 @@ public class NioFileService extends AbstractFileService {
   @Override
   public InputStream open(FileSystemNode node) {
     try {
-      log.debug("Getting {}", node.getPath());
       return Files.newInputStream(path(node.getPath()));
     } catch (IOException e) {
       throw new IllegalStateException(e);
@@ -167,11 +125,10 @@ public class NioFileService extends AbstractFileService {
   }
 
   @Override
-  public void save(InputStream in, String path, long size) {
-    log.debug("Saving inputstream to {}", path);
-    Path resolvedPath = path(path);
-    mkDirectories(resolvedPath.getParent());
-    try (OutputStream out = Files.newOutputStream(resolvedPath)) {
+  public void save(InputStream in, String pad, long size) {
+    Path path = path(pad);
+    mkDirectories(path.getParent());
+    try (OutputStream out = Files.newOutputStream(path)) {
       IOUtils.copy(in, out);
     } catch (IOException e) {
       throw new IllegalStateException(e);
@@ -190,7 +147,6 @@ public class NioFileService extends AbstractFileService {
 
   @Override
   protected void copyContent(FileSystemNode source, String target) {
-    log.debug("Copying object {} to {}", source, target);
     save(open(source), target);
   }
 

@@ -23,6 +23,14 @@
       <artifactId>slf4j-api</artifactId>
       <groupId>org.slf4j</groupId>
     </dependency>
+
+    <dependency>
+      <artifactId>fs-core</artifactId>
+      <classifier>tests</classifier>
+      <groupId>be.mathiasbosman</groupId>
+      <scope>test</scope>
+      <version>${project.version}</version>
+    </dependency>
     <dependency>
       <artifactId>spring-boot-starter-test</artifactId>
       <groupId>org.springframework.boot</groupId>

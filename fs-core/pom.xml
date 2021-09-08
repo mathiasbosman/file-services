@@ -3,6 +3,31 @@
   xmlns="http://maven.apache.org/POM/4.0.0"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <artifactId>fs-core</artifactId>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+            <phase>package</phase>
+          </execution>
+        </executions>
+        <groupId>org.apache.maven.plugins</groupId>
+      </plugin>
+    </plugins>
+  </build>
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <artifactId>file-services</artifactId>
+    <groupId>be.mathiasbosman</groupId>
+    <version>1.0.7-SNAPSHOT</version>
+  </parent>
+
   <dependencies>
     <dependency>
       <artifactId>commons-lang3</artifactId>
@@ -26,17 +51,14 @@
     </dependency>
 
     <dependency>
+      <artifactId>testcontainers</artifactId>
+      <groupId>org.testcontainers</groupId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <artifactId>spring-boot-starter-test</artifactId>
       <groupId>org.springframework.boot</groupId>
       <scope>test</scope>
     </dependency>
   </dependencies>
-
-  <modelVersion>4.0.0</modelVersion>
-
-  <parent>
-    <artifactId>file-services</artifactId>
-    <groupId>be.mathiasbosman</groupId>
-    <version>1.0.7-SNAPSHOT</version>
-  </parent>
 </project>

@@ -9,12 +9,7 @@
       <groupId>be.mathiasbosman</groupId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
-      <artifactId>fs-test</artifactId>
-      <groupId>be.mathiasbosman</groupId>
-      <scope>test</scope>
-      <version>${project.version}</version>
-    </dependency>
+
     <dependency>
       <artifactId>aws-java-sdk-s3</artifactId>
       <groupId>com.amazonaws</groupId>
@@ -34,6 +29,19 @@
     <dependency>
       <artifactId>slf4j-api</artifactId>
       <groupId>org.slf4j</groupId>
+    </dependency>
+
+    <dependency>
+      <artifactId>fs-core</artifactId>
+      <classifier>tests</classifier>
+      <groupId>be.mathiasbosman</groupId>
+      <scope>test</scope>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <artifactId>testcontainers</artifactId>
+      <groupId>org.testcontainers</groupId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <artifactId>spring-boot-starter-test</artifactId>

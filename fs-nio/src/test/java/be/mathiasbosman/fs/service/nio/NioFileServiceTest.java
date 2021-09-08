@@ -77,9 +77,9 @@ class NioFileServiceTest extends AbstractFileServiceTest {
   }
 
   @Override
-  protected void putDirectory(String pad) {
+  protected void putDirectory(String path) {
     try {
-      createDirectories(workdir.resolve(pad));
+      createDirectories(workdir.resolve(path));
     } catch (IOException e) {
       throw new IllegalArgumentException(e);
     }

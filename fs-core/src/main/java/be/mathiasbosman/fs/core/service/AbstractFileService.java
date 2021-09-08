@@ -9,7 +9,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -239,7 +238,7 @@ public abstract class AbstractFileService implements FileService {
   @Override
   public String read(FileSystemNode node) {
     try (InputStream inputStream = open(node)) {
-      return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+      return IOUtils.toString(inputStream, Charset.defaultCharset());
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
@@ -286,9 +285,9 @@ public abstract class AbstractFileService implements FileService {
   }
 
   @Override
-  public final long getSize(FileSystemNode node) {
+  public long getSize(FileSystemNode node) {
     if (node.isDirectory()) {
-      throw new IllegalArgumentException("Size of directory not determined. " + node.getPath());
+      return streamDirectory(node).mapToLong(FileSystemNode::getSize).sum();
     }
     return getSize(node.getPath());
   }
