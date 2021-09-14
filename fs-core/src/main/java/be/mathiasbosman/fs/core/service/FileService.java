@@ -113,14 +113,6 @@ public interface FileService {
   LocalDateTime getLastModifiedTime(FileSystemNode node, ZoneId zoneId);
 
   /**
-   * Get the Mime type of a given {@link FileSystemNode}.
-   *
-   * @param fileSystemNode The {@link FileSystemNode} to query
-   * @return The Mime type
-   */
-  String getMimeType(FileSystemNode fileSystemNode);
-
-  /**
    * Get the {@link FileSystemNode} on the given path. If not found null is returned.
    *
    * @param parts Path parts

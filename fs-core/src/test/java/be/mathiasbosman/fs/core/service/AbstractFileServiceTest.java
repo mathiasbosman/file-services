@@ -116,6 +116,9 @@ public abstract class AbstractFileServiceTest {
     assertThat(getFs().list("path/to/dir"))
         .isNotEmpty()
         .hasSize(2);
+    // root listing
+    assertThat(getFs().list("path"))
+        .isNotEmpty();
   }
 
   @Test
@@ -170,6 +173,13 @@ public abstract class AbstractFileServiceTest {
     getFs().delete(getFs().getFileNode("path/to"));
     assertNotExists("path/to");
     assertExists("path");
+    putObject("path/to/object");
+    putObject("path/to/sub/dir/object");
+    getFs().delete(getFs().getFileNode("path/to"), true);
+    assertNotExists("path/to/object");
+    assertNotExists("path/to/sub");
+    assertNotExists("path/to/sub/dir");
+    assertNotExists("path/to/sub/dir/object");
   }
 
   @Test

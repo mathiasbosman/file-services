@@ -4,13 +4,10 @@ import be.mathiasbosman.fs.core.domain.FileSystemNode;
 import be.mathiasbosman.fs.core.domain.FileSystemNodeType;
 import be.mathiasbosman.fs.core.service.AbstractFileService;
 import be.mathiasbosman.fs.core.service.FileNodeVisitor;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
@@ -31,7 +28,6 @@ import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.SystemUtils;
 
 /**
  * An implementation of the {@link be.mathiasbosman.fs.core.service.FileService} for NIO file
@@ -55,30 +51,6 @@ public class NioFileService extends AbstractFileService {
 
   public NioFileService(String prefix) {
     this(DEFAULT_FILE_SYSTEM, prefix);
-  }
-
-  @Override
-  public long countFiles(FileSystemNode node) {
-    if (!SystemUtils.IS_OS_UNIX) {
-      return defaultFileCount(node);
-    }
-    try {
-      Path path = path(node.getPath());
-      String shellCommand = "find . -maxdepth 1 -type f | wc -l";
-      String[] cmd = {"/bin/sh", "-c", shellCommand};
-      ProcessBuilder builder = new ProcessBuilder();
-      builder.redirectErrorStream(true);
-      builder.command(cmd);
-      builder.directory(path.toFile());
-      Process process = builder.start();
-      BufferedReader reader = new BufferedReader(
-          new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
-      String line = reader.readLine();
-      reader.close();
-      return Long.parseLong(line.trim());
-    } catch (IOException e) {
-      throw new IllegalStateException(e);
-    }
   }
 
   @Override
@@ -111,17 +83,11 @@ public class NioFileService extends AbstractFileService {
 
   @Override
   public LocalDateTime getCreationTime(FileSystemNode node, ZoneId zoneId) {
-    Path path = path(node.getPath());
-    BasicFileAttributes attributes = getAttributes(path);
-    FileTime fileTime = attributes.creationTime();
-    return LocalDateTime.ofInstant(fileTime.toInstant(), zoneId);
-  }
-
-  @Override
-  public String getMimeType(FileSystemNode node) {
-    Path path = path(node.getPath());
     try {
-      return Files.probeContentType(path);
+      Path path = path(node.getPath());
+      BasicFileAttributes attributes = getAttributes(path);
+      FileTime fileTime = attributes.creationTime();
+      return LocalDateTime.ofInstant(fileTime.toInstant(), zoneId);
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
@@ -129,10 +95,14 @@ public class NioFileService extends AbstractFileService {
 
   @Override
   public LocalDateTime getLastModifiedTime(FileSystemNode node, ZoneId zoneId) {
-    Path path = path(node.getPath());
-    BasicFileAttributes attributes = getAttributes(path);
-    FileTime fileTime = attributes.lastModifiedTime();
-    return LocalDateTime.ofInstant(fileTime.toInstant(), zoneId);
+    try {
+      Path path = path(node.getPath());
+      BasicFileAttributes attributes = getAttributes(path);
+      FileTime fileTime = attributes.lastModifiedTime();
+      return LocalDateTime.ofInstant(fileTime.toInstant(), zoneId);
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
   @Override
@@ -250,12 +220,8 @@ public class NioFileService extends AbstractFileService {
     return getFileNode(strip(subPath, File.pathSeparatorChar));
   }
 
-  private BasicFileAttributes getAttributes(Path path) {
-    try {
-      return Files.readAttributes(path, BasicFileAttributes.class);
-    } catch (IOException e) {
-      throw new IllegalStateException(e);
-    }
+  private BasicFileAttributes getAttributes(Path path) throws IOException {
+    return Files.readAttributes(path, BasicFileAttributes.class);
   }
 
   private static class FileAccumulator extends SimpleFileVisitor<Path> {
