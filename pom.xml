@@ -22,11 +22,6 @@
         <version>1.12.62</version>
       </dependency>
       <dependency>
-        <artifactId>nextcloud-api</artifactId>
-        <groupId>org.aarboard.nextcloud</groupId>
-        <version>11.5.0</version>
-      </dependency>
-      <dependency>
         <artifactId>testcontainers</artifactId>
         <groupId>org.testcontainers</groupId>
         <version>1.16.0</version>
