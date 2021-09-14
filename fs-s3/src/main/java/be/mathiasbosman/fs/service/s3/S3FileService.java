@@ -3,6 +3,7 @@ package be.mathiasbosman.fs.service.s3;
 import be.mathiasbosman.fs.core.domain.FileSystemNode;
 import be.mathiasbosman.fs.core.domain.FileSystemNodeType;
 import be.mathiasbosman.fs.core.service.AbstractFileService;
+import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
@@ -81,7 +82,6 @@ public class S3FileService extends AbstractFileService {
       if (CollectionUtils.isNotEmpty(list)) {
         throw new IllegalArgumentException("Directory not empty for deletion");
       }
-      return;
     }
     delete(toObjectKey(node.getPath()));
   }
@@ -90,20 +90,15 @@ public class S3FileService extends AbstractFileService {
     try {
       log.debug("Deleting {}/{}", bucketName, key);
       s3.deleteObject(bucketName, key);
-    } catch (Exception e) {
+    } catch (SdkClientException e) {
       throw new IllegalStateException(
-          "The S3 server threw an array deleting the object with key = " + key, e);
+          "The S3 server threw an error deleting the object with key = " + key, e);
     }
   }
 
   @Override
   public LocalDateTime getCreationTime(FileSystemNode node, ZoneId zoneId) {
     throw new UnsupportedOperationException("Amazon S3 does not support creation times.");
-  }
-
-  @Override
-  public String getMimeType(FileSystemNode node) {
-    return getMetaData(node.getPath()).getContentType();
   }
 
   @Override
@@ -209,7 +204,7 @@ public class S3FileService extends AbstractFileService {
       final ListObjectsRequest objectList = new ListObjectsRequest(bucketName, toObjectKey(path),
           null, null, 1);
       return CollectionUtils.isNotEmpty(s3.listObjects(objectList).getObjectSummaries());
-    } catch (Exception e) {
+    } catch (SdkClientException e) {
       throw new IllegalStateException("The S3 server threw an error listing objects on " + path, e);
     }
   }
@@ -229,7 +224,7 @@ public class S3FileService extends AbstractFileService {
     try {
       log.debug("Putting object {}/{}", bucketName, key);
       s3.putObject(bucketName, key, is, metadata);
-    } catch (Exception e) {
+    } catch (SdkClientException e) {
       throw new IllegalStateException(
           "The S3 server threw an array for the object with key = " + key,
           e);
@@ -267,7 +262,7 @@ public class S3FileService extends AbstractFileService {
   private boolean isFile(String path) {
     try {
       return s3.doesObjectExist(bucketName, toObjectKey(path));
-    } catch (Exception e) {
+    } catch (SdkClientException e) {
       throw new IllegalStateException("The S3 server threw an error accessing " + path, e);
     }
   }

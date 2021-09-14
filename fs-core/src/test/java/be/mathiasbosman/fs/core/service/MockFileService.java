@@ -77,16 +77,6 @@ public class MockFileService extends AbstractFileService {
   }
 
   @Override
-  public String getMimeType(FileSystemNode node) {
-    Path path = path(node.getPath());
-    try {
-      return Files.probeContentType(path);
-    } catch (IOException e) {
-      throw new IllegalStateException(e);
-    }
-  }
-
-  @Override
   public LocalDateTime getLastModifiedTime(FileSystemNode node, ZoneId zoneId) {
     Path path = path(node.getPath());
     BasicFileAttributes attributes = getAttributes(path);

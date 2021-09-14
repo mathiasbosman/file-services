@@ -5,8 +5,11 @@ import static java.nio.file.Files.newInputStream;
 import static java.nio.file.Files.newOutputStream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 
 import be.mathiasbosman.fs.core.domain.FileSystemNode;
+import be.mathiasbosman.fs.core.domain.FileSystemNodeImpl;
 import be.mathiasbosman.fs.core.service.AbstractFileServiceTest;
 import be.mathiasbosman.fs.core.service.FileService;
 import java.io.IOException;
@@ -16,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
@@ -26,6 +30,9 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 class NioFileServiceTest extends AbstractFileServiceTest {
 
@@ -108,12 +115,105 @@ class NioFileServiceTest extends AbstractFileServiceTest {
   }
 
   @Test
+  void listWithException() {
+    try (MockedStatic<Files> files = Mockito.mockStatic(Files.class)) {
+      files.when(
+          () -> Files.walkFileTree(any(), any(), anyInt(), any()))
+          .thenThrow(new IOException("Mocked IOException"));
+      final FileSystemNode mockNode = new FileSystemNodeImpl("x", "y", true, 0);
+      assertThatThrownBy(() -> getFs().list(mockNode))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("Mocked IOException");
+    }
+  }
+
+  @Test
+  void openWithException() {
+    try (MockedStatic<Files> files = Mockito.mockStatic(Files.class)) {
+      files.when(() -> Files.newInputStream(any()))
+          .thenThrow(new IOException("Mocked IOException"));
+      final FileSystemNode mockNode = new FileSystemNodeImpl("x", "y", false, 1);
+      assertThatThrownBy(() -> getFs().open(mockNode))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("Mocked IOException");
+    }
+  }
+
+  @Test
+  void saveWithException() {
+    try (MockedStatic<IOUtils> mockIOUtils = Mockito.mockStatic(IOUtils.class)) {
+      mockIOUtils.when(() -> IOUtils.copy(any(InputStream.class), any(OutputStream.class)))
+          .thenThrow(new IOException("Mocked IOException"));
+      assertThatThrownBy(() -> getFs().save("content".getBytes(), "x/y"))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("Mocked IOException");
+    }
+  }
+
+  @Test
+  void streamDirectoryWithException() {
+    try (MockedStatic<Files> files = Mockito.mockStatic(Files.class)) {
+      files.when(() -> Files.walk(any()))
+          .thenThrow(new IOException("Mocked IOException"));
+      final FileSystemNode mockNode = new FileSystemNodeImpl("x", "y", false, 1);
+      assertThatThrownBy(() -> getFs().streamDirectory(mockNode))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("Mocked IOException");
+    }
+  }
+
+  @Test
+  void getSizeWithException() {
+    try (MockedStatic<Files> files = Mockito.mockStatic(Files.class)) {
+      files.when(() -> Files.size(any()))
+          .thenThrow(new IOException("Mocked IOException"));
+      final FileSystemNode mockNode = new FileSystemNodeImpl("x", "y", false, 1);
+      assertThatThrownBy(() -> getFs().getSize(mockNode))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("Mocked IOException");
+    }
+  }
+
+  @Test
+  void mkDirectoriesWithException() {
+    try (MockedStatic<Files> files = Mockito.mockStatic(Files.class)) {
+      files.when(() -> Files.createDirectories(any()))
+          .thenThrow(new IOException("Mocked IOException"));
+      assertThatThrownBy(() -> getFs().mkDirectories("x"))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("Mocked IOException");
+    }
+  }
+
+  @Test
+  void deleteWithException() {
+    try (MockedStatic<Files> files = Mockito.mockStatic(Files.class)) {
+      files.when(() -> Files.delete(any()))
+          .thenThrow(new IOException("Mocked IOException"));
+      final FileSystemNode mockNode = new FileSystemNodeImpl("x", "y", false, 1);
+      assertThatThrownBy(() -> getFs().delete(mockNode))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("Mocked IOException");
+    }
+  }
+
+  @Test
   void getCreationTime() {
     putObject("x", "-");
     FileSystemNode fileNode = getFs().getFileNode("x");
     assertThat(getFs().getCreationTime(fileNode, ZoneId.systemDefault()))
         .isNotNull()
         .isBefore(LocalDateTime.now());
+
+    try (MockedStatic<Files> mockFiles = Mockito.mockStatic(Files.class)) {
+      mockFiles.when(
+          () -> Files.readAttributes(any(), ArgumentMatchers.<Class<BasicFileAttributes>>any()))
+          .thenThrow(new IOException("Mocked IOException"));
+      final FileSystemNode mockNode = new FileSystemNodeImpl("x", "y", false, 1);
+      assertThatThrownBy(() -> getFs().getCreationTime(mockNode, ZoneId.systemDefault()))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("Mocked IOException");
+    }
   }
 
   @Test
@@ -124,6 +224,16 @@ class NioFileServiceTest extends AbstractFileServiceTest {
     assertThat(lastModifiedTime)
         .isNotNull()
         .isBefore(LocalDateTime.now());
+
+    try (MockedStatic<Files> mockFiles = Mockito.mockStatic(Files.class)) {
+      mockFiles.when(
+          () -> Files.readAttributes(any(), ArgumentMatchers.<Class<BasicFileAttributes>>any()))
+          .thenThrow(new IOException("Mocked IOException"));
+      final FileSystemNode mockNode = new FileSystemNodeImpl("x", "y", false, 1);
+      assertThatThrownBy(() -> getFs().getLastModifiedTime(mockNode, ZoneId.systemDefault()))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("Mocked IOException");
+    }
   }
 
   @Test
