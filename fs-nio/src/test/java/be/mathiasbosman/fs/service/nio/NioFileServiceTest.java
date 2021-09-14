@@ -204,33 +204,29 @@ class NioFileServiceTest extends AbstractFileServiceTest {
     assertThat(getFs().getCreationTime(fileNode, ZoneId.systemDefault()))
         .isNotNull()
         .isBefore(LocalDateTime.now());
-
-    try (MockedStatic<Files> mockFiles = Mockito.mockStatic(Files.class)) {
-      mockFiles.when(
-          () -> Files.readAttributes(any(), ArgumentMatchers.<Class<BasicFileAttributes>>any()))
-          .thenThrow(new IOException("Mocked IOException"));
-      final FileSystemNode mockNode = new FileSystemNodeImpl("x", "y", false, 1);
-      assertThatThrownBy(() -> getFs().getCreationTime(mockNode, ZoneId.systemDefault()))
-          .isInstanceOf(IllegalStateException.class)
-          .hasMessageContaining("Mocked IOException");
-    }
   }
 
   @Test
   void getLastModifiedTime() {
     putObject("x", "-");
     FileSystemNode fileNode = getFs().getFileNode("x");
-    LocalDateTime lastModifiedTime = getFs().getLastModifiedTime(fileNode, ZoneId.systemDefault());
-    assertThat(lastModifiedTime)
+    assertThat(getFs().getLastModifiedTime(fileNode, ZoneId.systemDefault()))
         .isNotNull()
         .isBefore(LocalDateTime.now());
+  }
 
+  @Test
+  void readAttributesException() {
     try (MockedStatic<Files> mockFiles = Mockito.mockStatic(Files.class)) {
       mockFiles.when(
           () -> Files.readAttributes(any(), ArgumentMatchers.<Class<BasicFileAttributes>>any()))
           .thenThrow(new IOException("Mocked IOException"));
       final FileSystemNode mockNode = new FileSystemNodeImpl("x", "y", false, 1);
-      assertThatThrownBy(() -> getFs().getLastModifiedTime(mockNode, ZoneId.systemDefault()))
+      assertThatThrownBy(
+          () -> getFs().getLastModifiedTime(mockNode, ZoneId.systemDefault()))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("Mocked IOException");
+      assertThatThrownBy(() -> getFs().getCreationTime(mockNode, ZoneId.systemDefault()))
           .isInstanceOf(IllegalStateException.class)
           .hasMessageContaining("Mocked IOException");
     }
