@@ -2,16 +2,23 @@ package be.mathiasbosman.fs.core.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 
 import be.mathiasbosman.fs.core.domain.FileSystemNode;
 import be.mathiasbosman.fs.core.domain.FileSystemNodeImpl;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import lombok.SneakyThrows;
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 /**
  * Abstract FileService test that can be extended by other service tests. The abstract methods
@@ -55,6 +62,15 @@ public abstract class AbstractFileServiceTest {
     FileSystemNode objectNode = getFs().getFileNode("path/to/object");
     assertThat(getFs().getBytes(objectNode)).isEqualTo("content".getBytes());
     assertThat(getFs().getBytes("path", "to", "object")).isEqualTo("content".getBytes());
+
+    try (MockedStatic<IOUtils> mockedIOUtils = Mockito.mockStatic(IOUtils.class)) {
+      mockedIOUtils.when(() -> IOUtils.toByteArray(any(InputStream.class)))
+          .thenThrow(new IOException("Mocked IOException"));
+      putObject("path/to/failingObject");
+      assertThatThrownBy(() -> getFs().getBytes("path/to/failingObject"))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("Mocked IOException");
+    }
   }
 
   @Test
@@ -146,6 +162,15 @@ public abstract class AbstractFileServiceTest {
   void read() {
     putObject("path/to/object", "content");
     assertThat(getFs().read("path/to/object")).isEqualTo("content");
+
+    try (MockedStatic<IOUtils> mockedIOUtils = Mockito.mockStatic(IOUtils.class)) {
+      mockedIOUtils.when(() -> IOUtils.toString(any(InputStream.class), any(Charset.class)))
+          .thenThrow(new IOException("Mocked IOException"));
+      putObject("path/to/failingObject");
+      assertThatThrownBy(() -> getFs().read("path/to/failingObject"))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("Mocked IOException");
+    }
   }
 
   @Test
