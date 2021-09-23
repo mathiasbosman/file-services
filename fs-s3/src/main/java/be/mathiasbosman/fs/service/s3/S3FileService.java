@@ -3,7 +3,6 @@ package be.mathiasbosman.fs.service.s3;
 import be.mathiasbosman.fs.core.domain.FileSystemNode;
 import be.mathiasbosman.fs.core.domain.FileSystemNodeType;
 import be.mathiasbosman.fs.core.service.AbstractFileService;
-import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
@@ -87,13 +86,8 @@ public class S3FileService extends AbstractFileService {
   }
 
   private void delete(String key) {
-    try {
-      log.debug("Deleting {}/{}", bucketName, key);
-      s3.deleteObject(bucketName, key);
-    } catch (SdkClientException e) {
-      throw new IllegalStateException(
-          "The S3 server threw an error deleting the object with key = " + key, e);
-    }
+    log.debug("Deleting {}/{}", bucketName, key);
+    s3.deleteObject(bucketName, key);
   }
 
   @Override
@@ -141,12 +135,8 @@ public class S3FileService extends AbstractFileService {
   @Override
   public InputStream open(FileSystemNode node) {
     String key = toObjectKey(node.getPath());
-    try {
-      log.debug("Getting {}/{}", bucketName, key);
-      return s3.getObject(bucketName, key).getObjectContent();
-    } catch (Exception e) {
-      throw new IllegalStateException("The S3 server threw an error opening " + key, e);
-    }
+    log.debug("Getting {}/{}", bucketName, key);
+    return s3.getObject(bucketName, key).getObjectContent();
   }
 
   @Override
@@ -167,15 +157,8 @@ public class S3FileService extends AbstractFileService {
   protected void copyContent(FileSystemNode source, String to) {
     String sourceKey = toObjectKey(source.getPath());
     String destinationKey = toObjectKey(to);
-
-    try {
-      log.debug("Copying object {}/{} to {}/{}", bucketName, source, bucketName, destinationKey);
-      s3.copyObject(bucketName, sourceKey, bucketName, destinationKey);
-    } catch (Exception e) {
-      throw new IllegalStateException(
-          "The S3 server threw an error when copying from "
-              + sourceKey + " to " + destinationKey, e);
-    }
+    log.debug("Copying object {}/{} to {}/{}", bucketName, source, bucketName, destinationKey);
+    s3.copyObject(bucketName, sourceKey, bucketName, destinationKey);
   }
 
   @Override
@@ -200,13 +183,9 @@ public class S3FileService extends AbstractFileService {
 
   @Override
   protected boolean isDirectory(String path) {
-    try {
-      final ListObjectsRequest objectList = new ListObjectsRequest(bucketName, toObjectKey(path),
-          null, null, 1);
-      return CollectionUtils.isNotEmpty(s3.listObjects(objectList).getObjectSummaries());
-    } catch (SdkClientException e) {
-      throw new IllegalStateException("The S3 server threw an error listing objects on " + path, e);
-    }
+    final ListObjectsRequest objectList = new ListObjectsRequest(bucketName, toObjectKey(path),
+        null, null, 1);
+    return CollectionUtils.isNotEmpty(s3.listObjects(objectList).getObjectSummaries());
   }
 
   @Override
@@ -221,14 +200,8 @@ public class S3FileService extends AbstractFileService {
   }
 
   void put(String key, InputStream is, ObjectMetadata metadata) {
-    try {
-      log.debug("Putting object {}/{}", bucketName, key);
-      s3.putObject(bucketName, key, is, metadata);
-    } catch (SdkClientException e) {
-      throw new IllegalStateException(
-          "The S3 server threw an array for the object with key = " + key,
-          e);
-    }
+    log.debug("Putting object {}/{}", bucketName, key);
+    s3.putObject(bucketName, key, is, metadata);
   }
 
   ObjectMetadata toMetadata(long size) {
@@ -260,11 +233,7 @@ public class S3FileService extends AbstractFileService {
   }
 
   private boolean isFile(String path) {
-    try {
-      return s3.doesObjectExist(bucketName, toObjectKey(path));
-    } catch (SdkClientException e) {
-      throw new IllegalStateException("The S3 server threw an error accessing " + path, e);
-    }
+    return s3.doesObjectExist(bucketName, toObjectKey(path));
   }
 
   private String toObjectKey(String path) {
