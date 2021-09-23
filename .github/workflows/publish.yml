@@ -3,6 +3,9 @@ on:
   release:
     types: [ published ]
 
+env:
+  ACTION_ACTOR_EMAIL: ${{ secrets.ACTION_ACTOR_EMAIL }}
+
 jobs:
   test:
     name: Test run 🧪
@@ -22,8 +25,6 @@ jobs:
     name: Update version 🌿
     needs: test
     runs-on: ubuntu-latest
-    env:
-      ACTION_ACTOR_EMAIL: ${{ secrets.ACTION_ACTOR_EMAIL }}
     steps:
       - uses: actions/setup-java@v2
         with:
@@ -33,7 +34,6 @@ jobs:
         with:
           token: ${{ secrets.ACTION_PAT }}
       - name: Remove snapshot
-        # remove the defined prefix and suffix (from GitHub) and use this as new version
         run: |
           mvn versions:set -DremoveSnapshot versions:commit
       - name: Commit version
@@ -56,6 +56,13 @@ jobs:
           java-version: 11
           distribution: adopt
       - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.ACTION_PAT }}
+      - name: Pull new version
+        run: |
+          git config user.name "githubaction[bot]"
+          git config user.email "$ACTION_ACTOR_EMAIL"
+          git pull origin master --no-rebase
       - name: Publish package
         run: mvn -B deploy -DskipTests
         env:
@@ -65,8 +72,6 @@ jobs:
     name: Prepare snapshot 🌱
     needs: deploy
     runs-on: ubuntu-latest
-    env:
-      ACTION_ACTOR_EMAIL: ${{ secrets.ACTION_ACTOR_EMAIL }}
     steps:
       - name: Set up JDK 11
         uses: actions/setup-java@v2
