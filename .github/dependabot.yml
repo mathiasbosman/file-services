@@ -7,7 +7,7 @@ updates:
   - package-ecosystem: maven
     directory: /
     schedule:
-      interval: daily
+      interval: weekly
     ignore:
       - dependency-name: "com.amazonaws:aws-java-sdk-s3"
         update-types: [ "version-update:semver-patch", "version-update:semver-minor" ]
