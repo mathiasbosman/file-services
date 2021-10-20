@@ -64,7 +64,7 @@ jobs:
           git config user.email "$ACTION_ACTOR_EMAIL"
           git pull origin master --no-rebase
       - name: Publish package
-        run: mvn -B deploy -DskipTests
+        run: mvn -B deploy -DskipTests -Dowasp.skip=true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
