@@ -1,4 +1,4 @@
-name: code QL
+name: Code QL
 on:
   push:
     branches: [ master ]

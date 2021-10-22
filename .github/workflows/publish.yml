@@ -1,4 +1,4 @@
-name: publish package to GitHub Packages
+name: Publish
 on:
   release:
     types: [ published ]
