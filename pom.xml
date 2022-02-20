@@ -24,7 +24,7 @@
       <dependency>
         <artifactId>testcontainers</artifactId>
         <groupId>org.testcontainers</groupId>
-        <version>1.16.0</version>
+        <version>1.16.3</version>
       </dependency>
       <dependency>
         <artifactId>commons-lang3</artifactId>
@@ -40,7 +40,7 @@
         <artifactId>mockito-inline</artifactId>
         <groupId>org.mockito</groupId>
         <scope>test</scope>
-        <version>4.0.0</version>
+        <version>4.3.1</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -96,7 +96,7 @@
     <artifactId>spring-boot-starter-parent</artifactId>
     <groupId>org.springframework.boot</groupId>
     <relativePath/>
-    <version>2.5.5</version> <!-- lookup parent from repository -->
+    <version>2.6.3</version> <!-- lookup parent from repository -->
   </parent>
 
   <properties>
