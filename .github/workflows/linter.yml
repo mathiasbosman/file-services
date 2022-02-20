@@ -22,7 +22,7 @@ jobs:
           java-version: 17
           distribution: adopt
       - name: Lint Code Base
-        uses: github/super-linter@v4
+        uses: github/super-linter/slim@v4
         env:
           VALIDATE_ALL_CODEBASE: false
           JAVA_FILE_NAME: checkstyle.xml
