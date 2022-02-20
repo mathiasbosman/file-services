@@ -24,7 +24,7 @@
       <dependency>
         <artifactId>testcontainers</artifactId>
         <groupId>org.testcontainers</groupId>
-        <version>1.16.2</version>
+        <version>1.16.3</version>
       </dependency>
       <dependency>
         <artifactId>commons-lang3</artifactId>
@@ -40,7 +40,7 @@
         <artifactId>mockito-inline</artifactId>
         <groupId>org.mockito</groupId>
         <scope>test</scope>
-        <version>4.1.0</version>
+        <version>4.3.1</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -70,21 +70,6 @@
         <groupId>org.jacoco</groupId>
         <version>0.8.7</version>
       </plugin>
-      <plugin>
-        <artifactId>dependency-check-maven</artifactId>
-        <configuration>
-          <skip>${owasp.skip}</skip>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>check</goal>
-            </goals>
-          </execution>
-        </executions>
-        <groupId>org.owasp</groupId>
-        <version>6.4.1</version>
-      </plugin>
     </plugins>
   </build>
   <modules>
@@ -111,15 +96,14 @@
     <artifactId>spring-boot-starter-parent</artifactId>
     <groupId>org.springframework.boot</groupId>
     <relativePath/>
-    <version>2.6.1</version> <!-- lookup parent from repository -->
+    <version>2.6.3</version> <!-- lookup parent from repository -->
   </parent>
 
   <properties>
-    <java.language.version>11</java.language.version>
+    <java.language.version>17</java.language.version>
     <maven.compiler.source>${java.language.version}</maven.compiler.source>
     <maven.compiler.target>${java.language.version}</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <owasp.skip>false</owasp.skip>
   </properties>
 
   <version>1.1.2-SNAPSHOT</version>

@@ -9,9 +9,6 @@ import java.util.stream.Stream;
 
 /**
  * Simple interface for handling file operations on a file system such as any NIO system or S3.
- *
- * @author mathiasbosman
- * @since 0.0.1
  */
 public interface FileService {
 

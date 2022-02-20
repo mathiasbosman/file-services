@@ -4,9 +4,6 @@ import be.mathiasbosman.fs.core.domain.FileSystemNode;
 
 /**
  * Simple visitor for {@link FileSystemNode}s.
- *
- * @author mathiasbosman
- * @since 0.0.1
  */
 public interface FileNodeVisitor {
 

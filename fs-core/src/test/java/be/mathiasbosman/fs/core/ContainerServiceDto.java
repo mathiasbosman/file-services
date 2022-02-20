@@ -1,15 +1,8 @@
 package be.mathiasbosman.fs.core;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
 /**
  * Dto to hold container information.
  */
-@Getter
-@AllArgsConstructor
-public class ContainerServiceDto {
+public record ContainerServiceDto(String serviceName, int port) {
 
-  private final String serviceName;
-  private final int port;
 }

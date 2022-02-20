@@ -29,9 +29,7 @@ import org.apache.commons.lang3.StringUtils;
  * An implementation of the {@link be.mathiasbosman.fs.core.service.FileService} for AmazonS3 file
  * systems. A marker object name is used to mock directories.
  *
- * @author mathiasbosman
  * @see AmazonS3
- * @since 0.0.1
  */
 @Slf4j
 public class S3FileService extends AbstractFileService {

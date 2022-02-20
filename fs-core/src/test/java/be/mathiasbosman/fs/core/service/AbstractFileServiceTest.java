@@ -21,10 +21,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 /**
- * Abstract FileService test that can be extended by other service tests. The abstract methods
- * should be overridden for each file system.
- *
- * @since 0.0.1
+ * Abstract FileService test that can be extended by other service tests.
  */
 public abstract class AbstractFileServiceTest {
 
@@ -35,20 +32,24 @@ public abstract class AbstractFileServiceTest {
     assertThatThrownBy(() -> getFs().copy(node, "target"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("File mockParent/mock does not exist.");
+
     // copy empty directory
     putDirectory("sourceDir");
     FileSystemNode sourceDirNode = getFs().getFileNode("sourceDir");
     getFs().copy(sourceDirNode, "targetDir");
     assertDirectoryExists("sourceDir");
     assertDirectoryExists("targetDir");
+
     // copy directory with files
     putObject("sourceDir/a");
     getFs().copy(sourceDirNode, "targetDirB");
     assertExists("targetDirB/a");
+
     // copy file to existing target
     putObject("targetDirC/a");
     FileSystemNode sourceFileNode = getFs().getFileNode("sourceDir/a");
     getFs().copy(sourceFileNode, "targetDirC");
+
     // copy via path
     putObject("sourceDir/c");
     getFs().copy("sourceDir/c", "targetDir/c");
@@ -59,6 +60,7 @@ public abstract class AbstractFileServiceTest {
   @Test
   void getBytes() {
     putObject("path/to/object", "content");
+
     FileSystemNode objectNode = getFs().getFileNode("path/to/object");
     assertThat(getFs().getBytes(objectNode)).isEqualTo("content".getBytes());
     assertThat(getFs().getBytes("path", "to", "object")).isEqualTo("content".getBytes());
@@ -66,7 +68,9 @@ public abstract class AbstractFileServiceTest {
     try (MockedStatic<IOUtils> mockedIOUtils = Mockito.mockStatic(IOUtils.class)) {
       mockedIOUtils.when(() -> IOUtils.toByteArray(any(InputStream.class)))
           .thenThrow(new IOException("Mocked IOException"));
+
       putObject("path/to/failingObject");
+
       assertThatThrownBy(() -> getFs().getBytes("path/to/failingObject"))
           .isInstanceOf(IllegalStateException.class)
           .hasMessageContaining("Mocked IOException");
@@ -80,7 +84,9 @@ public abstract class AbstractFileServiceTest {
     assertThat(emptyNode.getName()).isEmpty();
     assertThat(emptyNode.isDirectory()).isTrue();
     assertThat(emptyNode.getSize()).isEqualTo(0);
+
     putObject("path/to/object");
+
     FileSystemNode fileNode = getFs().getFileNode("path", "to", "object");
     assertThat(fileNode).isNotNull();
     assertThat(fileNode.isDirectory()).isFalse();
@@ -95,6 +101,7 @@ public abstract class AbstractFileServiceTest {
   @Test
   void getOptionalFileNode() {
     putObject("path/to/object");
+
     assertThat(getFs().getOptionalFileNode("path/to/object")).isNotNull();
     assertThat(getFs().getOptionalFileNode("path/invalid")).isNull();
   }
@@ -102,11 +109,13 @@ public abstract class AbstractFileServiceTest {
   @Test
   void getParent() {
     putObject("path/to/object");
+
     FileSystemNode fileNode = getFs().getFileNode("path/to/object");
     FileSystemNode parentNode = getFs().getParent(fileNode);
     assertThat(parentNode).isNotNull();
     assertThat(parentNode.getPath()).isEqualTo("path/to");
     assertThat(parentNode.getParentPath()).isEqualTo("path");
+
     FileSystemNode rootNode = getFs().getFileNode("");
     assertThat(getFs().getParent(rootNode)).isNull();
     assertThat(getFs().getParent("path/to", "object")).isNotNull();
@@ -122,6 +131,7 @@ public abstract class AbstractFileServiceTest {
   void list() {
     putObject("path/to/dir/objectA");
     putObject("path/to/dir/objectB");
+
     // invalid path
     assertThat(getFs().list("path/to/invalid")).isEmpty();
     // file listing
@@ -140,6 +150,7 @@ public abstract class AbstractFileServiceTest {
   @Test
   void open() {
     putObject("path/to/object", "content");
+
     assertThat(getFs().open("path/to/object")).hasContent("content");
   }
 
@@ -147,6 +158,7 @@ public abstract class AbstractFileServiceTest {
   void save() {
     getFs().save(new ByteArrayInputStream("contentA".getBytes()), "path/to/objectA");
     assertThat(getContent("path/to/objectA")).isEqualTo("contentA");
+
     getFs().save("contentB".getBytes(StandardCharsets.UTF_8), "path/to/objectB");
     assertThat(getContent("path/to/objectB")).isEqualTo("contentB");
   }
@@ -176,6 +188,7 @@ public abstract class AbstractFileServiceTest {
   @Test
   void isDirectory() {
     putDirectory("path/to/object");
+
     assertThat(getFs().isDirectory("path", "to", "invalid")).isFalse();
     assertThat(getFs().isDirectory("path", "to", "object")).isTrue();
   }
@@ -183,6 +196,7 @@ public abstract class AbstractFileServiceTest {
   @Test
   void exists() {
     putObject("path/to/object");
+
     assertThat(getFs().exists("path")).isTrue();
     assertThat(getFs().exists("path", "to")).isTrue();
     assertThat(getFs().exists("path", "to", "object")).isTrue();
@@ -219,6 +233,7 @@ public abstract class AbstractFileServiceTest {
   void getSize() {
     putObject("path/to/objectA", "contentA");
     putObject("path/to/objectB", "contentB");
+
     FileSystemNode directoryNode = getFs().getFileNode("path/to");
     FileSystemNode fileNode = getFs().getFileNode("path/to/objectA");
     assertThat(getFs().getSize(fileNode)).isEqualTo("contentA".length());
@@ -255,6 +270,7 @@ public abstract class AbstractFileServiceTest {
     putObject("path/to/objectB");
     putObject("path/to/objectC");
     putObject("path/to/deeper/object");
+
     assertThat(getFs().countFiles(getFs().getFileNode("path/to"))).isEqualTo(3);
   }
 

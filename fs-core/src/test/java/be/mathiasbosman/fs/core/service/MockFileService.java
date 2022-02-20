@@ -27,8 +27,6 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * An implementation of the {@link be.mathiasbosman.fs.core.service.FileService} for test purposes.
  * It is basically a minified NIO implementation.
- *
- * @author mathiasbosman
  * @since 1.1.0
  */
 public class MockFileService extends AbstractFileService {
@@ -58,7 +56,7 @@ public class MockFileService extends AbstractFileService {
 
       @Override
       public void pre(FileSystemNode directory) {
-        // no op on pre() when deleting
+        // no operation on pre() when deleting
       }
 
       @Override
