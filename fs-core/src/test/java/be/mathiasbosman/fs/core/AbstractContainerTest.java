@@ -46,7 +46,7 @@ public abstract class AbstractContainerTest extends AbstractFileServiceTest {
         .withPull(false);
     for (ContainerServiceDto service : services) {
       container
-          .withExposedService(service.getServiceName(), service.getPort(), Wait.forListeningPort());
+          .withExposedService(service.serviceName(), service.port(), Wait.forListeningPort());
     }
     return container;
   }
