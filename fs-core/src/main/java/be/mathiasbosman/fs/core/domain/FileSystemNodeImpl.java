@@ -5,9 +5,6 @@ import lombok.Getter;
 
 /**
  * Simple implementation of {@link FileSystemNode}.
- *
- * @author mathiasbosman
- * @since 0.0.1
  */
 @Getter
 public class FileSystemNodeImpl implements FileSystemNode {

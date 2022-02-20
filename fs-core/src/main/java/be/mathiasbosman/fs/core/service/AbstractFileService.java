@@ -22,9 +22,6 @@ import org.apache.commons.lang3.tuple.Pair;
 /**
  * Abstract implementation of {@link FileService}. Also holding some static methods that can be used
  * for path manipulation.
- *
- * @author mathiasbosman
- * @since 0.0.1
  */
 public abstract class AbstractFileService implements FileService {
 
@@ -211,7 +208,6 @@ public abstract class AbstractFileService implements FileService {
     return open(getFileNode(parts));
   }
 
-  // methods that should be overridden
   @Override
   public abstract InputStream open(FileSystemNode node);
 

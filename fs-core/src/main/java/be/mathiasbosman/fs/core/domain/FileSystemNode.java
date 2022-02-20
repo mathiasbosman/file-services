@@ -3,9 +3,6 @@ package be.mathiasbosman.fs.core.domain;
 /**
  * Interface that represents a node on the file system. This node can be a directory, a file or
  * none-existent.
- *
- * @author mathiasbosman
- * @since 0.0.1
  */
 public interface FileSystemNode {
 
