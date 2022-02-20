@@ -33,9 +33,6 @@ import org.apache.commons.lang3.StringUtils;
  * An implementation of the {@link be.mathiasbosman.fs.core.service.FileService} for NIO file
  * systems. It holds some static arrays containing invalid filename characters for Windows and Unix
  * systems.
- *
- * @author mathiasbosman
- * @since 0.0.1
  */
 @Slf4j
 public class NioFileService extends AbstractFileService {
@@ -71,7 +68,7 @@ public class NioFileService extends AbstractFileService {
 
       @Override
       public void pre(FileSystemNode directory) {
-        // no op on pre() when deleting
+        // no operation on pre() when deleting
       }
 
       @Override
@@ -138,7 +135,7 @@ public class NioFileService extends AbstractFileService {
 
   @Override
   public void save(InputStream in, String path, long size) {
-    log.debug("Saving inputstream to {}", path);
+    log.debug("Saving input stream to {}", path);
     Path resolvedPath = path(path);
     mkDirectories(resolvedPath.getParent());
     try (OutputStream out = Files.newOutputStream(resolvedPath)) {
