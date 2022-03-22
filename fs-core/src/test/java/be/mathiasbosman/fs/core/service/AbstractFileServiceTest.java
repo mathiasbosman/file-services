@@ -29,30 +29,31 @@ public abstract class AbstractFileServiceTest {
   void copyNode() {
     FileSystemNodeImpl node = new FileSystemNodeImpl("mockParent", "mock", false, 1);
     // assert none-existing
-    assertThatThrownBy(() -> getFs().copy(node, "target"))
+    FileService fs = getFs();
+    assertThatThrownBy(() -> fs.copy(node, "target"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("File mockParent/mock does not exist.");
 
     // copy empty directory
     putDirectory("sourceDir");
-    FileSystemNode sourceDirNode = getFs().getFileNode("sourceDir");
-    getFs().copy(sourceDirNode, "targetDir");
+    FileSystemNode sourceDirNode = fs.getFileNode("sourceDir");
+    fs.copy(sourceDirNode, "targetDir");
     assertDirectoryExists("sourceDir");
     assertDirectoryExists("targetDir");
 
     // copy directory with files
     putObject("sourceDir/a");
-    getFs().copy(sourceDirNode, "targetDirB");
+    fs.copy(sourceDirNode, "targetDirB");
     assertExists("targetDirB/a");
 
     // copy file to existing target
     putObject("targetDirC/a");
-    FileSystemNode sourceFileNode = getFs().getFileNode("sourceDir/a");
-    getFs().copy(sourceFileNode, "targetDirC");
+    FileSystemNode sourceFileNode = fs.getFileNode("sourceDir/a");
+    fs.copy(sourceFileNode, "targetDirC");
 
     // copy via path
     putObject("sourceDir/c");
-    getFs().copy("sourceDir/c", "targetDir/c");
+    fs.copy("sourceDir/c", "targetDir/c");
     assertExists("sourceDir/c");
     assertExists("targetDir/c");
   }
@@ -61,9 +62,10 @@ public abstract class AbstractFileServiceTest {
   void getBytes() {
     putObject("path/to/object", "content");
 
-    FileSystemNode objectNode = getFs().getFileNode("path/to/object");
-    assertThat(getFs().getBytes(objectNode)).isEqualTo("content".getBytes());
-    assertThat(getFs().getBytes("path", "to", "object")).isEqualTo("content".getBytes());
+    FileService fs = getFs();
+    FileSystemNode objectNode = fs.getFileNode("path/to/object");
+    assertThat(fs.getBytes(objectNode)).isEqualTo("content".getBytes());
+    assertThat(fs.getBytes("path", "to", "object")).isEqualTo("content".getBytes());
 
     try (MockedStatic<IOUtils> mockedIOUtils = Mockito.mockStatic(IOUtils.class)) {
       mockedIOUtils.when(() -> IOUtils.toByteArray(any(InputStream.class)))
@@ -71,7 +73,7 @@ public abstract class AbstractFileServiceTest {
 
       putObject("path/to/failingObject");
 
-      assertThatThrownBy(() -> getFs().getBytes("path/to/failingObject"))
+      assertThatThrownBy(() -> fs.getBytes("path/to/failingObject"))
           .isInstanceOf(IllegalStateException.class)
           .hasMessageContaining("Mocked IOException");
     }
@@ -79,21 +81,22 @@ public abstract class AbstractFileServiceTest {
 
   @Test
   void getFileNode() {
-    FileSystemNode emptyNode = getFs().getFileNode("");
+    FileService fs = getFs();
+    FileSystemNode emptyNode = fs.getFileNode("");
     assertThat(emptyNode.getParentPath()).isNull();
     assertThat(emptyNode.getName()).isEmpty();
     assertThat(emptyNode.isDirectory()).isTrue();
-    assertThat(emptyNode.getSize()).isEqualTo(0);
+    assertThat(emptyNode.getSize()).isZero();
 
     putObject("path/to/object");
 
-    FileSystemNode fileNode = getFs().getFileNode("path", "to", "object");
+    FileSystemNode fileNode = fs.getFileNode("path", "to", "object");
     assertThat(fileNode).isNotNull();
     assertThat(fileNode.isDirectory()).isFalse();
     assertThat(fileNode.getName()).isEqualTo("object");
     assertThat(fileNode.getPath()).isEqualTo("path/to/object");
     assertThat(fileNode.getParentPath()).isEqualTo("path/to");
-    assertThatThrownBy(() -> getFs().getFileNode("path/invalid"))
+    assertThatThrownBy(() -> fs.getFileNode("path/invalid"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Path does not exist on filesystem: path/invalid");
   }
@@ -133,17 +136,18 @@ public abstract class AbstractFileServiceTest {
     putObject("path/to/dir/objectB");
 
     // invalid path
-    assertThat(getFs().list("path/to/invalid")).isEmpty();
+    FileService fs = getFs();
+    assertThat(fs.list("path/to/invalid")).isEmpty();
     // file listing
-    assertThatThrownBy(() -> getFs().list("path/to/dir/objectA"))
+    assertThatThrownBy(() -> fs.list("path/to/dir/objectA"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Cannot list contents of a file node");
     // directory listing
-    assertThat(getFs().list("path/to/dir"))
+    assertThat(fs.list("path/to/dir"))
         .isNotEmpty()
         .hasSize(2);
     // root listing
-    assertThat(getFs().list("path"))
+    assertThat(fs.list("path"))
         .isNotEmpty();
   }
 
@@ -173,13 +177,14 @@ public abstract class AbstractFileServiceTest {
   @Test
   void read() {
     putObject("path/to/object", "content");
-    assertThat(getFs().read("path/to/object")).isEqualTo("content");
+    FileService fs = getFs();
+    assertThat(fs.read("path/to/object")).isEqualTo("content");
 
     try (MockedStatic<IOUtils> mockedIOUtils = Mockito.mockStatic(IOUtils.class)) {
       mockedIOUtils.when(() -> IOUtils.toString(any(InputStream.class), any(Charset.class)))
           .thenThrow(new IOException("Mocked IOException"));
       putObject("path/to/failingObject");
-      assertThatThrownBy(() -> getFs().read("path/to/failingObject"))
+      assertThatThrownBy(() -> fs.read("path/to/failingObject"))
           .isInstanceOf(IllegalStateException.class)
           .hasMessageContaining("Mocked IOException");
     }
@@ -257,11 +262,11 @@ public abstract class AbstractFileServiceTest {
     for (FileSystemNode file : getFs().list()) {
       getFs().walk(file, spy);
     }
-    assertThat(Arrays.asList("x/a", "x/b", "x/c/1", "y/e", "z")).isEqualTo(spy.visitedFiles);
-    assertThat(Arrays.asList("x", "x/c", "x/c/d", "y")).isEqualTo(spy.visitedFolders);
-    assertThat(Arrays
+    assertThat(spy.visitedFiles).isEqualTo(Arrays.asList("x/a", "x/b", "x/c/1", "y/e", "z"));
+    assertThat(spy.visitedFolders).isEqualTo(Arrays.asList("x", "x/c", "x/c/d", "y"));
+    assertThat(spy.visitationOrder).isEqualTo(Arrays
         .asList("> x", "x/a", "x/b", "> x/c", "x/c/1", "> x/c/d", "< x/c/d", "< x/c", "< x", "> y",
-            "y/e", "< y", "z")).isEqualTo(spy.visitationOrder);
+            "y/e", "< y", "z"));
   }
 
   @Test

@@ -13,7 +13,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -38,13 +37,11 @@ public abstract class AbstractFileService implements FileService {
    * @return The combined path {@link String}
    */
   public static String combine(String... parts) {
-
     return Joiner.on(File.separatorChar).skipNulls().join(
         Arrays.stream(parts).map(input -> {
           String stripped = strip(input, File.separatorChar);
           return StringUtils.isEmpty(stripped) ? null : stripped;
-        }).collect(Collectors.toList())
-    );
+        }).toList());
   }
 
   /**
@@ -188,9 +185,6 @@ public abstract class AbstractFileService implements FileService {
   }
 
   @Override
-  public abstract List<FileSystemNode> list(FileSystemNode root);
-
-  @Override
   public List<FileSystemNode> list(String... parts) {
     FileSystemNode node = getOptionalFileNode(parts);
     if (node == null) {
@@ -207,9 +201,6 @@ public abstract class AbstractFileService implements FileService {
     checkPath(parts);
     return open(getFileNode(parts));
   }
-
-  @Override
-  public abstract InputStream open(FileSystemNode node);
 
 
   @Override
@@ -269,9 +260,6 @@ public abstract class AbstractFileService implements FileService {
   public void delete(FileSystemNode node) {
     delete(node, false);
   }
-
-  @Override
-  public abstract void delete(FileSystemNode node, boolean recursive);
 
   @Override
   public void move(String from, String to) {
