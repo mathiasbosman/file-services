@@ -109,9 +109,10 @@ class NioFileServiceTest extends AbstractFileServiceTest {
   void deleteOnNio() {
     putObject("x/y/z", "-");
 
-    assertThatThrownBy(() -> getFs().delete(
-        getFs().getFileNode("x/y"), false
-    )).isInstanceOf(IllegalStateException.class)
+    FileService fs = getFs();
+    FileSystemNode fileNode = fs.getFileNode("x/y");
+    assertThatThrownBy(() -> fs.delete(fileNode, false))
+        .isInstanceOf(IllegalStateException.class)
         .hasMessage("Directory is not empty for deletion");
   }
 
@@ -121,9 +122,10 @@ class NioFileServiceTest extends AbstractFileServiceTest {
       files.when(() -> Files.walkFileTree(any(), any(), anyInt(), any()))
           .thenThrow(new IOException("Mocked IOException"));
 
+      FileService fs = getFs();
       final FileSystemNode mockNode = new FileSystemNodeImpl("x", "y", true, 0);
 
-      assertThatThrownBy(() -> getFs().list(mockNode))
+      assertThatThrownBy(() -> fs.list(mockNode))
           .isInstanceOf(IllegalStateException.class)
           .hasMessageContaining("Mocked IOException");
     }
@@ -135,9 +137,10 @@ class NioFileServiceTest extends AbstractFileServiceTest {
       files.when(() -> Files.newInputStream(any()))
           .thenThrow(new IOException("Mocked IOException"));
 
+      FileService fs = getFs();
       final FileSystemNode mockNode = new FileSystemNodeImpl("x", "y", false, 1);
 
-      assertThatThrownBy(() -> getFs().open(mockNode))
+      assertThatThrownBy(() -> fs.open(mockNode))
           .isInstanceOf(IllegalStateException.class)
           .hasMessageContaining("Mocked IOException");
     }
@@ -149,7 +152,9 @@ class NioFileServiceTest extends AbstractFileServiceTest {
       mockIOUtils.when(() -> IOUtils.copy(any(InputStream.class), any(OutputStream.class)))
           .thenThrow(new IOException("Mocked IOException"));
 
-      assertThatThrownBy(() -> getFs().save("content".getBytes(), "x/y"))
+      FileService fs = getFs();
+      byte[] bytes = "content".getBytes();
+      assertThatThrownBy(() -> fs.save(bytes, "x/y"))
           .isInstanceOf(IllegalStateException.class)
           .hasMessageContaining("Mocked IOException");
     }
@@ -163,7 +168,8 @@ class NioFileServiceTest extends AbstractFileServiceTest {
 
       final FileSystemNode mockNode = new FileSystemNodeImpl("x", "y", false, 1);
 
-      assertThatThrownBy(() -> getFs().streamDirectory(mockNode))
+      FileService fs = getFs();
+      assertThatThrownBy(() -> fs.streamDirectory(mockNode))
           .isInstanceOf(IllegalStateException.class)
           .hasMessageContaining("Mocked IOException");
     }
@@ -177,7 +183,8 @@ class NioFileServiceTest extends AbstractFileServiceTest {
 
       final FileSystemNode mockNode = new FileSystemNodeImpl("x", "y", false, 1);
 
-      assertThatThrownBy(() -> getFs().getSize(mockNode))
+      FileService fs = getFs();
+      assertThatThrownBy(() -> fs.getSize(mockNode))
           .isInstanceOf(IllegalStateException.class)
           .hasMessageContaining("Mocked IOException");
     }
@@ -189,7 +196,8 @@ class NioFileServiceTest extends AbstractFileServiceTest {
       files.when(() -> Files.createDirectories(any()))
           .thenThrow(new IOException("Mocked IOException"));
 
-      assertThatThrownBy(() -> getFs().mkDirectories("x"))
+      FileService fs = getFs();
+      assertThatThrownBy(() -> fs.mkDirectories("x"))
           .isInstanceOf(IllegalStateException.class)
           .hasMessageContaining("Mocked IOException");
     }
@@ -203,7 +211,8 @@ class NioFileServiceTest extends AbstractFileServiceTest {
 
       final FileSystemNode mockNode = new FileSystemNodeImpl("x", "y", false, 1);
 
-      assertThatThrownBy(() -> getFs().delete(mockNode))
+      FileService fs = getFs();
+      assertThatThrownBy(() -> fs.delete(mockNode))
           .isInstanceOf(IllegalStateException.class)
           .hasMessageContaining("Mocked IOException");
     }
@@ -213,8 +222,9 @@ class NioFileServiceTest extends AbstractFileServiceTest {
   void getCreationTime() {
     putObject("x", "-");
 
-    FileSystemNode fileNode = getFs().getFileNode("x");
-    assertThat(getFs().getCreationTime(fileNode, ZoneId.systemDefault()))
+    FileService fs = getFs();
+    FileSystemNode fileNode = fs.getFileNode("x");
+    assertThat(fs.getCreationTime(fileNode, ZoneId.systemDefault()))
         .isNotNull()
         .isBefore(LocalDateTime.now());
   }
@@ -232,15 +242,18 @@ class NioFileServiceTest extends AbstractFileServiceTest {
   @Test
   void readAttributesException() {
     try (MockedStatic<Files> mockFiles = Mockito.mockStatic(Files.class)) {
-      mockFiles.when(() -> Files.readAttributes(any(), ArgumentMatchers.<Class<BasicFileAttributes>>any()))
+      mockFiles.when(
+              () -> Files.readAttributes(any(), ArgumentMatchers.<Class<BasicFileAttributes>>any()))
           .thenThrow(new IOException("Mocked IOException"));
 
       final FileSystemNode mockNode = new FileSystemNodeImpl("x", "y", false, 1);
+      FileService fs = getFs();
+      ZoneId zoneId = ZoneId.systemDefault();
       assertThatThrownBy(
-          () -> getFs().getLastModifiedTime(mockNode, ZoneId.systemDefault()))
+          () -> fs.getLastModifiedTime(mockNode, zoneId))
           .isInstanceOf(IllegalStateException.class)
           .hasMessageContaining("Mocked IOException");
-      assertThatThrownBy(() -> getFs().getCreationTime(mockNode, ZoneId.systemDefault()))
+      assertThatThrownBy(() -> fs.getCreationTime(mockNode, zoneId))
           .isInstanceOf(IllegalStateException.class)
           .hasMessageContaining("Mocked IOException");
     }

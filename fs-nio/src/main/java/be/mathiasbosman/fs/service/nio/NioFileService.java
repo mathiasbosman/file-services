@@ -23,7 +23,6 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -117,7 +116,7 @@ public class NioFileService extends AbstractFileService {
       return fromIterable.stream()
           .map(toFile)
           .sorted((Comparator.comparing(FileSystemNode::getName)))
-          .collect(Collectors.toList());
+          .toList();
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
