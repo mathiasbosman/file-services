@@ -96,7 +96,7 @@
     <artifactId>spring-boot-starter-parent</artifactId>
     <groupId>org.springframework.boot</groupId>
     <relativePath/>
-    <version>2.6.5</version> <!-- lookup parent from repository -->
+    <version>2.6.6</version> <!-- lookup parent from repository -->
   </parent>
 
   <properties>
