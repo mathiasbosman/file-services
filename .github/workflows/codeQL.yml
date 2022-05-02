@@ -19,8 +19,8 @@ jobs:
           java-version: 17
           distribution: adopt
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v1
+        uses: github/codeql-action/init@v2
       - name: Testless build
         run: mvn -B install -DskipTests
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v1
+        uses: github/codeql-action/analyze@v2
