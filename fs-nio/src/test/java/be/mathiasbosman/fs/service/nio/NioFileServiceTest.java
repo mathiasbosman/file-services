@@ -266,7 +266,7 @@ class NioFileServiceTest extends AbstractFileServiceTest {
   }
 
   @Test
-  void stream() {
+  public void stream() {
     putObject("x/a", "-");
     putObject("x/z", "-");
     putObject("x/b/a", "-");

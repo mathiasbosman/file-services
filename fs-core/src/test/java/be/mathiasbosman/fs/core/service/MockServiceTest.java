@@ -2,15 +2,20 @@ package be.mathiasbosman.fs.core.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import be.mathiasbosman.fs.core.domain.FileSystemNode;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * This test class tests the abstract file service
@@ -88,5 +93,16 @@ public class MockServiceTest extends AbstractFileServiceTest {
     } catch (IOException e) {
       throw new IllegalArgumentException(e);
     }
+  }
+
+  @Test
+  public void stream() {
+    putObject("x/a", "-");
+    putObject("x/z", "-");
+    putObject("x/b/a", "-");
+    Stream<FileSystemNode> stream = getFs().streamDirectory(getFs().getFileNode("x"));
+    assertThat(stream).isNotNull();
+    List<FileSystemNode> collected = stream.collect(Collectors.toList());
+    assertThat(collected).hasSize(5);
   }
 }

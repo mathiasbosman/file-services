@@ -3,115 +3,33 @@ package be.mathiasbosman.fs.core.service;
 import be.mathiasbosman.fs.core.domain.FileSystemNode;
 import be.mathiasbosman.fs.core.domain.FileSystemNodeImpl;
 import be.mathiasbosman.fs.core.domain.FileSystemNodeType;
-import com.google.common.base.Joiner;
+import be.mathiasbosman.fs.core.util.FileServiceUtils;
+import be.mathiasbosman.fs.core.util.ZipEntryInputStream;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 /**
- * Abstract implementation of {@link FileService}. Also holding some static methods that can be used
- * for path manipulation.
+ * Abstract implementation of {@link FileService} for path manipulation.
  */
 public abstract class AbstractFileService implements FileService {
 
-  /**
-   * The character used for separating the file extension (defaults to '.').
-   */
-  public static final char EXTENSION_SEPARATOR = '.';
-
-  /**
-   * Combine multiple strings to a path using the {@link File} separator. Paths are also stripped
-   * from excessive {@link File#separatorChar}.
-   *
-   * @param parts Path parts
-   * @return The combined path {@link String}
-   */
-  public static String combine(String... parts) {
-    return Joiner.on(File.separatorChar).skipNulls().join(
-        Arrays.stream(parts).map(input -> {
-          String stripped = strip(input, File.separatorChar);
-          return StringUtils.isEmpty(stripped) ? null : stripped;
-        }).toList());
-  }
-
-  /**
-   * Combine multiple strings to a path using the {@link File} separator with leading separator or
-   * without.
-   *
-   * @param leadingSeparator Either state to include the File.separator or not
-   * @param parts            Path parts
-   * @return The combined path {@link String}
-   */
-  public static String combine(boolean leadingSeparator, String... parts) {
-    String combined = combine(parts);
-    return !leadingSeparator ? combined : File.separatorChar + combined;
-  }
-
-  /**
-   * Returns the extension (determined by checking the last ".") of a path.
-   *
-   * @param parts Pah parts
-   * @return The extension as {@link String} excluding the "." character
-   */
-  public static String getExtension(String... parts) {
-    String combined = combine(parts);
-    return Optional.of(combined)
-        .filter(f -> f.contains(String.valueOf(EXTENSION_SEPARATOR)))
-        .map(f -> f.substring(combined.lastIndexOf(EXTENSION_SEPARATOR) + 1))
-        .orElse(null);
-  }
-
-  /**
-   * Gets the parent path of a given path.
-   *
-   * @param path Path part
-   * @return Path of the parent
-   */
-  public static String getParentPath(String... path) {
-    return split(combine(path)).getLeft();
-  }
-
-  /**
-   * Strips all given separators from a given {@link String}. Spaces are always stripped.
-   *
-   * @param input     The input {@link String}
-   * @param separator The separator char to strip
-   * @return The stripped {@link String}
-   */
-  public static String strip(String input, char separator) {
-    return StringUtils.strip(input, separator + " ");
-  }
-
-  /**
-   * Split a given path using the file separator at the last separator. If no separator is present
-   * the left part will be null.
-   *
-   * @param path The path to split
-   * @return the split string as tuple
-   */
-  public static Pair<String, String> split(String path) {
-    if (path == null) {
-      return Pair.of(null, null);
-    }
-    int i = path.lastIndexOf(File.separator);
-    return 0 < i
-        ? Pair.of(path.substring(0, i), path.substring(i + 1))
-        : Pair.of((String) null, path);
-  }
-
   @Override
   public void copy(FileSystemNode source, String target) {
-    String targetPath = strip(target, File.separatorChar);
+    String targetPath = FileServiceUtils.strip(target);
     if (!exists(source.getPath())) {
       throw new IllegalArgumentException("File " + source.getPath() + " does not exist.");
     }
@@ -120,7 +38,7 @@ public abstract class AbstractFileService implements FileService {
       if (CollectionUtils.isEmpty(list)) {
         mkDirectories(targetPath);
       } else {
-        list.forEach(node -> copy(node, combine(targetPath, node.getName())));
+        list.forEach(node -> copy(node, FileServiceUtils.combine(targetPath, node.getName())));
       }
       return;
     }
@@ -152,12 +70,12 @@ public abstract class AbstractFileService implements FileService {
 
   @Override
   public FileSystemNode getFileNode(String... parts) {
-    return getForPath(combine(parts), true);
+    return getForPath(FileServiceUtils.combine(parts), true);
   }
 
   @Override
   public FileSystemNode getOptionalFileNode(String... parts) {
-    return getForPath(combine(parts), false);
+    return getForPath(FileServiceUtils.combine(parts), false);
   }
 
   @Override
@@ -167,13 +85,13 @@ public abstract class AbstractFileService implements FileService {
 
   @Override
   public FileSystemNode getParent(String... path) {
-    return getForPath(getParentPath(path), false);
+    return getForPath(FileServiceUtils.getParentPath(path), false);
   }
 
   @Override
   public void mkDirectories(String... path) {
     checkPath(path);
-    mkDirectories(combine(path));
+    mkDirectories(FileServiceUtils.combine(path));
   }
 
   protected abstract void mkDirectories(String path);
@@ -206,7 +124,7 @@ public abstract class AbstractFileService implements FileService {
   @Override
   public void save(InputStream is, String... parts) {
     checkPath(parts);
-    save(is, combine(parts), -1);
+    save(is, FileServiceUtils.combine(parts), -1);
   }
 
   protected abstract void save(InputStream is, String path, long size);
@@ -214,7 +132,7 @@ public abstract class AbstractFileService implements FileService {
   @Override
   public void save(byte[] bytes, String... parts) {
     checkPath(parts);
-    save(new ByteArrayInputStream(bytes), combine(parts), bytes.length);
+    save(new ByteArrayInputStream(bytes), FileServiceUtils.combine(parts), bytes.length);
   }
 
   @Override
@@ -238,14 +156,14 @@ public abstract class AbstractFileService implements FileService {
 
   @Override
   public boolean isDirectory(String... parts) {
-    return exists(parts) && isDirectory(combine(parts));
+    return exists(parts) && isDirectory(FileServiceUtils.combine(parts));
   }
 
   protected abstract boolean isDirectory(String path);
 
   @Override
   public boolean exists(String... parts) {
-    return exists(combine(parts));
+    return exists(FileServiceUtils.combine(parts));
   }
 
   protected abstract boolean exists(String path);
@@ -289,15 +207,114 @@ public abstract class AbstractFileService implements FileService {
     }
   }
 
+  @Override
+  public void zip(String path, OutputStream outputStream) {
+    zip(path, outputStream, null);
+  }
+
+  @Override
+  public void zip(String path, OutputStream outputStream, String prefix) {
+    try (final ZipOutputStream zipStream = new ZipOutputStream(outputStream)) {
+      walk(getFileNode(path), new FileNodeVisitor() {
+        @Override
+        public void on(FileSystemNode node) {
+          add(node, true);
+        }
+
+        private void add(FileSystemNode node, boolean file) {
+          final String nodePath = node.getPath();
+          try {
+            String inZipPath = FileServiceUtils.combine(prefix,
+                StringUtils.substringAfter(nodePath, path));
+            if (StringUtils.isEmpty(inZipPath)) {
+              return;
+            }
+            String path = file ? inZipPath : FileServiceUtils.appendSeparator(inZipPath);
+            zipStream.putNextEntry(new ZipEntry(path));
+            if (file) {
+              IOUtils.copy(open(node), zipStream);
+            }
+          } catch (Exception e) {
+            throw new RuntimeException("Problem while zipping node " + nodePath);
+          }
+        }
+
+        @Override
+        public void pre(FileSystemNode node) {
+          add(node, false);
+        }
+
+        @Override
+        public void post(FileSystemNode node) {
+        }
+      });
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public void unzip(String pad, final String target) {
+    unzip(zipStream(pad), target);
+  }
+
+  @Override
+  public void unzip(String pad, final String target, Consumer<ZipEntry> consumer) {
+    unzip(zipStream(pad), target, FileServiceUtils.always, consumer);
+  }
+
+  @Override
+  public void unzip(String pad, final String target, Predicate<ZipEntry> entryPredicate) {
+    unzip(zipStream(pad), target, entryPredicate);
+  }
+
+  @Override
+  public void unzip(String pad, final String target, Predicate<ZipEntry> entryPredicate,
+      Consumer<ZipEntry> consumer) {
+    unzip(zipStream(pad), target, entryPredicate, consumer);
+  }
+
+  private ZipInputStream zipStream(String pad) {
+    return new ZipInputStream(open(pad));
+  }
+
+  @Override
+  public void unzip(ZipInputStream input, final String target) {
+    unzip(input, target, FileServiceUtils.always);
+  }
+
+  @Override
+  public void unzip(ZipInputStream input, String target, Consumer<ZipEntry> consumer) {
+    unzip(input, target, FileServiceUtils.always, consumer);
+  }
+
+  @Override
+  public void unzip(ZipInputStream input, String target, Predicate<ZipEntry> entryPredicate) {
+    unzip(input, target, entryPredicate, FileServiceUtils.noConsumer);
+  }
+
+  @Override
+  public void unzip(ZipInputStream input, final String target, Predicate<ZipEntry> predicate,
+      Consumer<ZipEntry> consumer) {
+    final Consumer<ZipEntryInputStream> fileConsumer = s -> save(s,
+        FileServiceUtils.combine(target, s.getZipEntry().getName()));
+    final Consumer<ZipEntry> folderConsumer = e -> mkDirectories(target, e.getName());
+    FileServiceUtils.walk(input, predicate, consumer, fileConsumer, folderConsumer);
+  }
+
   protected abstract void copyContent(FileSystemNode source, String to);
 
   protected abstract FileSystemNodeType getFileNodeType(String path);
 
   protected FileSystemNode createFileNode(String path, boolean isDirectory, long size) {
-    Pair<String, String> dirAndName = split(path);
+    Pair<String, String> dirAndName = FileServiceUtils.split(path);
     String parentDir = dirAndName.getLeft();
     String name = dirAndName.getRight();
     return new FileSystemNodeImpl(parentDir, name, isDirectory, size);
+  }
+
+  protected FileSystemNode createDirectoryNode(String path) {
+    return createFileNode(path, true, 0L);
   }
 
   /**
@@ -319,7 +336,7 @@ public abstract class AbstractFileService implements FileService {
     if (StringUtils.isBlank(parts)) {
       return new FileSystemNodeImpl(null, "", true, 0);
     }
-    String path = strip(parts, File.separatorChar);
+    String path = FileServiceUtils.strip(parts);
     FileSystemNodeType fileSystemNodeType = getFileNodeType(path);
     if (FileSystemNodeType.NONE_EXISTENT == fileSystemNodeType) {
       if (!shouldExist) {

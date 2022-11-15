@@ -2,7 +2,11 @@ package be.mathiasbosman.fs.service.s3;
 
 import be.mathiasbosman.fs.core.domain.FileSystemNode;
 import be.mathiasbosman.fs.core.domain.FileSystemNodeType;
+import be.mathiasbosman.fs.core.domain.FileSystemTree;
+import be.mathiasbosman.fs.core.domain.FileSystemTreeImpl;
 import be.mathiasbosman.fs.core.service.AbstractFileService;
+import be.mathiasbosman.fs.core.service.FileNodeVisitor;
+import be.mathiasbosman.fs.core.util.FileServiceUtils;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
@@ -188,8 +192,19 @@ public class S3FileService extends AbstractFileService {
 
   @Override
   protected void mkDirectories(String path) {
-    put(combine(toObjectKey(path), DIRECTORY_MARKER_OBJECT_NAME),
+    put(FileServiceUtils.combine(toObjectKey(path), DIRECTORY_MARKER_OBJECT_NAME),
         new ByteArrayInputStream(new byte[]{1}), toMetadata(1));
+  }
+
+
+  @Override
+  public void walk(FileSystemNode node, FileNodeVisitor visitor) {
+    if (node == null || node.getPath() == null) {
+      throw new IllegalArgumentException("Path should be set when walking");
+    }
+
+    final List<S3ObjectSummary> objectSummaries = getObjectSummaries(node.getPath());
+    walk(toTree(node, objectSummaries), visitor);
   }
 
   ObjectMetadata getMetaData(String path) {
@@ -210,6 +225,19 @@ public class S3FileService extends AbstractFileService {
       metadata.setContentLength(size);
     }
     return metadata;
+  }
+
+  private <T extends FileNodeVisitor> void walk(FileSystemTree<FileSystemNode> tree, T visitor) {
+    final FileSystemNode file = tree.getNode();
+    if (file.isDirectory()) {
+      visitor.pre(file);
+      for (FileSystemTree<FileSystemNode> child : tree.getChildren()) {
+        walk(child, visitor);
+      }
+      visitor.post(file);
+    } else {
+      visitor.on(file);
+    }
   }
 
   private List<S3ObjectSummary> getObjectSummaries(String path) {
@@ -235,6 +263,55 @@ public class S3FileService extends AbstractFileService {
   }
 
   private String toObjectKey(String path) {
-    return combine(bucketPrefix, path);
+    return FileServiceUtils.combine(bucketPrefix, path);
   }
+
+  private FileSystemTree<FileSystemNode> toTree(FileSystemNode root,
+      List<S3ObjectSummary> objectSummaries) {
+    int rootLength = root.getPath().length();
+    FileSystemTree<FileSystemNode> result = new FileSystemTreeImpl<>(root);
+    objectSummaries.forEach(summary -> {
+      final String key = pathWithoutPrefix(summary);
+      String subPath = key.substring(rootLength + 1);
+      add(subPath, summary, result);
+    });
+
+    return result;
+  }
+
+  private void add(String path, S3ObjectSummary summary, FileSystemTree<FileSystemNode> tree) {
+    final int index = path.indexOf(File.separatorChar);
+    if (index == -1) {
+      if (isVisible(path)) {
+        tree.addChild(path, createFileNode(summary));
+      }
+      return;
+    }
+    String directoryName = path.substring(0, index);
+    String subPath = path.substring(index + 1);
+    add(subPath, summary, tree.add(directoryName, () -> createDirectoryNode(summary, subPath)));
+  }
+
+  private boolean isVisible(String name) {
+    return !DIRECTORY_MARKER_OBJECT_NAME.equals(name);
+  }
+
+  private FileSystemNode createDirectoryNode(S3ObjectSummary objectSummary, String subPath) {
+    final String fileNodePath = pathWithoutPrefix(objectSummary);
+    String directoryPath = StringUtils.substringBeforeLast(fileNodePath, subPath);
+    return createDirectoryNode(directoryPath);
+  }
+
+  private FileSystemNode createFileNode(S3ObjectSummary summary) {
+    return createFileNode(pathWithoutPrefix(summary), summary);
+  }
+
+  private FileSystemNode createFileNode(String path, S3ObjectSummary summary) {
+    return createFileNode(path, false, summary.getSize());
+  }
+
+  private String pathWithoutPrefix(S3ObjectSummary s3ObjectSummary) {
+    return s3ObjectSummary.getKey().substring(bucketPrefix.length());
+  }
+
 }

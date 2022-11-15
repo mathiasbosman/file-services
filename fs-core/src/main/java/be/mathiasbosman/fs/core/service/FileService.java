@@ -2,10 +2,15 @@ package be.mathiasbosman.fs.core.service;
 
 import be.mathiasbosman.fs.core.domain.FileSystemNode;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Simple interface for handling file operations on a file system such as any NIO system or S3.
@@ -252,4 +257,34 @@ public interface FileService {
    */
   void walk(FileSystemNode root, FileNodeVisitor visitor);
 
+  /**
+   * Will create a zipped stream to outputStream containing all bitstreams under path. A prefix is
+   * optionally used to have the effect of a root folder inside the zip (unzipping will unzip under
+   * that folder).
+   *
+   * @param root         The path at which to start zipping
+   * @param outputStream the {@link OutputStream}
+   * @param prefix       Optionally used to have the effect of a root folder inside the zip
+   */
+  void zip(String root, OutputStream outputStream, String prefix);
+
+  void zip(String path, OutputStream outputStream);
+
+  void unzip(String pad, String target);
+
+  void unzip(String pad, String target, Consumer<ZipEntry> consumer);
+
+  void unzip(String pad, String target, Predicate<ZipEntry> entryPredicate);
+
+  void unzip(String pad, String target, Predicate<ZipEntry> entryPredicate,
+      Consumer<ZipEntry> consumer);
+
+  void unzip(ZipInputStream input, String target);
+
+  void unzip(ZipInputStream input, String target, Predicate<ZipEntry> entryPredicate);
+
+  void unzip(ZipInputStream input, String target, Consumer<ZipEntry> consumer);
+
+  void unzip(ZipInputStream input, String target, Predicate<ZipEntry> entryPredicate,
+      Consumer<ZipEntry> consumer);
 }

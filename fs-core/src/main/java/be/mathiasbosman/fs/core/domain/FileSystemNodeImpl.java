@@ -1,6 +1,6 @@
 package be.mathiasbosman.fs.core.domain;
 
-import be.mathiasbosman.fs.core.service.AbstractFileService;
+import be.mathiasbosman.fs.core.util.FileServiceUtils;
 import lombok.Getter;
 
 /**
@@ -25,7 +25,7 @@ public class FileSystemNodeImpl implements FileSystemNode {
    */
   public FileSystemNodeImpl(String parentPath, String name, boolean isDirectory, long size) {
     this.parentPath = parentPath;
-    this.path = AbstractFileService.combine(parentPath, name);
+    this.path = FileServiceUtils.combine(parentPath, name);
     this.name = name;
     this.isDirectory = isDirectory;
     this.size = size;
