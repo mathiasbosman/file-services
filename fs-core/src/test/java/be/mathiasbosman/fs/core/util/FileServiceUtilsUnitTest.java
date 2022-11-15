@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
 
-public class FileServiceUtilsUnitTest {
+class FileServiceUtilsUnitTest {
 
   @Test
   void combine() {

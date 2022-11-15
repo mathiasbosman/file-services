@@ -15,6 +15,6 @@ public class WalkZipInputStreamTest {
     FileServiceUtils.walk(zipInputStream,
         f -> sb.append("f: ").append(f.getZipEntry().getName()).append(", "),
         d -> sb.append("d: ").append(d.getName()).append(", "));
-    assertThat(sb.toString()).isEqualTo("d: a/, f: a/a.txt, d: b/, f: b/b.txt, f: c.txt, ");
+    assertThat(sb).hasToString("d: a/, f: a/a.txt, d: b/, f: b/b.txt, f: c.txt, ");
   }
 }

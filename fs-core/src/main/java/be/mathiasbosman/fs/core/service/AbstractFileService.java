@@ -246,6 +246,7 @@ public abstract class AbstractFileService implements FileService {
 
         @Override
         public void post(FileSystemNode node) {
+          // no op
         }
       });
     } catch (Exception e) {
