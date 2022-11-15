@@ -40,6 +40,7 @@ public abstract class AbstractContainerTest extends AbstractFileServiceTest {
   public void createContainer() {
     this.dockerContainer = new DockerComposeContainer<>(
         new File(composeFileSrc))
+        .withOptions("--compatibility")
         .withLocalCompose(true)
         .withPull(false);
     services.forEach(this::exposeService);
