@@ -87,7 +87,6 @@
   <packaging>pom</packaging>
   <description>File services</description>
   <distributionManagement>
-    <!-- Github distribution -->
     <repository>
       <id>github</id>
       <name>GitHub Packages</name>

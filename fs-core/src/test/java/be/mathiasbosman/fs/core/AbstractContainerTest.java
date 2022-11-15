@@ -36,24 +36,27 @@ public abstract class AbstractContainerTest extends AbstractFileServiceTest {
 
   /**
    * Creates the container.
-   *
-   * @return The created container
    */
-  public DockerComposeContainer<?> createContainer() {
-    DockerComposeContainer<?> container = new DockerComposeContainer<>(
+  public void createContainer() {
+    this.dockerContainer = new DockerComposeContainer<>(
         new File(composeFileSrc))
         .withLocalCompose(true)
         .withPull(false);
-    for (ContainerServiceDto service : services) {
-      container
-          .withExposedService(service.serviceName(), service.port(), Wait.forListeningPort());
-    }
-    return container;
+    services.forEach(this::exposeService);
+  }
+
+  private void exposeService(ContainerServiceDto dto) {
+    log.info("Exposing {}", dto);
+    this.dockerContainer.withExposedService(
+        dto.serviceName(),
+        dto.port(),
+        Wait.forListeningPort()
+    );
   }
 
   @BeforeAll
   public void startContainer() {
-    this.dockerContainer = createContainer();
+    createContainer();
     this.dockerContainer.start();
   }
 
