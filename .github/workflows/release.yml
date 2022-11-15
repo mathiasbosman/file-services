@@ -62,6 +62,6 @@ jobs:
           cache: maven
       - name: Publish package
         run: |
-          mvn -B deploy
+          mvn -B release:perform
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

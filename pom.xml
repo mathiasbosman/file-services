@@ -91,14 +91,13 @@
     <repository>
       <id>github</id>
       <name>GitHub Packages</name>
-      <url>https://maven.pkg.github.com/mathiasbosman/${project.artifactId}</url>
+      <url>https://maven.pkg.github.com/mathiasbosman/file-services</url>
     </repository>
   </distributionManagement>
 
   <scm>
-    <developerConnection>scm:git:https://github.com/mathiasbosman/${project.artifactId}
+    <developerConnection>scm:git:https://github.com/mathiasbosman/file-services
     </developerConnection>
-    <tag>HEAD</tag>
   </scm>
 
   <groupId>be.mathiasbosman</groupId>
