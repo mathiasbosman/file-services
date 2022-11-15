@@ -20,11 +20,6 @@ public class ZipEntryInputStream extends InputStream {
     return delegate.read();
   }
 
-  @Override
-  public void close() {
-    //no impact on delegate
-  }
-
   public ZipEntry getZipEntry() {
     return zipEntry;
   }
