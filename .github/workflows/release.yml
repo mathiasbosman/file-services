@@ -44,6 +44,25 @@ jobs:
           git config user.email "actions@github.com"
           mvn -B release:prepare
           mvn -B release:perform
-          mvn -B deploy -DskipTests -Dowasp.skip=true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy:
+    name: Deploy 📦
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: adopt
+          cache: maven
+      - name: Publish package
+        run: |
+          mvn -B deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
