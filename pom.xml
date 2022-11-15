@@ -95,6 +95,12 @@
       <url>https://maven.pkg.github.com/mathiasbosman/${project.artifactId}</url>
     </repository>
   </distributionManagement>
+
+  <scm>
+    <developerConnection>scm:git:https://github.com/mathiasbosman/${project.artifactId}
+    </developerConnection>
+  </scm>
+
   <groupId>be.mathiasbosman</groupId>
 
   <modelVersion>4.0.0</modelVersion>
