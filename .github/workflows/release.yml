@@ -40,9 +40,10 @@ jobs:
           cache: maven
       - name: Release package
         run: |
+          git config user.name "githubaction[bot]"
+          git config user.email "actions@github.com"
           mvn -B release:prepare
           mvn -B release:perform
-          mvn -B clean install -DskipTests -Dowasp.skip=true
           mvn -B deploy -DskipTests -Dowasp.skip=true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
