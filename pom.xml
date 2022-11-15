@@ -96,8 +96,9 @@
   </distributionManagement>
 
   <scm>
-    <developerConnection>scm:git:https://github.com/mathiasbosman/file-services
-    </developerConnection>
+    <connection>scm:git:${project.scm.url}</connection>
+    <developerConnection>scm:git:${project.scm.url}</developerConnection>
+    <url>https://github.com/mathiasbosman/file-services.git</url>
     <tag>HEAD</tag>
   </scm>
 
