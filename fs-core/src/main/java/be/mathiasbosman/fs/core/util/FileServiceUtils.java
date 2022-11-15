@@ -1,11 +1,12 @@
 package be.mathiasbosman.fs.core.util;
 
-import com.google.common.base.Joiner;
+import be.mathiasbosman.fs.core.domain.FileServiceException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -75,7 +76,7 @@ public class FileServiceUtils {
         }
       }
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new FileServiceException(e);
     }
   }
 
@@ -102,12 +103,11 @@ public class FileServiceUtils {
     if (parts == null) {
       return null;
     }
-    return Joiner.on(File.separatorChar).skipNulls().join(
-        Arrays.stream(parts).map(input -> {
+    return Arrays.stream(parts).map(input -> {
           String stripped = strip(input);
           return StringUtils.isEmpty(stripped) ? null : stripped;
-        }).collect(Collectors.toList())
-    );
+        }).filter(Objects::nonNull)
+        .collect(Collectors.joining(File.separator));
   }
 
   /**

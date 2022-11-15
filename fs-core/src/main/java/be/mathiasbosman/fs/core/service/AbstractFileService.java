@@ -1,5 +1,6 @@
 package be.mathiasbosman.fs.core.service;
 
+import be.mathiasbosman.fs.core.domain.FileServiceException;
 import be.mathiasbosman.fs.core.domain.FileSystemNode;
 import be.mathiasbosman.fs.core.domain.FileSystemNodeImpl;
 import be.mathiasbosman.fs.core.domain.FileSystemNodeType;
@@ -232,10 +233,12 @@ public abstract class AbstractFileService implements FileService {
             String path = file ? inZipPath : FileServiceUtils.appendSeparator(inZipPath);
             zipStream.putNextEntry(new ZipEntry(path));
             if (file) {
-              IOUtils.copy(open(node), zipStream);
+              try (InputStream stream = open(node)) {
+                IOUtils.copy(stream, zipStream);
+              }
             }
           } catch (Exception e) {
-            throw new RuntimeException("Problem while zipping node " + nodePath);
+            throw new FileServiceException("Problem while zipping node " + nodePath);
           }
         }
 
@@ -250,7 +253,7 @@ public abstract class AbstractFileService implements FileService {
         }
       });
     } catch (Exception e) {
-      throw new RuntimeException(e);
+      throw new FileServiceException(e);
     }
   }
 
