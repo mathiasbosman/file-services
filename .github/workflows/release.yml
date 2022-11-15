@@ -5,23 +5,23 @@ on:
       - master
 
 jobs:
-  test:
-    name: Test run 🧪
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: 17
-          distribution: adopt
-          cache: maven
-      - name: Maven verify
-        run: mvn -B verify
+  # test:
+  #   name: Test run 🧪
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Set up JDK 17
+  #       uses: actions/setup-java@v3
+  #       with:
+  #         java-version: 17
+  #         distribution: adopt
+  #         cache: maven
+  #     - name: Maven verify
+  #       run: mvn -B verify
 
   release:
     name: Release 🚀
-    needs: test
+    # needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -40,8 +40,6 @@ jobs:
           cache: maven
       - name: Release package
         run: |
-          git config user.name "githubaction[bot]"
-          git config user.email "actions@github.com"
           mvn -B release:prepare
           mvn -B release:perform
           mvn -B clean install -DskipTests -Dowasp.skip=true
