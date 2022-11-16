@@ -18,6 +18,7 @@ import java.util.function.Predicate;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+import lombok.NonNull;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -97,8 +98,8 @@ public abstract class AbstractFileService implements FileService {
 
   protected abstract void mkDirectories(String path);
 
-  static void checkPath(String[] parts) {
-    if (parts == null || parts.length == 0) {
+  static void checkPath(@NonNull String[] parts) {
+    if (parts.length == 0) {
       throw new IllegalArgumentException("Operation only possible with path in second argument.");
     }
   }

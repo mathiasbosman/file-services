@@ -11,5 +11,7 @@ class AbstractFileServiceUnitTest {
     String[] nullString = new String[0];
     assertThatThrownBy(() -> AbstractFileService.checkPath(nullString))
         .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> AbstractFileService.checkPath(null))
+        .isInstanceOf(NullPointerException.class);
   }
 }
