@@ -115,21 +115,19 @@ public class S3FileService extends AbstractFileService {
     String prefix = root ? "" : directory.getPath() + File.separatorChar;
     Iterable<S3ObjectSummary> objectListing = getObjectSummaries(directory.getPath());
     Set<String> subDirs = new HashSet<>();
-    for (S3ObjectSummary objectSummary : objectListing) {
-      String location = getLocation(objectSummary);
+    objectListing.forEach(summary -> {
+      String location = getLocation(summary);
       String subPad = location.substring(prefix.length());
       int firstSlash = subPad.indexOf(File.separatorChar);
       if (firstSlash < 0) {
         if (includeHiddenDirectoryMarkers || !DIRECTORY_MARKER_OBJECT_NAME.equals(subPad)) {
-          result.add(createFileNode(location, false, objectSummary.getSize()));
+          result.add(createFileNode(location, false, summary.getSize()));
         }
       } else {
         subDirs.add(prefix + subPad.substring(0, firstSlash));
       }
-    }
-    for (String subDir : subDirs) {
-      result.add(createFileNode(subDir, true, 0));
-    }
+    });
+    subDirs.forEach(subDir -> result.add(createFileNode(subDir, true, 0)));
     result.sort(Comparator.comparing(FileSystemNode::getName));
     return result;
   }
@@ -231,9 +229,7 @@ public class S3FileService extends AbstractFileService {
     final FileSystemNode file = tree.getNode();
     if (file.isDirectory()) {
       visitor.pre(file);
-      for (FileSystemTree<FileSystemNode> child : tree.getChildren()) {
-        walk(child, visitor);
-      }
+      tree.getChildren().forEach(child -> walk(child, visitor));
       visitor.post(file);
     } else {
       visitor.on(file);

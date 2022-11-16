@@ -274,9 +274,7 @@ public abstract class AbstractFileServiceTest {
     putObject("y/e");
     putObject("z");
     SpyingTreeVisitor spy = new SpyingTreeVisitor();
-    for (FileSystemNode file : getFs().list()) {
-      getFs().walk(file, spy);
-    }
+    getFs().list().forEach(file -> getFs().walk(file, spy));
     assertThat(spy.visitedFiles).isEqualTo(Arrays.asList("x/a", "x/b", "x/c/1", "y/e", "z"));
     assertThat(spy.visitedFolders).isEqualTo(Arrays.asList("x", "x/c", "x/c/d", "y"));
     assertThat(spy.visitationOrder).isEqualTo(Arrays
