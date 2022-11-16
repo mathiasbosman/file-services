@@ -259,38 +259,8 @@ public abstract class AbstractFileService implements FileService {
   }
 
   @Override
-  public void unzip(String pad, final String target) {
-    unzip(zipStream(pad), target);
-  }
-
-  @Override
-  public void unzip(String pad, final String target, Consumer<ZipEntry> consumer) {
-    unzip(zipStream(pad), target, FileServiceUtils.always, consumer);
-  }
-
-  @Override
-  public void unzip(String pad, final String target, Predicate<ZipEntry> entryPredicate) {
-    unzip(zipStream(pad), target, entryPredicate);
-  }
-
-  @Override
-  public void unzip(String pad, final String target, Predicate<ZipEntry> entryPredicate,
-      Consumer<ZipEntry> consumer) {
-    unzip(zipStream(pad), target, entryPredicate, consumer);
-  }
-
-  private ZipInputStream zipStream(String pad) {
-    return new ZipInputStream(open(pad));
-  }
-
-  @Override
   public void unzip(ZipInputStream input, final String target) {
     unzip(input, target, FileServiceUtils.always);
-  }
-
-  @Override
-  public void unzip(ZipInputStream input, String target, Consumer<ZipEntry> consumer) {
-    unzip(input, target, FileServiceUtils.always, consumer);
   }
 
   @Override

@@ -268,23 +268,41 @@ public interface FileService {
    */
   void zip(String root, OutputStream outputStream, String prefix);
 
+  /**
+   * Zips a file and outputs the stream
+   *
+   * @param path         The path to zip
+   * @param outputStream The {@link OutputStream} to stream too
+   */
   void zip(String path, OutputStream outputStream);
 
-  void unzip(String pad, String target);
-
-  void unzip(String pad, String target, Consumer<ZipEntry> consumer);
-
-  void unzip(String pad, String target, Predicate<ZipEntry> entryPredicate);
-
-  void unzip(String pad, String target, Predicate<ZipEntry> entryPredicate,
-      Consumer<ZipEntry> consumer);
-
+  /**
+   * Unzip a {@link ZipInputStream} to a target path on the filesystem
+   *
+   * @param input  The {@link ZipInputStream} to unzip
+   * @param target the target path to unzip too
+   */
   void unzip(ZipInputStream input, String target);
 
+  /**
+   * Unzips an input stream to a given target. Only entries that match the given predicate will be
+   * unzipped.
+   *
+   * @param input          The {@link ZipInputStream} to unzip
+   * @param target         The target path
+   * @param entryPredicate The predicate too match
+   */
   void unzip(ZipInputStream input, String target, Predicate<ZipEntry> entryPredicate);
 
-  void unzip(ZipInputStream input, String target, Consumer<ZipEntry> consumer);
-
+  /**
+   * Unzips an input stream to a given target. Only entries that match the given predicate will be
+   * unzipped. The entries that are unzipped will be consumed by the given consumer.
+   *
+   * @param input          The {@link ZipInputStream} to unzip
+   * @param target         The target path
+   * @param entryPredicate The predicate too match
+   * @param consumer       The consumer for the entries
+   */
   void unzip(ZipInputStream input, String target, Predicate<ZipEntry> entryPredicate,
       Consumer<ZipEntry> consumer);
 }
