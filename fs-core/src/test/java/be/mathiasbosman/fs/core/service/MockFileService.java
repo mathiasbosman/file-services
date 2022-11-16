@@ -124,6 +124,7 @@ public class MockFileService extends AbstractFileService {
   }
 
   @Override
+  @SuppressWarnings("resource") // we return a stream
   public Stream<FileSystemNode> streamDirectory(FileSystemNode root) {
     try {
       Path path = path(root.getPath());

@@ -145,6 +145,7 @@ public class NioFileService extends AbstractFileService {
   }
 
   @Override
+  @SuppressWarnings("resource") //we return the stream
   public Stream<FileSystemNode> streamDirectory(FileSystemNode root) {
     try {
       Path path = path(root.getPath());

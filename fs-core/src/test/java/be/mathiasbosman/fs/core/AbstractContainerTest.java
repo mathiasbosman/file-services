@@ -37,6 +37,7 @@ public abstract class AbstractContainerTest extends AbstractFileServiceTest {
   /**
    * Creates the container.
    */
+  @SuppressWarnings("resource") // we start and stop the resource
   public void createContainer() {
     this.dockerContainer = new DockerComposeContainer<>(
         new File(composeFileSrc))

@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
@@ -355,7 +356,9 @@ public abstract class AbstractFileServiceTest {
     ZipInputStream zipInputStream = new ZipInputStream(
         new ByteArrayInputStream(outputStream.toByteArray()));
     Set<String> names = new HashSet<>();
-    names.add(zipInputStream.getNextEntry().getName());
+    ZipEntry firstEntry = zipInputStream.getNextEntry();
+    assertThat(firstEntry).isNotNull();
+    names.add(firstEntry.getName());
     names.add(zipInputStream.getNextEntry().getName());
     names.add(zipInputStream.getNextEntry().getName());
     names.add(zipInputStream.getNextEntry().getName());

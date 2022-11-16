@@ -132,6 +132,8 @@ class NioFileServiceTest extends AbstractFileServiceTest {
   }
 
   @Test
+  @SuppressWarnings("resource")
+    //we need the exceptions
   void openWithException() {
     try (MockedStatic<Files> files = Mockito.mockStatic(Files.class)) {
       files.when(() -> Files.newInputStream(any()))
@@ -161,6 +163,8 @@ class NioFileServiceTest extends AbstractFileServiceTest {
   }
 
   @Test
+  @SuppressWarnings("resource")
+    //we need the exception
   void streamDirectoryWithException() {
     try (MockedStatic<Files> files = Mockito.mockStatic(Files.class)) {
       files.when(() -> Files.walk(any()))
