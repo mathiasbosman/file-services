@@ -97,9 +97,9 @@ public class MockServiceTest extends AbstractFileServiceTest {
 
   @Test
   public void stream() {
-    putObject("x/a", "-");
-    putObject("x/z", "-");
-    putObject("x/b/a", "-");
+    putObject("x/a");
+    putObject("x/z");
+    putObject("x/b/a");
     Stream<FileSystemNode> stream = getFs().streamDirectory(getFs().getFileNode("x"));
     assertThat(stream).isNotNull();
     List<FileSystemNode> collected = stream.collect(Collectors.toList());

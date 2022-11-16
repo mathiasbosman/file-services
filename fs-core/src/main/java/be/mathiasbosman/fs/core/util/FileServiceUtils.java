@@ -5,10 +5,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -52,19 +50,9 @@ public class FileServiceUtils {
   public static void walk(ZipInputStream zipInputStream, Predicate<ZipEntry> predicate,
       Consumer<ZipEntry> consumer, Consumer<ZipEntryInputStream> fileConsumer,
       Consumer<ZipEntry> folderConsumer) {
-    Set<String> unique = new HashSet<>();
     ZipEntry entry;
     try {
       while (null != (entry = zipInputStream.getNextEntry())) {
-        final String name = entry.getName();
-        if (StringUtils.isBlank(name)) {
-          throw new IllegalArgumentException(
-              "Zip file corrupt. There is an entry with a blank name.");
-        }
-        if (!unique.add(name)) {
-          throw new IllegalArgumentException(
-              "Zip file corrupt. Entry '" + name + "' is not unique.");
-        }
         if (!predicate.test(entry)) {
           continue;
         }
@@ -100,9 +88,6 @@ public class FileServiceUtils {
   }
 
   public static String combine(String... parts) {
-    if (parts == null) {
-      return null;
-    }
     return Arrays.stream(parts).map(input -> {
           String stripped = strip(input);
           return StringUtils.isEmpty(stripped) ? null : stripped;

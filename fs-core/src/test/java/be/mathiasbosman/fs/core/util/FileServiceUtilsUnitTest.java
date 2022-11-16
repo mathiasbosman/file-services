@@ -1,7 +1,9 @@
 package be.mathiasbosman.fs.core.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.zip.ZipInputStream;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
 
@@ -42,6 +44,19 @@ class FileServiceUtilsUnitTest {
     assertThat(FileServiceUtils.split("a")).isEqualTo(Pair.of(null, "a"));
     assertThat(FileServiceUtils.split("a/b")).isEqualTo(Pair.of("a", "b"));
     assertThat(FileServiceUtils.split("a/b/c")).isEqualTo(Pair.of("a/b", "c"));
+  }
+
+  @Test
+  void getResourceAsStreamFails() {
+    assertThatThrownBy(() -> new ZipInputStream(
+        FileServiceUtils.getResourceAsStream(WalkZipInputStreamTest.class, "foo/bar")))
+        .isInstanceOf(IllegalStateException.class);
+  }
+
+  @Test
+  void appendSeparator() {
+    assertThat(FileServiceUtils.appendSeparator("a/")).isEqualTo("a/");
+    assertThat(FileServiceUtils.appendSeparator("a")).isEqualTo("a/");
   }
 
 }

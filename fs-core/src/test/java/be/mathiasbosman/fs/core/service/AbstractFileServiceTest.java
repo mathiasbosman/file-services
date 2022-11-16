@@ -338,9 +338,9 @@ public abstract class AbstractFileServiceTest {
 
   @Test
   public void stream() {
-    putObject("x/a", "-");
-    putObject("x/z", "-");
-    putObject("x/b/a", "-");
+    putObject("x/a");
+    putObject("x/z");
+    putObject("x/b/a");
     Stream<FileSystemNode> stream = getFs().streamDirectory(getFs().getFileNode("x"));
     assertThat(stream).isNotNull();
     List<FileSystemNode> collected = stream.collect(Collectors.toList());
@@ -349,9 +349,9 @@ public abstract class AbstractFileServiceTest {
 
   @Test
   void zip() throws Exception {
-    putObject("x/a", "-");
-    putObject("x/z", "-");
-    putObject("x/b/a", "-");
+    putObject("x/a");
+    putObject("x/z");
+    putObject("x/b/a");
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     getFs().zip("x", outputStream, null);
     ZipInputStream zipInputStream = new ZipInputStream(
@@ -367,41 +367,41 @@ public abstract class AbstractFileServiceTest {
 
   @Test
   void zipWithPrefixAndUnzip() {
-    putObject("x/a", "-");
-    putObject("x/z", "-");
-    putObject("x/b/a", "-");
+    putObject("x/a");
+    putObject("x/z");
+    putObject("x/b/a");
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    final FileService fs1 = getFs();
-    fs1.zip("x", outputStream, "hello");
+    final FileService fs = getFs();
+    fs.zip("x", outputStream, "hello");
     ZipInputStream zipInputStream = new ZipInputStream(
         new ByteArrayInputStream(outputStream.toByteArray()));
-    fs1.unzip(zipInputStream, "test");
-    assertThat(fs1.exists("test/hello/a")).isTrue();
-    assertThat(fs1.exists("test/hello/z")).isTrue();
-    assertThat(fs1.exists("test/hello/b/a")).isTrue();
+    fs.unzip(zipInputStream, "test");
+    assertThat(fs.exists("test/hello/a")).isTrue();
+    assertThat(fs.exists("test/hello/z")).isTrue();
+    assertThat(fs.exists("test/hello/b/a")).isTrue();
   }
 
   @Test
   void zipUnzipHidden() {
-    putObject("x/a", "-");
-    putObject("x/z", "-");
-    putObject("x/b/e", "-");
-    putObject("x/b/.g", "-");
-    putObject("x/.c", "-");
-    putObject("x/.d/f", "-");
+    putObject("x/a");
+    putObject("x/z");
+    putObject("x/b/e");
+    putObject("x/b/.g");
+    putObject("x/.c");
+    putObject("x/.d/f");
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    final FileService fs1 = getFs();
-    fs1.zip("x", outputStream);
+    final FileService fs = getFs();
+    fs.zip("x", outputStream);
     ZipInputStream zipInputStream = new ZipInputStream(
         new ByteArrayInputStream(outputStream.toByteArray()));
-    fs1.unzip(zipInputStream, "test", FileServiceUtils.visible);
-    assertThat(fs1.exists("test/a")).isTrue();
-    assertThat(fs1.exists("test/z")).isTrue();
-    assertThat(fs1.exists("test/b")).isTrue();
-    assertThat(fs1.exists("test/b/e")).isTrue();
-    assertThat(fs1.exists("test/b/.g")).isFalse();
-    assertThat(fs1.exists("test/.c")).isFalse();
-    assertThat(fs1.exists("test/.d/f")).isFalse();
-    assertThat(fs1.exists("test/.d")).isFalse();
+    fs.unzip(zipInputStream, "test", FileServiceUtils.visible);
+    assertThat(fs.exists("test/a")).isTrue();
+    assertThat(fs.exists("test/z")).isTrue();
+    assertThat(fs.exists("test/b")).isTrue();
+    assertThat(fs.exists("test/b/e")).isTrue();
+    assertThat(fs.exists("test/b/.g")).isFalse();
+    assertThat(fs.exists("test/.c")).isFalse();
+    assertThat(fs.exists("test/.d/f")).isFalse();
+    assertThat(fs.exists("test/.d")).isFalse();
   }
 }
