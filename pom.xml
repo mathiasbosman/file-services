@@ -38,7 +38,7 @@
         <artifactId>mockito-inline</artifactId>
         <groupId>org.mockito</groupId>
         <scope>test</scope>
-        <version>4.11.0</version>
+        <version>5.0.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
