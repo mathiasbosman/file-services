@@ -2,10 +2,15 @@ package be.mathiasbosman.fs.core.service;
 
 import be.mathiasbosman.fs.core.domain.FileSystemNode;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Simple interface for handling file operations on a file system such as any NIO system or S3.
@@ -252,4 +257,52 @@ public interface FileService {
    */
   void walk(FileSystemNode root, FileNodeVisitor visitor);
 
+  /**
+   * Will create a zipped stream to outputStream containing all bitstreams under path. A prefix is
+   * optionally used to have the effect of a root folder inside the zip (unzipping will unzip under
+   * that folder).
+   *
+   * @param root         The path at which to start zipping
+   * @param outputStream the {@link OutputStream}
+   * @param prefix       Optionally used to have the effect of a root folder inside the zip
+   */
+  void zip(String root, OutputStream outputStream, String prefix);
+
+  /**
+   * Zips a file and outputs the stream
+   *
+   * @param path         The path to zip
+   * @param outputStream The {@link OutputStream} to stream too
+   */
+  void zip(String path, OutputStream outputStream);
+
+  /**
+   * Unzip a {@link ZipInputStream} to a target path on the filesystem
+   *
+   * @param input  The {@link ZipInputStream} to unzip
+   * @param target the target path to unzip too
+   */
+  void unzip(ZipInputStream input, String target);
+
+  /**
+   * Unzips an input stream to a given target. Only entries that match the given predicate will be
+   * unzipped.
+   *
+   * @param input          The {@link ZipInputStream} to unzip
+   * @param target         The target path
+   * @param entryPredicate The predicate too match
+   */
+  void unzip(ZipInputStream input, String target, Predicate<ZipEntry> entryPredicate);
+
+  /**
+   * Unzips an input stream to a given target. Only entries that match the given predicate will be
+   * unzipped. The entries that are unzipped will be consumed by the given consumer.
+   *
+   * @param input          The {@link ZipInputStream} to unzip
+   * @param target         The target path
+   * @param entryPredicate The predicate too match
+   * @param consumer       The consumer for the entries
+   */
+  void unzip(ZipInputStream input, String target, Predicate<ZipEntry> entryPredicate,
+      Consumer<ZipEntry> consumer);
 }

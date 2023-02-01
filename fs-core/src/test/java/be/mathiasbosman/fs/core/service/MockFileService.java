@@ -2,7 +2,7 @@ package be.mathiasbosman.fs.core.service;
 
 import be.mathiasbosman.fs.core.domain.FileSystemNode;
 import be.mathiasbosman.fs.core.domain.FileSystemNodeType;
-import java.io.File;
+import be.mathiasbosman.fs.core.util.FileServiceUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -124,6 +124,7 @@ public class MockFileService extends AbstractFileService {
   }
 
   @Override
+  @SuppressWarnings("resource") // we return a stream
   public Stream<FileSystemNode> streamDirectory(FileSystemNode root) {
     try {
       Path path = path(root.getPath());
@@ -140,7 +141,7 @@ public class MockFileService extends AbstractFileService {
 
   @Override
   protected boolean exists(String path) {
-    return Files.exists(path(combine(path)));
+    return Files.exists(path(FileServiceUtils.combine(path)));
   }
 
   @Override
@@ -191,7 +192,7 @@ public class MockFileService extends AbstractFileService {
 
   private FileSystemNode file(Path path) {
     String subPath = path.toString().substring(workDir.toString().length());
-    return getFileNode(strip(subPath, File.pathSeparatorChar));
+    return getFileNode(FileServiceUtils.strip(subPath));
   }
 
   private BasicFileAttributes getAttributes(Path path) {

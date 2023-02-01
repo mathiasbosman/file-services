@@ -6,14 +6,22 @@ import static org.mockito.ArgumentMatchers.any;
 
 import be.mathiasbosman.fs.core.domain.FileSystemNode;
 import be.mathiasbosman.fs.core.domain.FileSystemNodeImpl;
+import be.mathiasbosman.fs.core.util.FileServiceUtils;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
@@ -227,6 +235,14 @@ public abstract class AbstractFileServiceTest {
   }
 
   @Test
+  void deleteFolder() {
+    FileService fs = getFs();
+    fs.mkDirectories("x");
+    fs.delete(fs.getFileNode("x"));
+    assertNotExists("x");
+  }
+
+  @Test
   void move() {
     putObject("path/to/object");
     getFs().move("path/to/object", "path/toBis/object");
@@ -259,9 +275,7 @@ public abstract class AbstractFileServiceTest {
     putObject("y/e");
     putObject("z");
     SpyingTreeVisitor spy = new SpyingTreeVisitor();
-    for (FileSystemNode file : getFs().list()) {
-      getFs().walk(file, spy);
-    }
+    getFs().list().forEach(file -> getFs().walk(file, spy));
     assertThat(spy.visitedFiles).isEqualTo(Arrays.asList("x/a", "x/b", "x/c/1", "y/e", "z"));
     assertThat(spy.visitedFolders).isEqualTo(Arrays.asList("x", "x/c", "x/c/d", "y"));
     assertThat(spy.visitationOrder).isEqualTo(Arrays
@@ -319,5 +333,76 @@ public abstract class AbstractFileServiceTest {
     public void post(FileSystemNode folder) {
       visitationOrder.add("< " + folder.getPath());
     }
+  }
+
+  @Test
+  public void stream() {
+    putObject("x/a");
+    putObject("x/z");
+    putObject("x/b/a");
+    Stream<FileSystemNode> stream = getFs().streamDirectory(getFs().getFileNode("x"));
+    assertThat(stream).isNotNull();
+    List<FileSystemNode> collected = stream.collect(Collectors.toList());
+    assertThat(collected).hasSize(3);
+  }
+
+  @Test
+  void zip() throws Exception {
+    putObject("x/a");
+    putObject("x/z");
+    putObject("x/b/a");
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    getFs().zip("x", outputStream, null);
+    ZipInputStream zipInputStream = new ZipInputStream(
+        new ByteArrayInputStream(outputStream.toByteArray()));
+    Set<String> names = new HashSet<>();
+    ZipEntry firstEntry = zipInputStream.getNextEntry();
+    assertThat(firstEntry).isNotNull();
+    names.add(firstEntry.getName());
+    names.add(zipInputStream.getNextEntry().getName());
+    names.add(zipInputStream.getNextEntry().getName());
+    names.add(zipInputStream.getNextEntry().getName());
+    assertThat(zipInputStream.getNextEntry()).isNull();
+    assertThat(names).containsExactlyInAnyOrder("a", "z", "b/a", "b/");
+  }
+
+  @Test
+  void zipWithPrefixAndUnzip() {
+    putObject("x/a");
+    putObject("x/z");
+    putObject("x/b/a");
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    final FileService fs = getFs();
+    fs.zip("x", outputStream, "hello");
+    ZipInputStream zipInputStream = new ZipInputStream(
+        new ByteArrayInputStream(outputStream.toByteArray()));
+    fs.unzip(zipInputStream, "test");
+    assertThat(fs.exists("test/hello/a")).isTrue();
+    assertThat(fs.exists("test/hello/z")).isTrue();
+    assertThat(fs.exists("test/hello/b/a")).isTrue();
+  }
+
+  @Test
+  void zipUnzipHidden() {
+    putObject("x/a");
+    putObject("x/z");
+    putObject("x/b/e");
+    putObject("x/b/.g");
+    putObject("x/.c");
+    putObject("x/.d/f");
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    final FileService fs = getFs();
+    fs.zip("x", outputStream);
+    ZipInputStream zipInputStream = new ZipInputStream(
+        new ByteArrayInputStream(outputStream.toByteArray()));
+    fs.unzip(zipInputStream, "test", FileServiceUtils.visible);
+    assertThat(fs.exists("test/a")).isTrue();
+    assertThat(fs.exists("test/z")).isTrue();
+    assertThat(fs.exists("test/b")).isTrue();
+    assertThat(fs.exists("test/b/e")).isTrue();
+    assertThat(fs.exists("test/b/.g")).isFalse();
+    assertThat(fs.exists("test/.c")).isFalse();
+    assertThat(fs.exists("test/.d/f")).isFalse();
+    assertThat(fs.exists("test/.d")).isFalse();
   }
 }
