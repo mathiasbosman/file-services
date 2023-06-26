@@ -5,8 +5,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -50,14 +52,27 @@ public class FileServiceUtils {
   public static void walk(ZipInputStream zipInputStream, Predicate<ZipEntry> predicate,
       Consumer<ZipEntry> consumer, Consumer<ZipEntryInputStream> fileConsumer,
       Consumer<ZipEntry> folderConsumer) {
+    Set<String> unique = new HashSet<>();
     ZipEntry entry;
     try {
       while (null != (entry = zipInputStream.getNextEntry())) {
-        if (!predicate.test(entry)) {
+        final String name = entry.getName();
+        final boolean isDirectory = entry.isDirectory();
+        if (StringUtils.isBlank(name)) {
+          throw new IllegalArgumentException("Zip file corrupt: contains entry with empty name.");
+        }
+        //some zip software adds folders twice.
+        boolean isUnique = unique.add(name);
+        if (!isUnique && !isDirectory) {
+          throw new IllegalArgumentException(
+              "Zip file corrupt: entry '" + name + "' is not unique.");
+        }
+        boolean isSoftwareAddedDir = isDirectory && !isUnique;
+        if (isSoftwareAddedDir || !predicate.test(entry)) {
           continue;
         }
         consumer.accept(entry);
-        if (entry.isDirectory()) {
+        if (isDirectory) {
           folderConsumer.accept(entry);
         } else {
           fileConsumer.accept(new ZipEntryInputStream(zipInputStream, entry));

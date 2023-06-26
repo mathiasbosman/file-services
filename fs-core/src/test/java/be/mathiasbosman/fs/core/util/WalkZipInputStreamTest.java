@@ -13,8 +13,8 @@ public class WalkZipInputStreamTest {
     ZipInputStream zipInputStream = new ZipInputStream(
         FileServiceUtils.getResourceAsStream(WalkZipInputStreamTest.class, "zip/test.zip"));
     FileServiceUtils.walk(zipInputStream,
-        f -> sb.append("f: ").append(f.getZipEntry().getName()).append(", "),
-        d -> sb.append("d: ").append(d.getName()).append(", "));
-    assertThat(sb).hasToString("d: a/, f: a/a.txt, d: b/, f: b/b.txt, f: c.txt, ");
+        f -> sb.append("f:").append(f.getZipEntry().getName()).append(", "),
+        d -> sb.append("d:").append(d.getName()).append(", "));
+    assertThat(sb).hasToString("d:a/, f:a/a.txt, d:b/, f:b/b.txt, f:c.txt, ");
   }
 }

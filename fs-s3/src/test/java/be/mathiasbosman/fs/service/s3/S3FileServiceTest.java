@@ -34,6 +34,7 @@ class S3FileServiceTest extends AbstractContainerTest {
 
   private final AmazonS3 s3;
   private final String bucketName = "test";
+  private final String prefix = "sandbox/";
 
   S3FileServiceTest() {
     super(dockerComposeFile, new ContainerServiceDto(dockerS3Service, dockerS3Port));
@@ -53,7 +54,7 @@ class S3FileServiceTest extends AbstractContainerTest {
 
   @Override
   protected FileService getFs() {
-    return new S3FileService(s3, bucketName);
+    return new S3FileService(s3, bucketName, prefix);
   }
 
   @AfterEach
@@ -89,12 +90,12 @@ class S3FileServiceTest extends AbstractContainerTest {
     metadata.setContentType("text/plain");
     metadata.setContentLength(bytes.length);
     log.debug("Putting remote object to {}", path);
-    s3.putObject(bucketName, path, new ByteArrayInputStream(bytes), metadata);
+    s3.putObject(bucketName, prefix + path, new ByteArrayInputStream(bytes), metadata);
   }
 
   @Override
   protected void assertExists(String path) {
-    assertThat(s3.doesObjectExist(bucketName, path)).isTrue();
+    assertThat(s3.doesObjectExist(bucketName, prefix + path)).isTrue();
   }
 
   @Override
@@ -104,12 +105,12 @@ class S3FileServiceTest extends AbstractContainerTest {
 
   @Override
   protected void assertNotExists(String path) {
-    assertThat(s3.doesObjectExist(bucketName, path)).isFalse();
+    assertThat(s3.doesObjectExist(bucketName, prefix + path)).isFalse();
   }
 
   @Override
   protected String getContent(String path) {
-    return s3.getObjectAsString(bucketName, path);
+    return s3.getObjectAsString(bucketName, prefix + path);
   }
 
   @Test
