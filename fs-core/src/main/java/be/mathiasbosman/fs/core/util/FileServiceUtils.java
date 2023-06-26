@@ -61,12 +61,14 @@ public class FileServiceUtils {
         if (StringUtils.isBlank(name)) {
           throw new IllegalArgumentException("Zip file corrupt: contains entry with empty name.");
         }
-        if (!unique.add(name)) {
-          if (isDirectory) {
-            continue; //some zip software adds folders twice.
-          }
+        //some zip software adds folders twice.
+        boolean isUnique = unique.add(name);
+        if (!isUnique && !isDirectory) {
+          throw new IllegalArgumentException(
+              "Zip file corrupt: entry '" + name + "' is not unique.");
         }
-        if (!predicate.test(entry)) {
+        boolean isSoftwareAddedDir = isDirectory && !isUnique;
+        if (isSoftwareAddedDir || !predicate.test(entry)) {
           continue;
         }
         consumer.accept(entry);
