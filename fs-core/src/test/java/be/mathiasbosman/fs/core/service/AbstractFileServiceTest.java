@@ -410,8 +410,7 @@ public abstract class AbstractFileServiceTest {
     putObject("x/a", "-");
     final FileSystemNode fileNode = getFs().getFileNode("x/a");
     final Date lastModified = fileNode.getLastModified();
-    assertThat(lastModified).isNotNull();
-    assertThat(lastModified).isAfter(ts);
+    assertThat(lastModified).isNotNull().isAfter(ts);
   }
 
   @Test
