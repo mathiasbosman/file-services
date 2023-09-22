@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -278,6 +279,13 @@ class NioFileServiceTest extends AbstractFileServiceTest {
     assertThat(stream).isNotNull();
     List<FileSystemNode> collected = stream.collect(Collectors.toList());
     assertThat(collected).hasSize(5);
+  }
+
+  @Override
+  protected void assertModifiedFolder(String path) {
+    final FileSystemNode folderNode = getFs().getFileNode(path);
+    final Date lastModified = folderNode.getLastModified();
+    assertThat(lastModified).isNotNull();
   }
 
 }

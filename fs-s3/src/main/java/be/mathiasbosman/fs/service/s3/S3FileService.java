@@ -4,10 +4,12 @@ import be.mathiasbosman.fs.core.domain.FileSystemNode;
 import be.mathiasbosman.fs.core.domain.FileSystemNodeType;
 import be.mathiasbosman.fs.core.domain.FileSystemTree;
 import be.mathiasbosman.fs.core.domain.FileSystemTreeImpl;
+import be.mathiasbosman.fs.core.domain.NodeMetadata;
 import be.mathiasbosman.fs.core.service.AbstractFileService;
 import be.mathiasbosman.fs.core.service.FileNodeVisitor;
 import be.mathiasbosman.fs.core.util.FileServiceUtils;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -117,17 +119,18 @@ public class S3FileService extends AbstractFileService {
     Set<String> subDirs = new HashSet<>();
     objectListing.forEach(summary -> {
       String location = getLocation(summary);
-      String subPad = location.substring(prefix.length());
-      int firstSlash = subPad.indexOf(File.separatorChar);
+      String subPath = location.substring(prefix.length());
+      int firstSlash = subPath.indexOf(File.separatorChar);
       if (firstSlash < 0) {
-        if (includeHiddenDirectoryMarkers || !DIRECTORY_MARKER_OBJECT_NAME.equals(subPad)) {
-          result.add(createFileNode(location, false, summary.getSize()));
+        if (includeHiddenDirectoryMarkers || !DIRECTORY_MARKER_OBJECT_NAME.equals(subPath)) {
+          result.add(createFileNode(location, false, summary.getSize(),
+              summary.getLastModified()));
         }
       } else {
-        subDirs.add(prefix + subPad.substring(0, firstSlash));
+        subDirs.add(prefix + subPath.substring(0, firstSlash));
       }
     });
-    subDirs.forEach(subDir -> result.add(createFileNode(subDir, true, 0)));
+    subDirs.forEach(subDir -> result.add(createFileNode(subDir, true, 0, null)));
     result.sort(Comparator.comparing(FileSystemNode::getName));
     return result;
   }
@@ -163,7 +166,7 @@ public class S3FileService extends AbstractFileService {
 
   @Override
   protected boolean exists(String path) {
-    return isFile(path) || isDirectory(path);
+    return getFileNodeType(path) != null;
   }
 
   @Override
@@ -171,8 +174,34 @@ public class S3FileService extends AbstractFileService {
     if (isFile(path)) {
       return FileSystemNodeType.FILE;
     }
-    return isDirectory(path) ? FileSystemNodeType.DIRECTORY : FileSystemNodeType.NONE_EXISTENT;
+    if (isDirectory(path)) {
+      return FileSystemNodeType.DIRECTORY;
+    }
+    return null;
   }
+
+  @Override
+  protected NodeMetadata getNodeMetadata(String path) {
+    final String key = toObjectKey(path);
+    try {
+      ObjectMetadata objectMetadata = s3.getObjectMetadata(bucketName, key);
+      return new NodeMetadata(FileSystemNodeType.FILE, objectMetadata.getContentLength(),
+          objectMetadata.getLastModified());
+    } catch (AmazonS3Exception e) {
+      if (404 == e.getStatusCode()) {
+        return isDirectory(path) ? new NodeMetadata(FileSystemNodeType.DIRECTORY) : null;
+      }
+      throw amazonException(key, e);
+    } catch (Exception e) {
+      throw amazonException(key, e);
+    }
+  }
+
+  private RuntimeException amazonException(String key, Exception e) {
+    return new RuntimeException(
+        "Error occurred while executing getObjectMetadata on s3 with key=" + key, e);
+  }
+
 
   @Override
   protected long getSize(String path) {
@@ -295,7 +324,7 @@ public class S3FileService extends AbstractFileService {
   private FileSystemNode createDirectoryNode(S3ObjectSummary objectSummary, String subPath) {
     final String fileNodePath = pathWithoutPrefix(objectSummary);
     String directoryPath = StringUtils.substringBeforeLast(fileNodePath, subPath);
-    return createDirectoryNode(directoryPath);
+    return createDirectoryNode(directoryPath, objectSummary.getLastModified());
   }
 
   private FileSystemNode createFileNode(S3ObjectSummary summary) {
@@ -303,7 +332,7 @@ public class S3FileService extends AbstractFileService {
   }
 
   private FileSystemNode createFileNode(String path, S3ObjectSummary summary) {
-    return createFileNode(path, false, summary.getSize());
+    return createFileNode(path, false, summary.getSize(), summary.getLastModified());
   }
 
   private String pathWithoutPrefix(S3ObjectSummary s3ObjectSummary) {

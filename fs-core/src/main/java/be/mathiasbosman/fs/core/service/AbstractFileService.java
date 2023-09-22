@@ -4,6 +4,7 @@ import be.mathiasbosman.fs.core.domain.FileServiceException;
 import be.mathiasbosman.fs.core.domain.FileSystemNode;
 import be.mathiasbosman.fs.core.domain.FileSystemNodeImpl;
 import be.mathiasbosman.fs.core.domain.FileSystemNodeType;
+import be.mathiasbosman.fs.core.domain.NodeMetadata;
 import be.mathiasbosman.fs.core.util.FileServiceUtils;
 import be.mathiasbosman.fs.core.util.ZipEntryInputStream;
 import java.io.ByteArrayInputStream;
@@ -12,6 +13,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -28,6 +30,12 @@ import org.apache.commons.lang3.tuple.Pair;
  * Abstract implementation of {@link FileService} for path manipulation.
  */
 public abstract class AbstractFileService implements FileService {
+
+  protected abstract FileSystemNodeType getFileNodeType(String path);
+
+  protected abstract void copyContent(FileSystemNode source, String to);
+
+  protected abstract NodeMetadata getNodeMetadata(String path);
 
   @Override
   public void copy(FileSystemNode source, String target) {
@@ -107,13 +115,7 @@ public abstract class AbstractFileService implements FileService {
   @Override
   public List<FileSystemNode> list(String... parts) {
     FileSystemNode node = getOptionalFileNode(parts);
-    if (node == null) {
-      return Collections.emptyList();
-    }
-    if (!node.isDirectory()) {
-      throw new IllegalArgumentException("Cannot list contents of a file node: " + node);
-    }
-    return list(node);
+    return node != null ? list(node) : Collections.emptyList();
   }
 
   @Override
@@ -277,19 +279,16 @@ public abstract class AbstractFileService implements FileService {
     FileServiceUtils.walk(input, predicate, consumer, fileConsumer, folderConsumer);
   }
 
-  protected abstract void copyContent(FileSystemNode source, String to);
-
-  protected abstract FileSystemNodeType getFileNodeType(String path);
-
-  protected FileSystemNode createFileNode(String path, boolean isDirectory, long size) {
+  protected FileSystemNode createFileNode(String path, boolean isDirectory, long size,
+      Date lastModified) {
     Pair<String, String> dirAndName = FileServiceUtils.split(path);
     String parentDir = dirAndName.getLeft();
     String name = dirAndName.getRight();
-    return new FileSystemNodeImpl(parentDir, name, isDirectory, size);
+    return new FileSystemNodeImpl(parentDir, name, isDirectory, size, lastModified);
   }
 
-  protected FileSystemNode createDirectoryNode(String path) {
-    return createFileNode(path, true, 0L);
+  protected FileSystemNode createDirectoryNode(String path, Date lastModified) {
+    return createFileNode(path, true, 0L, lastModified);
   }
 
   /**
@@ -309,18 +308,19 @@ public abstract class AbstractFileService implements FileService {
 
   private FileSystemNode getForPath(String parts, boolean shouldExist) {
     if (StringUtils.isBlank(parts)) {
-      return new FileSystemNodeImpl(null, "", true, 0);
+      return new FileSystemNodeImpl(null, "", true, 0, null);
     }
     String path = FileServiceUtils.strip(parts);
-    FileSystemNodeType fileSystemNodeType = getFileNodeType(path);
-    if (FileSystemNodeType.NONE_EXISTENT == fileSystemNodeType) {
+    NodeMetadata nodeMetadata = getNodeMetadata(path);
+    if (nodeMetadata == null) {
       if (!shouldExist) {
         return null;
       }
       throw new IllegalArgumentException("Path does not exist on filesystem: " + path);
     }
-    boolean directory = FileSystemNodeType.DIRECTORY == fileSystemNodeType;
-    return createFileNode(path, directory, directory ? 0 : getSize(path));
+    boolean directory = nodeMetadata.isDirectory();
+    return createFileNode(path, directory, directory ? 0 : getSize(path),
+        nodeMetadata.getLastModified());
   }
 
 }

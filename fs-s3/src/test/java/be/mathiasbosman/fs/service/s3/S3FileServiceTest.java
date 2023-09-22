@@ -10,12 +10,14 @@ import be.mathiasbosman.fs.core.service.FileService;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.Region;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -35,6 +37,7 @@ class S3FileServiceTest extends AbstractContainerTest {
   private final AmazonS3 s3;
   private final String bucketName = "test";
   private final String prefix = "sandbox/";
+  private final FileService fs;
 
   S3FileServiceTest() {
     super(dockerComposeFile, new ContainerServiceDto(dockerS3Service, dockerS3Port));
@@ -44,6 +47,7 @@ class S3FileServiceTest extends AbstractContainerTest {
     s3 = AmazonS3Factory.toAmazonS3(endpoint,
         Region.EU_London.toAWSRegion(), "minio_key", "minio_secret", bucketName,
         true, false);
+    fs = new S3FileService(s3, bucketName, prefix);
   }
 
   @BeforeEach
@@ -54,7 +58,7 @@ class S3FileServiceTest extends AbstractContainerTest {
 
   @Override
   protected FileService getFs() {
-    return new S3FileService(s3, bucketName, prefix);
+    return fs;
   }
 
   @AfterEach
@@ -89,8 +93,10 @@ class S3FileServiceTest extends AbstractContainerTest {
     metadata.setContentEncoding("aws-chunked");
     metadata.setContentType("text/plain");
     metadata.setContentLength(bytes.length);
-    log.debug("Putting remote object to {}", path);
-    s3.putObject(bucketName, prefix + path, new ByteArrayInputStream(bytes), metadata);
+    log.info("Putting remote object to {}", path);
+    PutObjectResult result = s3.putObject(bucketName, prefix + path,
+        new ByteArrayInputStream(bytes), metadata);
+    log.info(result.toString());
   }
 
   @Override
@@ -158,4 +164,11 @@ class S3FileServiceTest extends AbstractContainerTest {
     assertThat(files).hasSize(3);
   }
 
+  @Override
+  public void assertModifiedFolder(String path) {
+    final FileSystemNode folderNode = getFs().getFileNode(path);
+    final Date lastModified = folderNode.getLastModified();
+    assertThat(lastModified).isNull();
+
+  }
 }
