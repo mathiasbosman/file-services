@@ -1,5 +1,7 @@
 package be.mathiasbosman.fs.core.domain;
 
+import java.util.Date;
+
 /**
  * Interface that represents a node on the file system. This node can be a directory, a file or
  * none-existent.
@@ -40,4 +42,11 @@ public interface FileSystemNode {
    * @return True if directory
    */
   boolean isDirectory();
+
+  /**
+   * Get the timestamp of the last modification
+   *
+   * @return The last modified timestamp
+   */
+  Date getLastModified();
 }

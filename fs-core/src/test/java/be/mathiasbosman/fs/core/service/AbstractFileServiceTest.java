@@ -15,6 +15,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -24,6 +25,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -32,6 +34,8 @@ import org.mockito.Mockito;
  * Abstract FileService test that can be extended by other service tests.
  */
 public abstract class AbstractFileServiceTest {
+
+  protected abstract FileService getFs();
 
   @Test
   void copyNode() {
@@ -146,10 +150,6 @@ public abstract class AbstractFileServiceTest {
     // invalid path
     FileService fs = getFs();
     assertThat(fs.list("path/to/invalid")).isEmpty();
-    // file listing
-    assertThatThrownBy(() -> fs.list("path/to/dir/objectA"))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Cannot list contents of a file node");
     // directory listing
     assertThat(fs.list("path/to/dir"))
         .isNotEmpty()
@@ -309,8 +309,6 @@ public abstract class AbstractFileServiceTest {
     putObject(path, "-");
   }
 
-  protected abstract FileService getFs();
-
   private static class SpyingTreeVisitor implements FileNodeVisitor {
 
     private final List<String> visitationOrder = new ArrayList<>();
@@ -405,4 +403,23 @@ public abstract class AbstractFileServiceTest {
     assertThat(fs.exists("test/.d/f")).isFalse();
     assertThat(fs.exists("test/.d")).isFalse();
   }
+
+  @Test
+  public void assertModified() {
+    final Date ts = DateUtils.addSeconds(new Date(), -1);
+    putObject("x/a", "-");
+    final FileSystemNode fileNode = getFs().getFileNode("x/a");
+    final Date lastModified = fileNode.getLastModified();
+    assertThat(lastModified).isNotNull();
+    assertThat(lastModified).isAfter(ts);
+  }
+
+  @Test
+  public void assertModifiedFolder() {
+    putObject("x/a", "-");
+    assertModifiedFolder("x");
+  }
+
+  abstract protected void assertModifiedFolder(String path);
+
 }

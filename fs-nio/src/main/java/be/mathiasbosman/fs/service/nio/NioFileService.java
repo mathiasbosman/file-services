@@ -2,6 +2,7 @@ package be.mathiasbosman.fs.service.nio;
 
 import be.mathiasbosman.fs.core.domain.FileSystemNode;
 import be.mathiasbosman.fs.core.domain.FileSystemNodeType;
+import be.mathiasbosman.fs.core.domain.NodeMetadata;
 import be.mathiasbosman.fs.core.service.AbstractFileService;
 import be.mathiasbosman.fs.core.service.FileNodeVisitor;
 import be.mathiasbosman.fs.core.util.FileServiceUtils;
@@ -12,6 +13,7 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -20,6 +22,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Function;
@@ -102,8 +105,8 @@ public class NioFileService extends AbstractFileService {
   }
 
   @Override
-  public boolean isDirectory(String pad) {
-    return Files.isDirectory(path(pad));
+  public boolean isDirectory(String path) {
+    return Files.isDirectory(path(path));
   }
 
   @Override
@@ -167,17 +170,34 @@ public class NioFileService extends AbstractFileService {
   }
 
   @Override
-  protected FileSystemNodeType getFileNodeType(String pad) {
-    if (!exists(pad)) {
-      return FileSystemNodeType.NONE_EXISTENT;
+  protected FileSystemNodeType getFileNodeType(String path) {
+    if (!exists(path)) {
+      return null;
     }
-    return isDirectory(pad) ? FileSystemNodeType.DIRECTORY : FileSystemNodeType.FILE;
+    return isDirectory(path) ? FileSystemNodeType.DIRECTORY : FileSystemNodeType.FILE;
   }
 
   @Override
-  protected long getSize(String pad) {
+  protected NodeMetadata getNodeMetadata(String path) {
     try {
-      return Files.size(path(pad));
+      final BasicFileAttributes basicFileAttributes = Files.readAttributes(
+          path(FileServiceUtils.combine(path)), BasicFileAttributes.class);
+      FileSystemNodeType type = basicFileAttributes.isDirectory() ? FileSystemNodeType.DIRECTORY
+          : FileSystemNodeType.FILE;
+      return new NodeMetadata(type, basicFileAttributes.size(),
+          new Date(basicFileAttributes.lastModifiedTime().toMillis()));
+    } catch (NoSuchFileException e) {
+      return null;
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
+
+  }
+
+  @Override
+  protected long getSize(String path) {
+    try {
+      return Files.size(path(path));
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
