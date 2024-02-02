@@ -10,7 +10,6 @@ import be.mathiasbosman.fs.core.service.FileService;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.Region;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import java.io.ByteArrayInputStream;
@@ -22,12 +21,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-@Slf4j
 class S3FileServiceTest extends AbstractContainerTest {
 
   private static final String dockerComposeFile = "src/test/resources/docker/docker-compose-minio.yml";
@@ -43,7 +40,6 @@ class S3FileServiceTest extends AbstractContainerTest {
     super(dockerComposeFile, new ContainerServiceDto(dockerS3Service, dockerS3Port));
     // see docker compose
     String endpoint = "http://localhost:" + dockerS3Port;
-    log.debug("Creating s3 connection on {}", endpoint);
     s3 = AmazonS3Factory.toAmazonS3(endpoint,
         Region.EU_London.toAWSRegion(), "minio_key", "minio_secret", bucketName,
         true, false);
@@ -93,10 +89,8 @@ class S3FileServiceTest extends AbstractContainerTest {
     metadata.setContentEncoding("aws-chunked");
     metadata.setContentType("text/plain");
     metadata.setContentLength(bytes.length);
-    log.info("Putting remote object to {}", path);
-    PutObjectResult result = s3.putObject(bucketName, prefix + path,
+    s3.putObject(bucketName, prefix + path,
         new ByteArrayInputStream(bytes), metadata);
-    log.info(result.toString());
   }
 
   @Override

@@ -137,10 +137,7 @@ public class NioFileService extends AbstractFileService {
 
   @Override
   public void save(InputStream in, String path, long size) {
-    log.debug("Saving input stream to {}", path);
-    Path resolvedPath = path(path);
-    mkDirectories(resolvedPath.getParent());
-    try (OutputStream out = Files.newOutputStream(resolvedPath)) {
+    try (OutputStream out = Files.newOutputStream(mkToPath(path))) {
       IOUtils.copy(in, out);
     } catch (IOException e) {
       throw new IllegalStateException(e);
@@ -158,10 +155,19 @@ public class NioFileService extends AbstractFileService {
     }
   }
 
+  private Path mkToPath(String pad) {
+    Path path = path(pad);
+    mkDirectories(path.getParent());
+    return path;
+  }
+
   @Override
   protected void copyContent(FileSystemNode source, String target) {
-    log.debug("Copying object {} to {}", source, target);
-    save(open(source), target);
+    try {
+      Files.copy(path(source.getPath()), mkToPath(target));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override

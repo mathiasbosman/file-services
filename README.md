@@ -20,6 +20,7 @@ The packages can be obtained from the GitHub repository. To use them add the rep
 Maven settings:
 
 ```xml
+
 <repository>
   <id>github</id>
   <url>https://maven.pkg.github.com/mathiasbosman/file-services</url>
@@ -29,6 +30,10 @@ Maven settings:
   </snapshots>
 </repository>
 ```
+
+### Testing
+
+The tests use Testcontainers so make sure a Docker daemon is running when testing.
 
 ### NIO file system
 
