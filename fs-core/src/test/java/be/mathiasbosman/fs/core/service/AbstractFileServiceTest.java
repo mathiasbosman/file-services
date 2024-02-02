@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 
 import be.mathiasbosman.fs.core.domain.FileSystemNode;
-import be.mathiasbosman.fs.core.domain.FileSystemNodeImpl;
 import be.mathiasbosman.fs.core.util.FileServiceUtils;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -38,13 +37,8 @@ public abstract class AbstractFileServiceTest {
   protected abstract FileService getFs();
 
   @Test
-  void copyNode() {
-    FileSystemNodeImpl node = new FileSystemNodeImpl("mockParent", "mock", false, 1);
-    // assert none-existing
+  public void copy() {
     FileService fs = getFs();
-    assertThatThrownBy(() -> fs.copy(node, "target"))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("File mockParent/mock does not exist.");
 
     // copy empty directory
     putDirectory("sourceDir");
@@ -244,10 +238,14 @@ public abstract class AbstractFileServiceTest {
 
   @Test
   void move() {
-    putObject("path/to/object");
-    getFs().move("path/to/object", "path/toBis/object");
-    assertExists("path/toBis/object");
-    assertNotExists("path/to/object");
+    FileService fs = getFs();
+    putObject("folder/file.txt", "information");
+    putObject("folder/more.txt", "more data");
+    fs.move("folder", "copy");
+    assertThat(fs.exists("copy/more.txt")).isTrue();
+    assertThat(fs.read("copy/file.txt")).isEqualTo("information");
+    assertThat(fs.exists("folder/file.txt")).isFalse();
+    assertThat(fs.exists("folder/more.txt")).isFalse();
   }
 
   @Test
@@ -416,7 +414,9 @@ public abstract class AbstractFileServiceTest {
   @Test
   public void assertModifiedFolder() {
     putObject("x/a", "-");
+    putObject("y/b/c", "-");
     assertModifiedFolder("x");
+    assertModifiedFolder("y/b");
   }
 
   abstract protected void assertModifiedFolder(String path);
