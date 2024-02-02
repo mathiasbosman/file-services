@@ -113,7 +113,7 @@
   </parent>
 
   <properties>
-    <java.language.version>17</java.language.version>
+    <java.language.version>21</java.language.version>
     <maven.compiler.source>${java.language.version}</maven.compiler.source>
     <maven.compiler.target>${java.language.version}</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
