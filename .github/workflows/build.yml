@@ -26,7 +26,7 @@ jobs:
           reporter: java-junit
           only-summary: true
           list-suites: failed
-          litst-tests: failed
+          list-tests: failed
       - name: Sonar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
