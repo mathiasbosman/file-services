@@ -32,15 +32,17 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: master
+          ssh-key: ${{ secrets.ACTION_MAVEN_KEY }}
       - uses: actions/setup-java@v4
         with:
           java-version: 21
           distribution: adopt
           cache: maven
-      - name: Publish package
+      - name: Release package
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          mvn --batch-mode deploy
+          mvn -B release:prepare
+          mvn -B release:perform
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
