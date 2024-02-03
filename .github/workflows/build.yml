@@ -24,6 +24,9 @@ jobs:
           name: JUnit tests
           path: '**/target/surefire-reports/*.xml'
           reporter: java-junit
+          only-summary: true
+          list-suites: failed
+          litst-tests: failed
       - name: Sonar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
