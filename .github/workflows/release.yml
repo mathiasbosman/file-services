@@ -37,11 +37,10 @@ jobs:
           java-version: 21
           distribution: adopt
           cache: maven
-      - name: Release package
+      - name: Publish package
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          mvn -B release:prepare
-          mvn -B release:perform
+          mvn --batch-mode deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
