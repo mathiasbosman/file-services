@@ -13,7 +13,6 @@
         <groupId>commons-io</groupId>
         <version>2.15.1</version>
       </dependency>
-      <!-- file services -->
       <dependency>
         <artifactId>aws-java-sdk-s3</artifactId>
         <groupId>com.amazonaws</groupId>
@@ -72,7 +71,7 @@
         <artifactId>maven-release-plugin</artifactId>
         <configuration>
           <tagNameFormat>v@{project.version}</tagNameFormat>
-          <arguments>-DskipTests -Dowasp.skip=true</arguments>
+          <arguments>-DskipTests</arguments>
         </configuration>
         <groupId>org.apache.maven.plugins</groupId>
       </plugin>
