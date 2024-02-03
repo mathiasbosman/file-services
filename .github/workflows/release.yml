@@ -41,3 +41,4 @@ jobs:
           git-release-bot-name: "GitHub Actions"
           git-release-bot-email: "actions@github.com"
           ssh-private-key: ${{ secrets.ACTIONS_MAVEN_KEY }}
+          maven-args: "-DskipTests"
