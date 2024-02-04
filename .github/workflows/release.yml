@@ -30,15 +30,17 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ssh-key: ${{ secrets.ACTION_MAVEN_KEY }}
+          ref: master
       - uses: actions/setup-java@v4
         with:
           java-version: 21
           distribution: adopt
           cache: maven
       - name: Release package
-        uses: qcastel/github-actions-maven-release@master
-        with:
-          git-release-bot-name: "GitHub Actions"
-          git-release-bot-email: "actions@github.com"
-          ssh-private-key: ${{ secrets.ACTIONS_MAVEN_KEY }}
-          maven-args: "-DskipTests"
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          mvn -B release:prepare
+          mvn -B release:perform
