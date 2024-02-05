@@ -1,33 +1,17 @@
 name: Release
 on:
-  push:
-    branches:
-      - main
+  release:
+    types: [ published ]
 
 jobs:
-  release:
-    name: Prepare next release
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      actions: write
-      repository-projects: write
-      packages: write
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.ACTION_PAT }}
-      - uses: actions/setup-java@v4
-        with:
-          java-version: 21
-          distribution: adopt
-          cache: maven
-      - name: Release package
-        run: |
-          mvn -B clean install -DskipTests
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          mvn -B release:prepare
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  release1:
+    name: Release
+    uses: qcastel/github-actions-maven-release@v1.12.41
+    with:
+      ssh-private-key: ${{ secrets.ACTION_MAVEN_KEY }}
+      gpg-enabled: true
+      gpg-key-id: ${{ secrets.ACTIONS_RELEASE_GPG_ID }}
+      gpg-key: ${{ secrets.ACTIONS_RELEASE_GPG_KEY }}
+      gpg-passphrase: ${{ ACTIONS_RELEASE_GPG_PASSPHRASE }}
+      git-release-bot-name: "GitHub Actions"
+      git-release-bot-email: "actions@github.com"
