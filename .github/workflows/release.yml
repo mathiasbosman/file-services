@@ -25,6 +25,6 @@ jobs:
           gpg-enabled: true
           gpg-key-id: ${{ secrets.ACTIONS_RELEASE_GPG_ID }}
           gpg-key: ${{ secrets.ACTIONS_RELEASE_GPG_KEY }}
-          gpg-passphrase: ${{ ACTIONS_RELEASE_GPG_PASSPHRASE }}
+          gpg-passphrase: ${{ secrets.ACTIONS_RELEASE_GPG_PASSPHRASE }}
           git-release-bot-name: "GitHub Actions"
           git-release-bot-email: "actions@github.com"
