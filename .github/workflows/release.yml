@@ -30,4 +30,4 @@ jobs:
       - name: Create new release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: mvn -B release:prepare release:perform
+        run: mvn -B release:branch -DupdateBranchVersions
