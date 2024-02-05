@@ -1,12 +1,13 @@
-name: Release
+name: Deploy
 on:
   workflow_dispatch:
 
 jobs:
-  release:
+  deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      packages: write
     steps:
       - uses: actions/checkout@v3
         with:
@@ -24,7 +25,7 @@ jobs:
           passphrase: ${{ secrets.ACTIONS_RELEASE_GPG_PASSPHRASE }}
           git_user_signingkey: true
           git_commit_gpgsign: true
-      - name: Create new release
+      - name: Deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: mvn -B release:branch -DbranchName="release-next"
+        run: mvn -B release:perform
