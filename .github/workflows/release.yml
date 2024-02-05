@@ -1,17 +1,30 @@
 name: Release
 on:
-  release:
-    types: [ published ]
+  push:
+    branches:
+      - master
 
 jobs:
-  release1:
-    name: Release
-    uses: qcastel/github-actions-maven-release@v1.12.41
-    with:
-      ssh-private-key: ${{ secrets.ACTION_MAVEN_KEY }}
-      gpg-enabled: true
-      gpg-key-id: ${{ secrets.ACTIONS_RELEASE_GPG_ID }}
-      gpg-key: ${{ secrets.ACTIONS_RELEASE_GPG_KEY }}
-      gpg-passphrase: ${{ ACTIONS_RELEASE_GPG_PASSPHRASE }}
-      git-release-bot-name: "GitHub Actions"
-      git-release-bot-email: "actions@github.com"
+  release:
+    if: "!contains(github.event.head_commit.message, '[release]')"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: adopt
+          cache: maven
+      - uses: actions/checkout@v3
+      - name: Maven install
+        run: mvn -B clean install -DskipTests
+      - name: Release
+        uses: qcastel/github-actions-maven-release@v1.12.41
+        with:
+          ssh-private-key: ${{ secrets.ACTION_MAVEN_KEY }}
+          gpg-enabled: true
+          gpg-key-id: ${{ secrets.ACTIONS_RELEASE_GPG_ID }}
+          gpg-key: ${{ secrets.ACTIONS_RELEASE_GPG_KEY }}
+          gpg-passphrase: ${{ ACTIONS_RELEASE_GPG_PASSPHRASE }}
+          git-release-bot-name: "GitHub Actions"
+          git-release-bot-email: "actions@github.com"

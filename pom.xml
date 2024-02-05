@@ -79,6 +79,7 @@
         <configuration>
           <tagNameFormat>v@{project.version}</tagNameFormat>
           <arguments>-DskipTests</arguments>
+          <scmCommentPrefix>[release]</scmCommentPrefix>
         </configuration>
         <groupId>org.apache.maven.plugins</groupId>
       </plugin>
