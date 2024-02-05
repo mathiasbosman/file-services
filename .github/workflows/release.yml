@@ -17,8 +17,6 @@ jobs:
         run: mvn -B clean install -DskipTests
       - name: Release
         uses: qcastel/github-actions-maven-release@v1.12.41
-        env:
-          JAVA_HOME: $JAVA_HOME
         with:
           ssh-private-key: ${{ secrets.ACTION_MAVEN_KEY }}
           gpg-enabled: true
