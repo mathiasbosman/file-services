@@ -2,11 +2,11 @@ name: Release
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   release:
-    name: Release and deploy 📦
+    name: Prepare next release
     runs-on: ubuntu-latest
     permissions:
       contents: write
