@@ -9,7 +9,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 
 import be.mathiasbosman.fs.core.domain.FileSystemNode;
-import be.mathiasbosman.fs.core.domain.FileSystemNodeImpl;
 import be.mathiasbosman.fs.core.service.AbstractFileServiceTest;
 import be.mathiasbosman.fs.core.service.FileService;
 import java.io.IOException;
@@ -124,7 +123,7 @@ class NioFileServiceTest extends AbstractFileServiceTest {
           .thenThrow(new IOException("Mocked IOException"));
 
       FileService fs = getFs();
-      final FileSystemNode mockNode = new FileSystemNodeImpl("x", "y", true, 0);
+      final FileSystemNode mockNode = new FileSystemNode("x", "y", true, 0);
 
       assertThatThrownBy(() -> fs.list(mockNode))
           .isInstanceOf(IllegalStateException.class)
@@ -141,7 +140,7 @@ class NioFileServiceTest extends AbstractFileServiceTest {
           .thenThrow(new IOException("Mocked IOException"));
 
       FileService fs = getFs();
-      final FileSystemNode mockNode = new FileSystemNodeImpl("x", "y", false, 1);
+      final FileSystemNode mockNode = new FileSystemNode("x", "y", false, 1);
 
       assertThatThrownBy(() -> fs.open(mockNode))
           .isInstanceOf(IllegalStateException.class)
@@ -171,7 +170,7 @@ class NioFileServiceTest extends AbstractFileServiceTest {
       files.when(() -> Files.walk(any()))
           .thenThrow(new IOException("Mocked IOException"));
 
-      final FileSystemNode mockNode = new FileSystemNodeImpl("x", "y", false, 1);
+      final FileSystemNode mockNode = new FileSystemNode("x", "y", false, 1);
 
       FileService fs = getFs();
       assertThatThrownBy(() -> fs.streamDirectory(mockNode))
@@ -186,7 +185,7 @@ class NioFileServiceTest extends AbstractFileServiceTest {
       files.when(() -> Files.size(any()))
           .thenThrow(new IOException("Mocked IOException"));
 
-      final FileSystemNode mockNode = new FileSystemNodeImpl("x", "y", false, 1);
+      final FileSystemNode mockNode = new FileSystemNode("x", "y", false, 1);
 
       FileService fs = getFs();
       assertThatThrownBy(() -> fs.getSize(mockNode))
@@ -214,7 +213,7 @@ class NioFileServiceTest extends AbstractFileServiceTest {
       files.when(() -> Files.delete(any()))
           .thenThrow(new IOException("Mocked IOException"));
 
-      final FileSystemNode mockNode = new FileSystemNodeImpl("x", "y", false, 1);
+      final FileSystemNode mockNode = new FileSystemNode("x", "y", false, 1);
 
       FileService fs = getFs();
       assertThatThrownBy(() -> fs.delete(mockNode))
@@ -251,7 +250,7 @@ class NioFileServiceTest extends AbstractFileServiceTest {
               () -> Files.readAttributes(any(), ArgumentMatchers.<Class<BasicFileAttributes>>any()))
           .thenThrow(new IOException("Mocked IOException"));
 
-      final FileSystemNode mockNode = new FileSystemNodeImpl("x", "y", false, 1);
+      final FileSystemNode mockNode = new FileSystemNode("x", "y", false, 1);
       FileService fs = getFs();
       ZoneId zoneId = ZoneId.systemDefault();
       assertThatThrownBy(
@@ -284,7 +283,7 @@ class NioFileServiceTest extends AbstractFileServiceTest {
   @Override
   protected void assertModifiedFolder(String path) {
     final FileSystemNode folderNode = getFs().getFileNode(path);
-    final Date lastModified = folderNode.getLastModified();
+    final Date lastModified = folderNode.lastModified();
     assertThat(lastModified).isNotNull();
   }
 

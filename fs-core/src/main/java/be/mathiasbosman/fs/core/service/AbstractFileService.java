@@ -2,7 +2,6 @@ package be.mathiasbosman.fs.core.service;
 
 import be.mathiasbosman.fs.core.domain.FileServiceException;
 import be.mathiasbosman.fs.core.domain.FileSystemNode;
-import be.mathiasbosman.fs.core.domain.FileSystemNodeImpl;
 import be.mathiasbosman.fs.core.domain.FileSystemNodeType;
 import be.mathiasbosman.fs.core.domain.NodeMetadata;
 import be.mathiasbosman.fs.core.util.FileServiceUtils;
@@ -40,15 +39,15 @@ public abstract class AbstractFileService implements FileService {
   @Override
   public void copy(FileSystemNode source, String target) {
     String targetPath = FileServiceUtils.strip(target);
-    if (!exists(source.getPath())) {
-      throw new IllegalArgumentException("File " + source.getPath() + " does not exist.");
+    if (!exists(source.path())) {
+      throw new IllegalArgumentException("File " + source.path() + " does not exist.");
     }
     if (source.isDirectory()) {
       List<FileSystemNode> list = list(source);
       if (CollectionUtils.isEmpty(list)) {
         mkDirectories(targetPath);
       } else {
-        list.forEach(node -> copy(node, FileServiceUtils.combine(targetPath, node.getName())));
+        list.forEach(node -> copy(node, FileServiceUtils.combine(targetPath, node.name())));
       }
       return;
     }
@@ -90,7 +89,7 @@ public abstract class AbstractFileService implements FileService {
 
   @Override
   public FileSystemNode getParent(FileSystemNode node) {
-    return StringUtils.isEmpty(node.getPath()) ? null : getFileNode(node.getParentPath());
+    return StringUtils.isEmpty(node.path()) ? null : getFileNode(node.parentPath());
   }
 
   @Override
@@ -193,9 +192,9 @@ public abstract class AbstractFileService implements FileService {
   @Override
   public long getSize(FileSystemNode node) {
     if (node.isDirectory()) {
-      return streamDirectory(node).mapToLong(FileSystemNode::getSize).sum();
+      return streamDirectory(node).mapToLong(FileSystemNode::size).sum();
     }
-    return getSize(node.getPath());
+    return getSize(node.path());
   }
 
   protected abstract long getSize(String path);
@@ -226,7 +225,7 @@ public abstract class AbstractFileService implements FileService {
         }
 
         private void add(FileSystemNode node, boolean file) {
-          final String nodePath = node.getPath();
+          final String nodePath = node.path();
           try {
             String inZipPath = FileServiceUtils.combine(prefix,
                 StringUtils.substringAfter(nodePath, path));
@@ -284,7 +283,7 @@ public abstract class AbstractFileService implements FileService {
     Pair<String, String> dirAndName = FileServiceUtils.split(path);
     String parentDir = dirAndName.getLeft();
     String name = dirAndName.getRight();
-    return new FileSystemNodeImpl(parentDir, name, isDirectory, size, lastModified);
+    return new FileSystemNode(parentDir, name, isDirectory, size, lastModified);
   }
 
   protected FileSystemNode createDirectoryNode(String path, Date lastModified) {
@@ -308,7 +307,7 @@ public abstract class AbstractFileService implements FileService {
 
   private FileSystemNode getForPath(String parts, boolean shouldExist) {
     if (StringUtils.isBlank(parts)) {
-      return new FileSystemNodeImpl(null, "", true, 0, null);
+      return createFileNode("", true, 0, null);
     }
     String path = FileServiceUtils.strip(parts);
     NodeMetadata nodeMetadata = getNodeMetadata(path);
@@ -320,7 +319,7 @@ public abstract class AbstractFileService implements FileService {
     }
     boolean directory = nodeMetadata.isDirectory();
     return createFileNode(path, directory, directory ? 0 : getSize(path),
-        nodeMetadata.getLastModified());
+        nodeMetadata.lastModified());
   }
 
 }

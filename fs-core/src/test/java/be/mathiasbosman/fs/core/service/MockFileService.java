@@ -71,7 +71,7 @@ public class MockFileService extends AbstractFileService {
 
   @Override
   public LocalDateTime getCreationTime(FileSystemNode node, ZoneId zoneId) {
-    Path path = path(node.getPath());
+    Path path = path(node.path());
     BasicFileAttributes attributes = getAttributes(path);
     FileTime fileTime = attributes.creationTime();
     return LocalDateTime.ofInstant(fileTime.toInstant(), zoneId);
@@ -79,7 +79,7 @@ public class MockFileService extends AbstractFileService {
 
   @Override
   public LocalDateTime getLastModifiedTime(FileSystemNode node, ZoneId zoneId) {
-    Path path = path(node.getPath());
+    Path path = path(node.path());
     BasicFileAttributes attributes = getAttributes(path);
     FileTime fileTime = attributes.lastModifiedTime();
     return LocalDateTime.ofInstant(fileTime.toInstant(), zoneId);
@@ -93,13 +93,13 @@ public class MockFileService extends AbstractFileService {
   @Override
   public List<FileSystemNode> list(FileSystemNode root) {
     try {
-      Path path = path(root.getPath());
+      Path path = path(root.path());
       FileAccumulator accumulator = new FileAccumulator(path);
       Files.walkFileTree(path, Collections.emptySet(), 1, accumulator);
       List<Path> fromIterable = accumulator.toList();
       return fromIterable.stream()
           .map(toFile)
-          .sorted((Comparator.comparing(FileSystemNode::getName)))
+          .sorted((Comparator.comparing(FileSystemNode::name)))
           .collect(Collectors.toList());
     } catch (IOException e) {
       throw new IllegalStateException(e);
@@ -109,7 +109,7 @@ public class MockFileService extends AbstractFileService {
   @Override
   public InputStream open(FileSystemNode node) {
     try {
-      return Files.newInputStream(path(node.getPath()));
+      return Files.newInputStream(path(node.path()));
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
@@ -130,7 +130,7 @@ public class MockFileService extends AbstractFileService {
   @SuppressWarnings("resource") // we return a stream
   public Stream<FileSystemNode> streamDirectory(FileSystemNode root) {
     try {
-      Path path = path(root.getPath());
+      Path path = path(root.path());
       return Files.walk(path).map(toFile);
     } catch (IOException e) {
       throw new IllegalStateException(e);
@@ -194,7 +194,7 @@ public class MockFileService extends AbstractFileService {
   }
 
   protected Path path(FileSystemNode node) {
-    return path(node.getPath());
+    return path(node.path());
   }
 
   private Path path(String location) {

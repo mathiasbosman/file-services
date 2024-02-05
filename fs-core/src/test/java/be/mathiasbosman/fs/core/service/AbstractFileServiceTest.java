@@ -89,19 +89,19 @@ public abstract class AbstractFileServiceTest {
   void getFileNode() {
     FileService fs = getFs();
     FileSystemNode emptyNode = fs.getFileNode("");
-    assertThat(emptyNode.getParentPath()).isNull();
-    assertThat(emptyNode.getName()).isEmpty();
+    assertThat(emptyNode.parentPath()).isNull();
+    assertThat(emptyNode.name()).isEmpty();
     assertThat(emptyNode.isDirectory()).isTrue();
-    assertThat(emptyNode.getSize()).isZero();
+    assertThat(emptyNode.size()).isZero();
 
     putObject("path/to/object");
 
     FileSystemNode fileNode = fs.getFileNode("path", "to", "object");
     assertThat(fileNode).isNotNull();
     assertThat(fileNode.isDirectory()).isFalse();
-    assertThat(fileNode.getName()).isEqualTo("object");
-    assertThat(fileNode.getPath()).isEqualTo("path/to/object");
-    assertThat(fileNode.getParentPath()).isEqualTo("path/to");
+    assertThat(fileNode.name()).isEqualTo("object");
+    assertThat(fileNode.path()).isEqualTo("path/to/object");
+    assertThat(fileNode.parentPath()).isEqualTo("path/to");
     assertThatThrownBy(() -> fs.getFileNode("path/invalid"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Path does not exist on filesystem: path/invalid");
@@ -122,8 +122,8 @@ public abstract class AbstractFileServiceTest {
     FileSystemNode fileNode = getFs().getFileNode("path/to/object");
     FileSystemNode parentNode = getFs().getParent(fileNode);
     assertThat(parentNode).isNotNull();
-    assertThat(parentNode.getPath()).isEqualTo("path/to");
-    assertThat(parentNode.getParentPath()).isEqualTo("path");
+    assertThat(parentNode.path()).isEqualTo("path/to");
+    assertThat(parentNode.parentPath()).isEqualTo("path");
 
     FileSystemNode rootNode = getFs().getFileNode("");
     assertThat(getFs().getParent(rootNode)).isNull();
@@ -307,28 +307,13 @@ public abstract class AbstractFileServiceTest {
     putObject(path, "-");
   }
 
-  private static class SpyingTreeVisitor implements FileNodeVisitor {
-
-    private final List<String> visitationOrder = new ArrayList<>();
-    private final List<String> visitedFiles = new ArrayList<>();
-    private final List<String> visitedFolders = new ArrayList<>();
-
-    @Override
-    public void on(FileSystemNode file) {
-      visitedFiles.add(file.getPath());
-      visitationOrder.add(file.getPath());
-    }
-
-    @Override
-    public void pre(FileSystemNode folder) {
-      visitedFolders.add(folder.getPath());
-      visitationOrder.add("> " + folder.getPath());
-    }
-
-    @Override
-    public void post(FileSystemNode folder) {
-      visitationOrder.add("< " + folder.getPath());
-    }
+  @Test
+  public void assertModified() {
+    final Date ts = DateUtils.addSeconds(new Date(), -1);
+    putObject("x/a", "-");
+    final FileSystemNode fileNode = getFs().getFileNode("x/a");
+    final Date lastModified = fileNode.lastModified();
+    assertThat(lastModified).isNotNull().isAfter(ts);
   }
 
   @Test
@@ -402,13 +387,28 @@ public abstract class AbstractFileServiceTest {
     assertThat(fs.exists("test/.d")).isFalse();
   }
 
-  @Test
-  public void assertModified() {
-    final Date ts = DateUtils.addSeconds(new Date(), -1);
-    putObject("x/a", "-");
-    final FileSystemNode fileNode = getFs().getFileNode("x/a");
-    final Date lastModified = fileNode.getLastModified();
-    assertThat(lastModified).isNotNull().isAfter(ts);
+  private static class SpyingTreeVisitor implements FileNodeVisitor {
+
+    private final List<String> visitationOrder = new ArrayList<>();
+    private final List<String> visitedFiles = new ArrayList<>();
+    private final List<String> visitedFolders = new ArrayList<>();
+
+    @Override
+    public void on(FileSystemNode file) {
+      visitedFiles.add(file.path());
+      visitationOrder.add(file.path());
+    }
+
+    @Override
+    public void pre(FileSystemNode folder) {
+      visitedFolders.add(folder.path());
+      visitationOrder.add("> " + folder.path());
+    }
+
+    @Override
+    public void post(FileSystemNode folder) {
+      visitationOrder.add("< " + folder.path());
+    }
   }
 
   @Test

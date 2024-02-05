@@ -1,52 +1,18 @@
 package be.mathiasbosman.fs.core.domain;
 
+import be.mathiasbosman.fs.core.util.FileServiceUtils;
 import java.util.Date;
 
-/**
- * Interface that represents a node on the file system. This node can be a directory, a file or
- * none-existent.
- */
-public interface FileSystemNode {
+public record FileSystemNode(String parentPath, String path, String name, boolean isDirectory,
+                             long size, Date lastModified) {
 
-  /**
-   * Returns the name of the node.
-   *
-   * @return Name of the node
-   */
-  String getName();
+  public FileSystemNode(String parentPath, String name, boolean isDirectory, long size) {
+    this(parentPath, name, isDirectory, size, new Date());
+  }
 
-  /**
-   * Returns the full path of the node.
-   *
-   * @return Full path
-   */
-  String getPath();
-
-  /**
-   * Get the parent path.
-   *
-   * @return The parent path
-   */
-  String getParentPath();
-
-  /**
-   * Get size.
-   *
-   * @return The size of the node (content length)
-   */
-  long getSize();
-
-  /**
-   * Determines if the node is a directory or not.
-   *
-   * @return True if directory
-   */
-  boolean isDirectory();
-
-  /**
-   * Get the timestamp of the last modification
-   *
-   * @return The last modified timestamp
-   */
-  Date getLastModified();
+  public FileSystemNode(String parentPath, String name, boolean isDirectory, long size,
+      Date lastModified) {
+    this(parentPath, FileServiceUtils.combine(parentPath, name), name, isDirectory, size,
+        lastModified);
+  }
 }

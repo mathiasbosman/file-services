@@ -68,7 +68,7 @@ public class S3FileService extends AbstractFileService {
   @Override
   public void delete(FileSystemNode node, boolean recursive) {
     if (recursive) {
-      final List<S3ObjectSummary> objectSummaries = getObjectSummaries(node.getPath());
+      final List<S3ObjectSummary> objectSummaries = getObjectSummaries(node.path());
       objectSummaries.forEach(s3ObjectSummary -> delete(s3ObjectSummary.getKey()));
       return;
     }
@@ -77,8 +77,8 @@ public class S3FileService extends AbstractFileService {
       List<FileSystemNode> list = list(node, true);
       if (CollectionUtils.size(list) == 1) {
         FileSystemNode sub = list.get(0);
-        if (DIRECTORY_MARKER_OBJECT_NAME.equals(sub.getName())) {
-          delete(toObjectKey(sub.getPath()));
+        if (DIRECTORY_MARKER_OBJECT_NAME.equals(sub.name())) {
+          delete(toObjectKey(sub.path()));
           return;
         }
       }
@@ -86,7 +86,7 @@ public class S3FileService extends AbstractFileService {
         throw new IllegalArgumentException("Directory not empty for deletion");
       }
     }
-    delete(toObjectKey(node.getPath()));
+    delete(toObjectKey(node.path()));
   }
 
   private void delete(String key) {
@@ -101,7 +101,7 @@ public class S3FileService extends AbstractFileService {
 
   @Override
   public LocalDateTime getLastModifiedTime(FileSystemNode node, ZoneId zoneId) {
-    ObjectMetadata metaData = getMetaData(node.getPath());
+    ObjectMetadata metaData = getMetaData(node.path());
     return LocalDateTime.ofInstant(metaData.getLastModified().toInstant(), zoneId);
   }
 
@@ -113,9 +113,9 @@ public class S3FileService extends AbstractFileService {
   private List<FileSystemNode> list(FileSystemNode directory,
       boolean includeHiddenDirectoryMarkers) {
     List<FileSystemNode> result = new LinkedList<>();
-    boolean root = StringUtils.isEmpty(directory.getPath());
-    String prefix = root ? "" : directory.getPath() + File.separatorChar;
-    Iterable<S3ObjectSummary> objectListing = getObjectSummaries(directory.getPath());
+    boolean root = StringUtils.isEmpty(directory.path());
+    String prefix = root ? "" : directory.path() + File.separatorChar;
+    Iterable<S3ObjectSummary> objectListing = getObjectSummaries(directory.path());
     Set<String> subDirs = new HashSet<>();
     objectListing.forEach(summary -> {
       String location = getLocation(summary);
@@ -131,13 +131,13 @@ public class S3FileService extends AbstractFileService {
       }
     });
     subDirs.forEach(subDir -> result.add(createFileNode(subDir, true, 0, null)));
-    result.sort(Comparator.comparing(FileSystemNode::getName));
+    result.sort(Comparator.comparing(FileSystemNode::name));
     return result;
   }
 
   @Override
   public InputStream open(FileSystemNode node) {
-    String key = toObjectKey(node.getPath());
+    String key = toObjectKey(node.path());
     log.debug("Getting {}/{}", bucketName, key);
     return s3.getObject(bucketName, key).getObjectContent();
   }
@@ -149,7 +149,7 @@ public class S3FileService extends AbstractFileService {
 
   @Override
   public Stream<FileSystemNode> streamDirectory(FileSystemNode root) {
-    List<S3ObjectSummary> objectSummaries = getObjectSummaries(root.getPath());
+    List<S3ObjectSummary> objectSummaries = getObjectSummaries(root.path());
     return objectSummaries.stream().map(s3ObjectSummary -> {
       String location = getLocation(s3ObjectSummary);
       return getFileNode(location);
@@ -158,7 +158,7 @@ public class S3FileService extends AbstractFileService {
 
   @Override
   protected void copyContent(FileSystemNode source, String to) {
-    String sourceKey = toObjectKey(source.getPath());
+    String sourceKey = toObjectKey(source.path());
     String destinationKey = toObjectKey(to);
     log.debug("Copying object {}/{} to {}/{}", bucketName, source, bucketName, destinationKey);
     s3.copyObject(bucketName, sourceKey, bucketName, destinationKey);
@@ -226,11 +226,11 @@ public class S3FileService extends AbstractFileService {
 
   @Override
   public void walk(FileSystemNode node, FileNodeVisitor visitor) {
-    if (node == null || node.getPath() == null) {
+    if (node == null || node.path() == null) {
       throw new IllegalArgumentException("Path should be set when walking");
     }
 
-    final List<S3ObjectSummary> objectSummaries = getObjectSummaries(node.getPath());
+    final List<S3ObjectSummary> objectSummaries = getObjectSummaries(node.path());
     walk(toTree(node, objectSummaries), visitor);
   }
 
@@ -293,7 +293,7 @@ public class S3FileService extends AbstractFileService {
 
   private FileSystemTree<FileSystemNode> toTree(FileSystemNode root,
       List<S3ObjectSummary> objectSummaries) {
-    int rootLength = root.getPath().length();
+    int rootLength = root.path().length();
     FileSystemTree<FileSystemNode> result = new FileSystemTreeImpl<>(root);
     objectSummaries.forEach(summary -> {
       final String key = pathWithoutPrefix(summary);

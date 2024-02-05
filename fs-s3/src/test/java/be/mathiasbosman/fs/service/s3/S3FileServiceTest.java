@@ -161,7 +161,7 @@ class S3FileServiceTest extends AbstractContainerTest {
   @Override
   public void assertModifiedFolder(String path) {
     final FileSystemNode folderNode = getFs().getFileNode(path);
-    final Date lastModified = folderNode.getLastModified();
+    final Date lastModified = folderNode.lastModified();
     assertThat(lastModified).isNull();
 
   }

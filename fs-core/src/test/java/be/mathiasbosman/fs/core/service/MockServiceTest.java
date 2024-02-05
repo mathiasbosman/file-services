@@ -110,7 +110,7 @@ public class MockServiceTest extends AbstractFileServiceTest {
   @Override
   protected void assertModifiedFolder(String path) {
     final FileSystemNode folderNode = getFs().getFileNode(path);
-    final Date lastModified = folderNode.getLastModified();
+    final Date lastModified = folderNode.lastModified();
     assertThat(lastModified).isNotNull();
   }
 }
