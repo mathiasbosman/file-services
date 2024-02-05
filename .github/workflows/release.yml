@@ -15,15 +15,12 @@ jobs:
           cache: maven
       - name: Maven install
         run: mvn -B clean install -DskipTests
-      - name: Release
-        uses: qcastel/github-actions-maven-release@v1.12.41
-        env:
-          JAVA_HOME: ${{ env.JAVA_HOME }}
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v6
         with:
-          ssh-private-key: ${{ secrets.ACTION_MAVEN_KEY }}
-          gpg-enabled: true
-          gpg-key-id: ${{ secrets.ACTIONS_RELEASE_GPG_ID }}
-          gpg-key: ${{ secrets.ACTIONS_RELEASE_GPG_KEY }}
-          gpg-passphrase: ${{ secrets.ACTIONS_RELEASE_GPG_PASSPHRASE }}
-          git-release-bot-name: "GitHub Actions"
-          git-release-bot-email: "actions@github.com"
+          gpg_private_key: ${{ secrets.ACTIONS_RELEASE_GPG_KEY }}
+          passphrase: ${{ secrets.ACTIONS_RELEASE_GPG_PASSPHRASE }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+      - name: Create new release
+        run: mvn -B release:prepare
