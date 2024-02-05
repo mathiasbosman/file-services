@@ -127,5 +127,5 @@
     <sonar.organization>mathiasbosman</sonar.organization>
   </properties>
 
-  <version>1.0.1-SNAPSHOT</version>
+  <version>1.0.0-SNAPSHOT</version>
 </project>
