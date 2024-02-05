@@ -58,6 +58,6 @@
   <parent>
     <artifactId>file-services</artifactId>
     <groupId>be.mathiasbosman</groupId>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
   </parent>
 </project>
