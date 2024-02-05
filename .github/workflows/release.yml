@@ -31,6 +31,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ssh-key: ${{ secrets.ACTION_MAVEN_KEY }}
           ref: master
       - uses: actions/setup-java@v4
         with:
@@ -43,5 +44,3 @@ jobs:
           git config user.email "actions@github.com"
           mvn -B release:prepare
           mvn -B release:perform
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
