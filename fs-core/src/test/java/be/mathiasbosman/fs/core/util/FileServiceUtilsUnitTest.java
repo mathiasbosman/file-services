@@ -64,8 +64,7 @@ class FileServiceUtilsUnitTest {
   void getContentType() throws IOException {
     assertThat(FileServiceUtils.getContentType("test.txt")).isEqualTo("text/plain");
     assertThat(FileServiceUtils.getContentType("a/b/test.txt")).isEqualTo("text/plain");
-    assertThatThrownBy(() -> FileServiceUtils.getContentType("test.foo"))
-        .isInstanceOf(IOException.class);
+    assertThat(FileServiceUtils.getContentType("foo.bar")).isNull();
   }
 
 }

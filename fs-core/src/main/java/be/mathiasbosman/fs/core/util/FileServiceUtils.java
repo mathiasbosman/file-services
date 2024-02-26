@@ -145,6 +145,7 @@ public class FileServiceUtils {
    *
    * @param filename String The Filename
    * @return the content type as string
+   * @throws IOException in case of IO error while probing content type
    */
   public static String getContentType(String filename) throws IOException {
     Path path = new File(filename).toPath();
