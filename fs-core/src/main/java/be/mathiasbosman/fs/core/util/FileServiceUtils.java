@@ -4,6 +4,8 @@ import be.mathiasbosman.fs.core.domain.FileServiceException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Objects;
@@ -127,7 +129,7 @@ public class FileServiceUtils {
   /**
    * Returns the extension (determined by checking the last ".") of a path.
    *
-   * @param parts Pah parts
+   * @param parts Path parts
    * @return The extension as {@link String} excluding the "." character
    */
   public static String getExtension(String... parts) {
@@ -136,5 +138,17 @@ public class FileServiceUtils {
         .filter(f -> f.contains(String.valueOf('.')))
         .map(f -> f.substring(combined.lastIndexOf('.') + 1))
         .orElse(null);
+  }
+
+  /**
+   * Returns the content type based on the filename.
+   *
+   * @param filename String The Filename
+   * @return the content type as string
+   * @throws IOException in case of IO error while probing content type
+   */
+  public static String getContentType(String filename) throws IOException {
+    Path path = new File(filename).toPath();
+    return Files.probeContentType(path);
   }
 }

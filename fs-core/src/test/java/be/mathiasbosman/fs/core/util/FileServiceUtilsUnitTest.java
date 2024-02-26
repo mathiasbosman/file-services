@@ -3,6 +3,7 @@ package be.mathiasbosman.fs.core.util;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.IOException;
 import java.util.zip.ZipInputStream;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
@@ -57,6 +58,12 @@ class FileServiceUtilsUnitTest {
   void appendSeparator() {
     assertThat(FileServiceUtils.appendSeparator("a/")).isEqualTo("a/");
     assertThat(FileServiceUtils.appendSeparator("a")).isEqualTo("a/");
+  }
+
+  @Test
+  void getContentType() throws IOException {
+    assertThat(FileServiceUtils.getContentType("test.txt")).isEqualTo("text/plain");
+    assertThat(FileServiceUtils.getContentType("a/b/test.txt")).isEqualTo("text/plain");
   }
 
 }
