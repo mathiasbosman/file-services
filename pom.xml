@@ -6,7 +6,7 @@
       <dependency>
         <artifactId>guava</artifactId>
         <groupId>com.google.guava</groupId>
-        <version>33.0.0-jre</version>
+        <version>33.1.0-jre</version>
       </dependency>
       <dependency>
         <artifactId>commons-io</artifactId>
