@@ -104,7 +104,7 @@
     <connection>scm:git:${project.scm.url}</connection>
     <developerConnection>scm:git:${project.scm.url}</developerConnection>
     <url>https://github.com/mathiasbosman/file-services.git</url>
-    <tag>HEAD</tag>
+    <tag>v1.0.1</tag>
   </scm>
 
   <groupId>be.mathiasbosman</groupId>
@@ -127,5 +127,5 @@
     <sonar.organization>mathiasbosman</sonar.organization>
   </properties>
 
-  <version>1.0.1-SNAPSHOT</version>
+  <version>1.0.1</version>
 </project>
